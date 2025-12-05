@@ -595,7 +595,10 @@ const AnalysisResultPage = () => {
                           <Bar 
                             dataKey="value" 
                             radius={[0, 4, 4, 0]}
-                            onClick={(data) => setSelectedFactor(data.factor)}
+                            onClick={(data: any) => {
+  const factor = data?.payload?.factor || data?.factor;
+  setSelectedFactor(factor || null);
+}}
                             cursor="pointer"
                             isAnimationActive={barVisible}
                             animationBegin={0}
@@ -1024,9 +1027,8 @@ const AnalysisResultPage = () => {
               // Premium: Show full component or placeholder
               analysisData?.credibility?.manipulationScore !== undefined ? (
                 <ManipulationScoreGauge 
-                  manipulationScore={analysisData.credibility.manipulationScore}
-                  biasIndicators={analysisData.credibility.biasIndicators || []}
-                />
+  credibilityData={analysisData.credibility}
+/>
               ) : (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
                   <ShieldAlert className="w-12 h-12 text-gray-400 mx-auto mb-4" />
