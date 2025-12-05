@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
+    "server:start": "tsx api/server.ts",
+    "start": "tsx api/server.ts",
     "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\"",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -75,8 +77,7 @@
     "vite": "^6.3.5",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^1.6.1"
-    ,
+    "vitest": "^1.6.1",
     "supertest": "^6.3.4",
     "@types/helmet": "^4.0.0"
   }

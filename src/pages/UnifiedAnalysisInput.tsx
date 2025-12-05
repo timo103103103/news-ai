@@ -105,7 +105,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
     try {
       let requestBody: any = {};
-      let endpoint = `${API_BASE_URL}/analyze/summary`;
+      let endpoint = `${API_BASE_URL}/api/analyze/summary`;
 
       // Progress simulation
       const progressInterval = setInterval(() => {
@@ -137,7 +137,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
         const formData = new FormData();
         formData.append('file', selectedFile);
         
-        const response = await fetch(`${API_BASE_URL}/analyze/file`, {
+        const response = await fetch(`${API_BASE_URL}/api/analyze/file`, {
           method: 'POST',
           body: formData,
         });

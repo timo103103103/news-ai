@@ -41,7 +41,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
 
   // Call the real API - FIXED endpoint
   const analyzeContent = async (articleText: string, sourceType: 'url' | 'pdf' | 'docx' | 'text'): Promise<AnalysisResult> => {
-    const response = await fetch(`${API_BASE_URL}/analyze/summary`, {
+    const response = await fetch(`${API_BASE_URL}/api/analyze/summary`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
