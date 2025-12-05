@@ -1,0 +1,632 @@
+/* Analysis Components Styles */
+
+/* Summary Card */
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.summary-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.confidence-badge {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.confidence-text {
+  margin: 0;
+}
+
+.summary-content {
+  margin-bottom: 16px;
+}
+
+.summary-text {
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.summary-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* PESTLE Radar Chart */
+.pestle-radar {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
+
+.pestle-header {
+  margin-bottom: 24px;
+}
+
+.pestle-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.pestle-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.pestle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pestle-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pestle-bar {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pestle-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.pestle-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 120px;
+}
+
+.pestle-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.pestle-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Motive Heatmap */
+.motive-heatmap {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
+
+.motive-header {
+  margin-bottom: 24px;
+}
+
+.motive-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.motive-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.motive-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.motive-item {
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.motive-item.high-intensity {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.motive-item.medium-intensity {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.motive-item.low-intensity {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.motive-type {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.motive-category {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.motive-confidence {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.motive-description {
+  margin-bottom: 12px;
+}
+
+.motive-text {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.motive-intensity {
+  margin-top: 8px;
+}
+
+.intensity-bar {
+  height: 4px;
+  background: #f1f5f9;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.intensity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Party Bar Chart */
+.party-bar-chart {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
+
+.party-header {
+  margin-bottom: 24px;
+}
+
+.party-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.party-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.party-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.party-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.party-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 100px;
+}
+
+.party-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.party-impact {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.party-bar {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.party-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.party-sentiment {
+  display: flex;
+  align-items: center;
+}
+
+.sentiment-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sentiment-icon.positive {
+  color: #10b981;
+}
+
+.sentiment-icon.negative {
+  color: #ef4444;
+}
+
+.sentiment-icon.neutral {
+  color: #94a3b8;
+}
+
+/* Stock Impact Meter */
+.stock-impact-meter {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
+
+.stock-header {
+  margin-bottom: 24px;
+}
+
+.stock-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.stock-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+}
+
+.stock-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.stock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stock-symbol {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.stock-name {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.stock-prediction {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.prediction-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.change-value {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.change-value.positive {
+  color: #10b981;
+}
+
+.change-value.negative {
+  color: #ef4444;
+}
+
+.change-value.neutral {
+  color: #64748b;
+}
+
+.confidence-badge {
+  font-size: 10px;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.prediction-timeline {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.stock-icon {
+  display: flex;
+  align-items: center;
+}
+
+.stock-trend {
+  width: 20px;
+  height: 20px;
+}
+
+.stock-trend.positive {
+  color: #10b981;
+}
+
+.stock-trend.negative {
+  color: #ef4444;
+}
+
+.stock-trend.neutral {
+  color: #94a3b8;
+}
+
+/* Manipulation Score Gauge */
+.manipulation-gauge {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
+
+.gauge-header {
+  margin-bottom: 24px;
+}
+
+.gauge-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.gauge-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.gauge-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.gauge-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.gauge-center {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.gauge-score {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.gauge-label {
+  display: block;
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.gauge-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.factor-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.factor-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  min-width: 80px;
+}
+
+.factor-bar {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.factor-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.factor-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Responsive Design for Analysis Components */
+@media (max-width: 768px) {
+  .pestle-item,
+  .motive-item,
+  .party-item,
+  .stock-item,
+  .factor-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .pestle-info,
+  .motive-type,
+  .party-info,
+  .stock-prediction {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .gauge-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .gauge-score {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-card,
+  .pestle-radar,
+  .motive-heatmap,
+  .party-bar-chart,
+  .stock-impact-meter,
+  .manipulation-gauge {
+    padding: 16px;
+  }
+  
+  .gauge-circle {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .gauge-score {
+    font-size: 18px;
+  }
+}

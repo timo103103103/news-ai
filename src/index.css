@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Design Tokens */
+  --font-size-h1: 3.000rem;
+  --font-size-h2: 2.250rem;
+  --font-size-h3: 1.500rem;
+  --font-size-h4: 1.250rem;
+  --font-size-h5: 1.125rem;
+  --font-size-h6: 1.000rem;
+  --line-h1: 1.20; --track-h1: -0.01em;
+  --line-h2: 1.25; --track-h2: -0.005em;
+  --line-h3: 1.30; --track-h3: 0em;
+  --line-h4: 1.35; --track-h4: 0em;
+  --line-h5: 1.40; --track-h5: 0em;
+  --line-h6: 1.45; --track-h6: 0em;
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-bold: 700;
+
+  --space-4: 0.25rem;
+  --space-8: 0.50rem;
+  --space-12: 0.75rem;
+  --space-16: 1.00rem;
+  --space-24: 1.50rem;
+  --space-32: 2.00rem;
+  --space-40: 2.50rem;
+  --space-48: 3.00rem;
+  --space-64: 4.00rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+
+  --border-1: 1px;
+  --border-2: 2px;
+  --border-color: #E0E0E0;
+  --border-color-muted: #D8D8D8;
+
+  --elev-low: 0 1px 3px rgba(0,0,0,0.08);
+  --elev-med: 0 4px 8px rgba(0,0,0,0.12);
+  --elev-high: 0 12px 20px rgba(0,0,0,0.16);
+
+  --icon-16: 16px;
+  --icon-24: 24px;
+  --icon-32: 32px;
+  --icon-48: 48px;
+  --icon-stroke-thin: 1.5;
+  --icon-stroke: 2;
+  --icon-stroke-bold: 2.5;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-h1: 2.250rem;
+    --font-size-h2: 1.875rem;
+    --font-size-h3: 1.375rem;
+    --font-size-h4: 1.125rem;
+    --font-size-h5: 1.000rem;
+    --font-size-h6: 0.938rem;
+  }
+}
+
+/* Motion and animation utilities */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.entry-fade-up {
+  opacity: 0;
+  will-change: opacity, transform;
+  animation: fadeUp 500ms ease-out forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+.neon-hover {
+  transition: transform 300ms ease-in-out, text-shadow 300ms ease-in-out, box-shadow 300ms ease-in-out;
+}
+.neon-hover:hover {
+  text-shadow: 0 0 8px #00fffc, 0 0 14px #00fffc;
+  transform: scale(1.05);
+}
+
+.section-blur {
+  filter: blur(5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-fade-up { animation: none !important; }
+  .neon-hover { transition: none !important; }
+}

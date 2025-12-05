@@ -1,0 +1,65 @@
+{
+  "typography": {
+    "headings": {
+      "h1": { "size": "3.000rem", "lineHeight": "1.20", "letterSpacing": "-0.01em", "mobileSize": "2.250rem" },
+      "h2": { "size": "2.250rem", "lineHeight": "1.25", "letterSpacing": "-0.005em", "mobileSize": "1.875rem" },
+      "h3": { "size": "1.500rem", "lineHeight": "1.30", "letterSpacing": "0em", "mobileSize": "1.375rem" },
+      "h4": { "size": "1.250rem", "lineHeight": "1.35", "letterSpacing": "0em", "mobileSize": "1.125rem" },
+      "h5": { "size": "1.125rem", "lineHeight": "1.40", "letterSpacing": "0em", "mobileSize": "1.000rem" },
+      "h6": { "size": "1.000rem", "lineHeight": "1.45", "letterSpacing": "0em", "mobileSize": "0.938rem" }
+    },
+    "paragraph": {
+      "weights": { "light": 300, "regular": 400, "bold": 700 },
+      "usage": {
+        "light": "Long-form body copy, secondary descriptions",
+        "regular": "Default UI text, labels, micro-copy",
+        "bold": "Section titles, emphasis, actionable text"
+      },
+      "fallbacks": [
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Inter",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ]
+    }
+  },
+  "spacing": {
+    "scale": {
+      "4": "0.25rem",
+      "8": "0.50rem",
+      "12": "0.75rem",
+      "16": "1.00rem",
+      "24": "1.50rem",
+      "32": "2.00rem",
+      "40": "2.50rem",
+      "48": "3.00rem",
+      "64": "4.00rem"
+    },
+    "usage": {
+      "vertical": "Use 24px increments for section rhythm",
+      "horizontal": "Use 16px gutters for column spacing",
+      "padding": "Use 16px inner padding for cards"
+    }
+  },
+  "card": {
+    "elevation": {
+      "low": "0 1px 3px rgba(0,0,0,0.08)",
+      "medium": "0 4px 8px rgba(0,0,0,0.12)",
+      "high": "0 12px 20px rgba(0,0,0,0.16)"
+    },
+    "radius": { "sm": "8px", "md": "12px", "lg": "24px" },
+    "border": { "width": "1px", "color": "#E0E0E0" },
+    "padding": { "inner": "16px" }
+  },
+  "icons": {
+    "sizes": { "sm": "16px", "md": "24px", "lg": "32px", "xl": "48px" },
+    "stroke": { "thin": 1.5, "regular": 2, "bold": 2.5 },
+    "fillRules": { "default": "none", "accent": "currentColor" },
+    "hover": { "opacity": 0.9 },
+    "focus": { "outline": "2px solid #2E5BFF" }
+  }
+}

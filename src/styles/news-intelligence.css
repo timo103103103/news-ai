@@ -1,0 +1,440 @@
+/* =========================================
+   1. Global Reset & Variables
+   ========================================= */
+:root {
+  --primary-blue: #2563eb;
+  --primary-dark: #1d4ed8;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-400: #94a3b8;
+  --slate-600: #475569;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --white: #ffffff;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.news-landing-page {
+  font-family: var(--font-sans);
+  color: var(--slate-900);
+  background-color: var(--white);
+  line-height: 1.6;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Container Utility */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* =========================================
+   2. Navigation / Header
+   ========================================= */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+header.scrolled {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.nav-link {
+  color: var(--slate-600);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--primary-blue);
+}
+
+/* =========================================
+   3. Hero Section & Typography
+   ========================================= */
+.hero-section {
+  position: relative;
+  padding-top: 160px;
+  padding-bottom: 100px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Background Blobs (Abstract shapes) */
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  z-index: -1;
+  animation: float 10s infinite ease-in-out;
+}
+
+.blob-1 {
+  top: -10%;
+  right: -5%;
+  width: 600px;
+  height: 600px;
+  background: #dbeafe; /* Light blue */
+}
+
+.blob-2 {
+  bottom: 0;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: #e0e7ff; /* Indigo tint */
+}
+
+/* Hero Typography */
+.hero-title {
+  font-size: 4rem; /* Fallback */
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: var(--slate-900);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--primary-blue), #4f46e5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--slate-600);
+  max-width: 650px;
+  margin: 0 auto 3rem auto;
+}
+
+/* =========================================
+   4. The Search Input Simulation
+   ========================================= */
+.search-simulation {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto 4rem auto;
+  z-index: 10;
+}
+
+.search-simulation input {
+  width: 100%;
+  padding: 1.25rem 1.5rem 1.25rem 3.5rem; /* Left padding for icon */
+  font-size: 1.125rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-simulation input:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.search-simulation .search-icon {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--slate-400);
+}
+
+.search-simulation .analyze-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.search-simulation .analyze-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+/* =========================================
+   5. Features (Bento Grid)
+   ========================================= */
+.features-section {
+  padding: 5rem 0;
+  background-color: var(--slate-50);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid var(--slate-100);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: var(--slate-50);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================
+   6. Split Section (Why Us)
+   ========================================= */
+.split-section {
+  padding: 6rem 0;
+  background: white;
+}
+
+.split-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+@media (min-width: 960px) {
+  .split-container {
+    flex-direction: row;
+    align-items: center;
+  }
+  .split-container > div {
+    flex: 1;
+  }
+}
+
+/* Abstract UI Graphic */
+.ui-graphic {
+  position: relative;
+  background: var(--slate-900);
+  border-radius: 1rem;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.ui-graphic::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(30,41,59,0), rgba(15,23,42,1));
+  z-index: 1;
+}
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+}
+
+.check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: var(--slate-600);
+}
+
+/* =========================================
+   7. Testimonials (Dark Mode Cards)
+   ========================================= */
+.testimonials-section {
+  background-color: var(--slate-900);
+  color: white;
+  padding: 6rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grid Background Pattern */
+.grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.testimonial-card-dark {
+  background: rgba(30, 41, 59, 0.5); /* Slate 800 with opacity */
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.stars {
+  color: #fbbf24; /* Amber 400 */
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.quote-text {
+  font-style: italic;
+  color: var(--slate-200);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.author-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+/* =========================================
+   8. Footer & Utility Classes
+   ========================================= */
+.cta-section {
+  background-color: var(--primary-blue);
+  color: white;
+  text-align: center;
+  padding: 5rem 1rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.btn-white {
+  background: white;
+  color: var(--primary-blue);
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.btn-white:hover {
+  transform: translateY(-2px);
+  background-color: var(--slate-50);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+footer {
+  border-top: 1px solid var(--slate-200);
+  padding: 3rem 0;
+  color: var(--slate-600);
+  font-size: 0.875rem;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translate(0px, 0px); }
+  50% { transform: translate(-20px, 20px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Hide scrollbar for clean UI if needed */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

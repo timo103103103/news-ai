@@ -1,0 +1,210 @@
+/* --- Background & Base --- */
+.newspaperBg {
+  min-height: 100vh;
+  width: 100%;
+  background-image: 
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), 
+    url("https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  font-family: 'Inter', sans-serif; /* Ensure you have a clean sans-serif imported */
+  overflow-x: hidden;
+}
+
+/* --- Layout Containers --- */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+/* --- Hero Section (The "Eye-Catching" Part) --- */
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 6rem 0 4rem;
+  gap: 1.5rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.headline {
+  font-family: 'Playfair Display', serif; /* Professional News Serif */
+  font-size: clamp(3rem, 6vw, 5rem); /* Responsive sizing */
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to right, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.subheadline {
+  font-size: 1.25rem;
+  color: #cbd5e1;
+  max-width: 600px;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* --- The "Bento" Grid Layout --- */
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 1.5rem;
+}
+
+/* --- Professional Glass Cards --- */
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Specific Card Placements (The "Layout" Magic) --- */
+.mainFeature {
+  grid-column: span 12;
+}
+
+.secondaryFeature {
+  grid-column: span 6;
+}
+
+.statCard {
+  grid-column: span 4;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (min-width: 1024px) {
+  .mainFeature { grid-column: span 8; grid-row: span 2; }
+  .sideFeature { grid-column: span 4; grid-row: span 1; }
+}
+
+@media (max-width: 768px) {
+  .gridContainer { display: flex; flex-direction: column; }
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ctaButton {
+  background: white;
+  color: #0f172a;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-top: 2rem;
+}
+
+.ctaButton:hover {
+  transform: scale(1.05);
+}
+```
+
+### 2. Recommended `Home.tsx` Structure
+To make the CSS above work, arrange your Home component like this. This uses a **Bento Grid** layout, which is the current standard for high-end SaaS and Analysis platforms.
+
+```tsx
+import styles from './Home.module.css';
+import { ArrowRight, BarChart3, Globe, Shield } from 'lucide-react'; // Assuming you use Lucide icons
+
+export default function Home() {
+  return (
+    <div className={styles.newspaperBg}>
+      <div className={styles.container}>
+        
+        {/* 1. Hero Section: Center stage, high impact */}
+        <section className={styles.heroSection}>
+          <h1 className={styles.headline}>Global Intelligence,<br />Decoded.</h1>
+          <p className={styles.subheadline}>
+            Transform raw news into strategic assets. Our AI-driven analysis provides the clarity you need in a chaotic world.
+          </p>
+          <button className={styles.ctaButton}>Start Analysis</button>
+        </section>
+
+        {/* 2. The Feature Grid: Professional & Organized */}
+        <div className={styles.gridContainer}>
+          
+          {/* Main Feature: Takes up the most space */}
+          <div className={`${styles.card} ${styles.mainFeature}`}>
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-3 bg-blue-500/20 rounded-lg text-blue-300">
+                <Globe size={32} />
+              </div>
+              <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium">Live</span>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Real-Time Geopolitical Analysis</h3>
+              <p className="text-gray-400">Track PESTLE factors across 140+ countries instantly. Visualise supply chain risks before they hit the headlines.</p>
+            </div>
+          </div>
+
+          {/* Side Feature 1 */}
+          <div className={`${styles.card} ${styles.sideFeature}`}>
+            <div className="mb-4 p-3 bg-green-500/20 w-fit rounded-lg text-green-300">
+              <Shield size={24} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Credibility Scoring</h3>
+            <p className="text-sm text-gray-400">Automated source verification and bias detection.</p>
+          </div>
+
+          {/* Side Feature 2 */}
+          <div className={`${styles.card} ${styles.sideFeature}`}>
+            <div className="mb-4 p-3 bg-purple-500/20 w-fit rounded-lg text-purple-300">
+              <BarChart3 size={24} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Market Impact</h3>
+            <p className="text-sm text-gray-400">Correlate news sentiment with stock ticker volatility.</p>
+          </div>
+
+          {/* Stat Cards */}
+          <div className={`${styles.card} ${styles.statCard}`}>
+            <span className="text-4xl font-bold text-white">94%</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wider mt-2">Accuracy Rate</span>
+          </div>
+          <div className={`${styles.card} ${styles.statCard}`}>
+            <span className="text-4xl font-bold text-white">2.5M+</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wider mt-2">Articles Processed</span>
+          </div>
+          <div className={`${styles.card} ${styles.statCard}`}>
+            <span className="text-4xl font-bold text-white">150+</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wider mt-2">Enterprise Clients</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
