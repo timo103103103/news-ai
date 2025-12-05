@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription, SubscriptionProvider } from '@/contexts/SubscriptionContext';
@@ -23,9 +24,6 @@ import {
 } from 'lucide-react';
 import DailyIntelligenceSignup from '@/components/DailyIntelligenceSignup';
 import CredibilityAssessment from '../components/CredibilityAssessment';
-
-// 🔥 UPDATED: Point to your backend server
-const API_BASE_URL = '/api';
 
 // 🎨 PESTLE Factor Configuration
 const FACTOR_CONFIG: Record<string, { color: string; icon: any; description: string }> = {
