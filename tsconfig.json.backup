@@ -48,9 +48,6 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "api/tests",
     "**/*.spec.tsx"
   ]
 }

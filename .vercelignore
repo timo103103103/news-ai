@@ -1,27 +1,5 @@
-﻿# Ignore backend API files
-api/
-backend/
-
-# Ignore test files
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-__tests__/
-**/__tests__/
-
-# Ignore dev files
-nodemon.json
-.node-version
-
-# Ignore Railway config
-railway.json
-
-api/
-server/
-backend/
-tests/
-*.test.ts
-*.test.js
-node_modules/
-railway.json
+﻿# .vercelignore
+api/tests
+**/tests/**
+**/*.test.ts
+**/*.spec.ts
