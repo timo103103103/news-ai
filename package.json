@@ -38,6 +38,7 @@
     "pino-http": "^10.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.3.0",
     "recharts": "^3.4.1",
     "sonner": "^2.0.7",
@@ -80,5 +81,12 @@
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^1.6.1"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"vite\"",
+    "server:dev": "nodemon api/server.ts",
+    "build": "vite build",
+    "generate-sitemap": "node src/lib/generateSitemap.js",
+    "preview": "vite preview"
   }
 }
