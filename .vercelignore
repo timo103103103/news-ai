@@ -1,7 +1,18 @@
-node_modules
-build
-dist
-.git
-.trae
-.log
-.figma
+﻿# Ignore backend API files
+api/
+backend/
+
+# Ignore test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+**/__tests__/
+
+# Ignore dev files
+nodemon.json
+.node-version
+
+# Ignore Railway config
+railway.json
