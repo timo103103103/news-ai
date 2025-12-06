@@ -16,3 +16,12 @@ nodemon.json
 
 # Ignore Railway config
 railway.json
+
+api/
+server/
+backend/
+tests/
+*.test.ts
+*.test.js
+node_modules/
+railway.json
