@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import useAuthStore from '@/stores/authStore'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
@@ -11,22 +12,57 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        // Check for hash fragment (OAuth redirect)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
         
-        if (error) {
-          console.error('Auth callback error:', error)
-          navigate('/login')
-          return
-        }
+        if (accessToken) {
+          // OAuth flow - token in URL hash
+          const { data: { session }, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: hashParams.get('refresh_token') || ''
+          })
 
-        if (session) {
-          setSession(session)
-          navigate('/')
+          if (error) {
+            console.error('Auth callback error:', error)
+            toast.error('Login failed', {
+              description: error.message
+            })
+            navigate('/login')
+            return
+          }
+
+          if (session) {
+            setSession(session)
+            toast.success('Successfully logged in!', {
+              description: 'Welcome back!'
+            })
+            navigate('/')
+          } else {
+            navigate('/login')
+          }
         } else {
-          navigate('/login')
+          // Regular callback flow
+          const { data: { session }, error } = await supabase.auth.getSession()
+          
+          if (error) {
+            console.error('Auth callback error:', error)
+            navigate('/login')
+            return
+          }
+
+          if (session) {
+            setSession(session)
+            navigate('/')
+          } else {
+            navigate('/login')
+          }
         }
       } catch (error) {
         console.error('Auth callback error:', error)
+        toast.error('Authentication failed', {
+          description: 'Please try again'
+        })
         navigate('/login')
       }
     }
