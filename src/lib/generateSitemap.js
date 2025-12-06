@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const landingPagesPath = path.join(__dirname, '../data/landingPages.json');
 const landingPages = JSON.parse(fs.readFileSync(landingPagesPath, 'utf-8'));
 
-const BASE_URL = 'https://news-ai-i173.vercel.app';
+const BASE_URL = 'https://nexverisai.com';
 
 // Define static pages
 const staticPages = [

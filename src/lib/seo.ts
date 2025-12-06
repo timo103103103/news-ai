@@ -94,7 +94,7 @@ export function generateWebPageSchema(options: {
       'name': 'News AI',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://news-ai-i173.vercel.app/images/logo.png'
+        'url': 'https://nexverisai.com/images/logo.png'
       }
     }
   };
@@ -142,8 +142,8 @@ export function generateOrganizationSchema(): JsonLd {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     'name': 'News AI Intelligence Platform',
-    'url': 'https://news-ai-i173.vercel.app',
-    'logo': 'https://news-ai-i173.vercel.app/images/logo.png',
+    'url': 'https://nexverisai.com',
+    'logo': 'https://nexverisai.com/images/logo.png',
     'description': 'AI-powered news analysis platform providing bias detection, PESTLE analysis, sentiment analysis, and market impact predictions.',
     'sameAs': [
       // Add your social media URLs here
@@ -197,7 +197,7 @@ export function sanitizeMetaDescription(text: string, maxLength: number = 160): 
  * Generate canonical URL
  */
 export function generateCanonicalUrl(path: string): string {
-  const baseUrl = 'https://news-ai-i173.vercel.app';
+  const baseUrl = 'https://nexverisai.com';
   return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`;
 }
 

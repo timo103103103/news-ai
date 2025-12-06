@@ -50,7 +50,7 @@ interface LandingTemplateProps {
 }
 
 export default function LandingTemplate({ page, allPages }: LandingTemplateProps) {
-  const canonical = `https://news-ai-i173.vercel.app/landing/${page.slug}`;
+  const canonical = `https://nexverisai.com/landing/${page.slug}`;
   
   // JSON-LD Schema
   const jsonLd = {
@@ -74,7 +74,7 @@ export default function LandingTemplate({ page, allPages }: LandingTemplateProps
       "name": "News AI",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://news-ai-i173.vercel.app/images/logo.png"
+        "url": "https://nexverisai.com/images/logo.png"
       }
     }
   };
