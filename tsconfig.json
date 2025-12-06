@@ -34,15 +34,20 @@
     ]
   },
   "include": [
-    "src",
-    "api"
+    "src"
   ],
   "exclude": [
+    "node_modules",
+    "api",
+    "backend",
     "src/__tests__",
     "src/__tests_backup__",
     "src/test",
     "src/stories",
     "src/**/*.stories.tsx",
-    "api/tests"
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }
