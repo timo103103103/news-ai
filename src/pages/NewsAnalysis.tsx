@@ -8,7 +8,7 @@ import WinnerLoserTeaser from '../components/WinnerLoserTeaser';
 import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
 
 // ✅ CORRECT API endpoint - uses proxy configured in vite.config.ts
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app';
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();

@@ -16,7 +16,7 @@ interface NewsInputModuleProps {
 }
 
 // API Configuration - FIXED to match your backend
-const API_BASE_URL = '/api'; // Use proxy to backend on port 8081
+const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app'; // Use proxy to backend on port 8081
 
 const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'file' | 'text'>('url');

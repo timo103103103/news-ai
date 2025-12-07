@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, ArrowLeft, Type, BarChart3, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API_BASE_URL = '/api'; // ✅ Uses Vite proxy
+const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app'; // ✅ Uses Vite proxy
 
 interface AnalysisInputProps {
   onAnalysisComplete?: (data: any) => void;
@@ -105,7 +105,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
     try {
       let requestBody: any = {};
-      let endpoint = `${API_BASE_URL}/api/analyze/summary`;
+      let endpoint = `${API_BASE_URL}/analyze/summary`;
 
       // Progress simulation
       const progressInterval = setInterval(() => {
@@ -137,7 +137,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
         const formData = new FormData();
         formData.append('file', selectedFile);
         
-        const response = await fetch(`${API_BASE_URL}/api/analyze/file`, {
+        const response = await fetch(`${API_BASE_URL}/analyze/file`, {
           method: 'POST',
           body: formData,
         });
