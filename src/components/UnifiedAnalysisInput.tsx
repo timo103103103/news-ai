@@ -4,7 +4,7 @@ import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, ArrowLeft, Ty
 import { toast } from 'sonner';
 
 // ✅ Use environment variable for API URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'news-backend-production-ba81.up.railway.app';
 
 interface AnalysisInputProps {
   onAnalysisComplete?: (data: any) => void;

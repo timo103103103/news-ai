@@ -9,7 +9,7 @@ import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
 
 // ✅ CORRECT API endpoint - uses proxy configured in vite.config.ts
 // ✅ Use environment variable for Railway API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'news-backend-production-ba81.up.railway.app';
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();

@@ -16,7 +16,7 @@ interface NewsInputModuleProps {
 }
 
 // API Configuration - Use environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'news-backend-production-ba81.up.railway.app';
 
 const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'file' | 'text'>('url');
