@@ -16,7 +16,7 @@ interface AuthActions {
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error: AuthError | null }>
   signUp: (email: string, password: string, metadata?: { name?: string }) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
-  signInWithOAuth: (provider: 'google' | 'github') => Promise<{ error: AuthError | null }>
+  signInWithOAuth: (provider: 'google' | 'github', redirectUrl?: string) => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>
   updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>
   clearError: () => void
@@ -206,13 +206,20 @@ const useAuthStore = create<AuthState & AuthActions>()(
         }
       },
 
-      signInWithOAuth: async (provider: 'google' | 'github') => {
+      signInWithOAuth: async (provider: 'google' | 'github', redirectUrl?: string) => {
         set({ loading: true, error: null })
         try {
+          // Use provided redirectUrl or default to current origin
+          const finalRedirectUrl = redirectUrl || `${window.location.origin}/auth/callback`
+          
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
             options: {
-              redirectTo: `${window.location.origin}/auth/callback`,
+              redirectTo: finalRedirectUrl,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
             },
           })
           if (error) {
@@ -222,7 +229,8 @@ const useAuthStore = create<AuthState & AuthActions>()(
             })
             return { error }
           }
-          set({ loading: false })
+          // DON'T set loading to false - user will be redirected to OAuth provider
+          // Loading state will be cleared when they return via auth callback
           return { error: null }
         } catch (error) {
           const authError = { message: error instanceof Error ? error.message : `${provider} login failed` }

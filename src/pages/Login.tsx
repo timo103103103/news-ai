@@ -124,18 +124,20 @@ export default function Login() {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setIsLoading(true)
     try {
-      const { error } = await signInWithOAuth(provider)
+      // ✅ FIXED: Pass redirect URL to OAuth
+      const redirectUrl = `${window.location.origin}/auth/callback`
+      const { error } = await signInWithOAuth(provider, redirectUrl)
       if (error) {
         toast.error('Social login failed', {
           description: error.message
         })
       }
+      // Don't set loading to false here - user will be redirected
     } catch (error) {
       console.error('OAuth login error:', error)
       toast.error('Social login failed', {
         description: 'Please try again or use email login.'
       })
-    } finally {
       setIsLoading(false)
     }
   }
