@@ -15,8 +15,8 @@ interface NewsInputModuleProps {
   onTextProcessed?: (text: string, sourceType: string, language: string) => void;
 }
 
-// API Configuration - FIXED to match your backend
-const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app'; // Use proxy to backend on port 8081
+// API Configuration - Use environment variable
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
 
 const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'file' | 'text'>('url');
@@ -39,9 +39,9 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
     return 'en';
   };
 
-  // Call the real API - FIXED endpoint
+  // Call the real API
   const analyzeContent = async (articleText: string, sourceType: 'url' | 'pdf' | 'docx' | 'text'): Promise<AnalysisResult> => {
-    const response = await fetch(`${API_BASE_URL}/analyze/summary`, {
+    const response = await fetch(`${API_BASE_URL}/api/analyze/summary`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
