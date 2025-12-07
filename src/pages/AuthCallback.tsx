@@ -12,54 +12,85 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        console.log('🔐 AuthCallback: Starting auth callback handler')
+        console.log('🔐 Current URL:', window.location.href)
+        
         // Check for hash fragment (OAuth redirect)
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
         const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const error = hashParams.get('error')
+        const errorDescription = hashParams.get('error_description')
         
-        if (accessToken) {
+        console.log('🔐 Hash params:', { 
+          hasAccessToken: !!accessToken, 
+          hasRefreshToken: !!refreshToken,
+          error,
+          errorDescription 
+        })
+        
+        // Check for OAuth error
+        if (error) {
+          console.error('🔐 OAuth error:', error, errorDescription)
+          toast.error('Login failed', {
+            description: errorDescription || error
+          })
+          navigate('/login')
+          return
+        }
+        
+        if (accessToken && refreshToken) {
+          console.log('🔐 OAuth flow - setting session with tokens')
+          
           // OAuth flow - token in URL hash
-          const { data: { session }, error } = await supabase.auth.setSession({
+          const { data: { session }, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: hashParams.get('refresh_token') || ''
+            refresh_token: refreshToken
           })
 
-          if (error) {
-            console.error('Auth callback error:', error)
+          if (sessionError) {
+            console.error('🔐 Session error:', sessionError)
             toast.error('Login failed', {
-              description: error.message
+              description: sessionError.message
             })
             navigate('/login')
             return
           }
 
           if (session) {
+            console.log('🔐 Session established:', session.user?.email)
             setSession(session)
             toast.success('Successfully logged in!', {
               description: 'Welcome back!'
             })
             navigate('/')
           } else {
+            console.error('🔐 No session created')
             navigate('/login')
           }
         } else {
-          // Regular callback flow
-          const { data: { session }, error } = await supabase.auth.getSession()
+          console.log('🔐 No OAuth tokens in hash, checking for existing session')
           
-          if (error) {
-            console.error('Auth callback error:', error)
+          // Regular callback flow - check for existing session
+          const { data: { session }, error: getSessionError } = await supabase.auth.getSession()
+          
+          if (getSessionError) {
+            console.error('🔐 Get session error:', getSessionError)
             navigate('/login')
             return
           }
 
           if (session) {
+            console.log('🔐 Existing session found:', session.user?.email)
             setSession(session)
             navigate('/')
           } else {
+            console.log('🔐 No session found, redirecting to login')
             navigate('/login')
           }
         }
       } catch (error) {
-        console.error('Auth callback error:', error)
+        console.error('🔐 Auth callback error:', error)
         toast.error('Authentication failed', {
           description: 'Please try again'
         })
