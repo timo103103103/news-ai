@@ -13,6 +13,7 @@
     "server:start": "tsx api/server.ts",
     "start": "tsx api/server.ts",
     "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\"",
+    "generate-sitemap": "node src/lib/generateSitemap.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
@@ -81,12 +82,5 @@
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^1.6.1"
-  },
-  "scripts": {
-    "dev": "concurrently \"npm run server:dev\" \"vite\"",
-    "server:dev": "nodemon api/server.ts",
-    "build": "vite build",
-    "generate-sitemap": "node src/lib/generateSitemap.js",
-    "preview": "vite preview"
   }
 }
