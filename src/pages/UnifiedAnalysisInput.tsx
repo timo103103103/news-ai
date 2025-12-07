@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, ArrowLeft, Type, BarChart3, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app'; // ✅ Uses Vite proxy
+// ✅ CRITICAL: Use ONLY environment variable - NO fallback, NO hardcoded URLs
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AnalysisInputProps {
   onAnalysisComplete?: (data: any) => void;
@@ -18,55 +19,271 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  const MAX_TEXT_LENGTH = 10000;
-  const ALLOWED_FILE_TYPES = ['.pdf', '.docx', '.txt', '.doc'];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-  // Validation Functions
-  const validateUrl = (url: string): boolean => {
+  // Validation functions
+  const isValidUrl = (string: string) => {
     try {
-      new URL(url);
-      return url.startsWith('http://') || url.startsWith('https://');
-    } catch {
+      new URL(string);
+      return true;
+    } catch (_) {
       return false;
     }
   };
 
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
-    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!ALLOWED_FILE_TYPES.includes(extension)) {
-      return { 
-        valid: false, 
-        error: 'Unsupported file format. Please upload PDF, DOC, DOCX, or TXT files only.' 
-      };
+  const validateInput = () => {
+    setError('');
+    
+    if (activeTab === 'url' && !urlInput.trim()) {
+      setError('Please enter a valid URL');
+      return false;
     }
-    if (file.size > MAX_FILE_SIZE) {
-      return { valid: false, error: 'File size exceeds 10MB limit.' };
+    
+    if (activeTab === 'url' && !isValidUrl(urlInput)) {
+      setError('Please enter a valid URL (including http:// or https://)');
+      return false;
     }
-    return { valid: true };
+    
+    if (activeTab === 'text' && !textInput.trim()) {
+      setError('Please enter some text to analyze');
+      return false;
+    }
+    
+    if (activeTab === 'text' && textInput.trim().length < 50) {
+      setError('Text must be at least 50 characters long');
+      return false;
+    }
+    
+    if (activeTab === 'file' && !selectedFile) {
+      setError('Please select a file to analyze');
+      return false;
+    }
+    
+    return true;
   };
 
-  // File Handling
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  // Handle URL analysis
+  const handleUrlAnalysis = async () => {
+    if (!validateInput()) return;
+
+    // ✅ Check if API URL is configured
+    if (!API_BASE_URL) {
+      toast.error('Configuration Error', {
+        description: 'API endpoint not configured. Please check environment variables.'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log('🔗 Sending URL to backend:', API_BASE_URL);
+      
+      // ✅ CORRECT: Use environment variable with /api prefix
+      const endpoint = `${API_BASE_URL}/api/analyze/summary`;
+      
+      console.log('📡 Full endpoint:', endpoint);
+      console.log('📝 Request payload:', { url: urlInput });
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: urlInput,
+        }),
+      });
+
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('❌ Error response:', errorData);
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Analysis complete:', data);
+
+      toast.success('Analysis complete!', {
+        description: 'Your news article has been analyzed successfully.'
+      });
+
+      if (onAnalysisComplete) {
+        onAnalysisComplete(data);
+      }
+
+      // Navigate to results page with data
+      navigate('/results', { state: { analysisData: data } });
+
+    } catch (err) {
+      console.error('❌ Analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      toast.error('Analysis failed', {
+        description: errorMessage
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle file analysis
+  const handleFileAnalysis = async () => {
+    if (!validateInput() || !selectedFile) return;
+
+    // ✅ Check if API URL is configured
+    if (!API_BASE_URL) {
+      toast.error('Configuration Error', {
+        description: 'API endpoint not configured. Please check environment variables.'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      console.log('📁 Uploading file:', selectedFile.name);
+      console.log('🔗 Backend URL:', API_BASE_URL);
+
+      // ✅ CORRECT: Use environment variable with /api prefix
+      const endpoint = `${API_BASE_URL}/api/analyze/file`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ File analysis complete:', data);
+
+      toast.success('File analyzed successfully!');
+
+      if (onAnalysisComplete) {
+        onAnalysisComplete(data);
+      }
+
+      navigate('/results', { state: { analysisData: data } });
+
+    } catch (err) {
+      console.error('❌ File analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze file';
+      setError(errorMessage);
+      toast.error('File analysis failed', {
+        description: errorMessage
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle text analysis
+  const handleTextAnalysis = async () => {
+    if (!validateInput()) return;
+
+    // ✅ Check if API URL is configured
+    if (!API_BASE_URL) {
+      toast.error('Configuration Error', {
+        description: 'API endpoint not configured. Please check environment variables.'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log('📝 Analyzing text...');
+      console.log('🔗 Backend URL:', API_BASE_URL);
+
+      // ✅ CORRECT: Use environment variable with /api prefix
+      const endpoint = `${API_BASE_URL}/api/analyze/summary`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: textInput,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Text analysis complete:', data);
+
+      toast.success('Text analyzed successfully!');
+
+      if (onAnalysisComplete) {
+        onAnalysisComplete(data);
+      }
+
+      navigate('/results', { state: { analysisData: data } });
+
+    } catch (err) {
+      console.error('❌ Text analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze text';
+      setError(errorMessage);
+      toast.error('Text analysis failed', {
+        description: errorMessage
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
-      const validation = validateFile(file);
-      if (!validation.valid) {
-        setError(validation.error || 'File validation failed');
-        setSelectedFile(null);
-        toast.error(validation.error || 'File validation failed');
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!validTypes.includes(file.type)) {
+        setError('Please select a PDF, DOCX, or TXT file');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        setError('File size must be less than 10MB');
         return;
       }
       setSelectedFile(file);
       setError('');
-      toast.success(`File "${file.name}" selected successfully`);
     }
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!validTypes.includes(file.type)) {
+        setError('Please select a PDF, DOCX, or TXT file');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError('File size must be less than 10MB');
+        return;
+      }
+      setSelectedFile(file);
+      setError('');
+    }
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -78,387 +295,220 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      const file = files[0];
-      const validation = validateFile(file);
-      if (!validation.valid) {
-        setError(validation.error || 'File validation failed');
-        toast.error(validation.error || 'File validation failed');
-        return;
-      }
-      setSelectedFile(file);
-      setError('');
-      toast.success(`File "${file.name}" selected successfully`);
+  const handleAnalyze = () => {
+    switch (activeTab) {
+      case 'url':
+        handleUrlAnalysis();
+        break;
+      case 'file':
+        handleFileAnalysis();
+        break;
+      case 'text':
+        handleTextAnalysis();
+        break;
     }
-  }, []);
-
-  // Analysis Submission
-  const handleAnalyze = async () => {
-    setError('');
-    setIsLoading(true);
-    setUploadProgress(0);
-
-    try {
-      let requestBody: any = {};
-      let endpoint = `${API_BASE_URL}/analyze/summary`;
-
-      // Progress simulation
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-      }, 300);
-
-      // Prepare request based on input type
-      if (activeTab === 'url') {
-        if (!urlInput.trim()) {
-          throw new Error('Please enter a URL');
-        }
-        if (!validateUrl(urlInput)) {
-          throw new Error('Please enter a valid URL starting with http:// or https://');
-        }
-        requestBody = { url: urlInput.trim() };
-      } else if (activeTab === 'text') {
-        if (!textInput.trim()) {
-          throw new Error('Please enter some text to analyze');
-        }
-        if (textInput.length > MAX_TEXT_LENGTH) {
-          throw new Error(`Text exceeds maximum length of ${MAX_TEXT_LENGTH} characters`);
-        }
-        requestBody = { text: textInput.trim() };
-      } else if (activeTab === 'file') {
-        if (!selectedFile) {
-          throw new Error('Please select a file to analyze');
-        }
-        
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        
-        const response = await fetch(`${API_BASE_URL}/analyze/file`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        clearInterval(progressInterval);
-        setUploadProgress(100);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Server error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        handleAnalysisSuccess(data);
-        return;
-      }
-
-      // For URL and text analysis
-      console.log('🚀 Sending analysis request:', { endpoint, body: requestBody });
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      console.log('📡 Response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Server error:', errorData);
-        throw new Error(errorData.error || `Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      handleAnalysisSuccess(data);
-
-    } catch (err: any) {
-      console.error('Analysis error:', err);
-      setError(err.message || 'Failed to analyze content. Please try again.');
-      toast.error('Analysis failed', {
-        description: err.message || 'Please try again or contact support.'
-      });
-    } finally {
-      setIsLoading(false);
-      setUploadProgress(0);
-    }
-  };
-
-  const handleAnalysisSuccess = (data: any) => {
-    console.log('✅ Analysis successful:', data);
-    
-    // ✅ FIXED: Store with correct key 'analysisResult'
-    sessionStorage.setItem('analysisResult', JSON.stringify({
-      rawAnalysis: data.data,
-      timestamp: new Date().toISOString(),
-      sourceType: activeTab,
-    }));
-
-    console.log('💾 Saved to sessionStorage with key: analysisResult');
-    console.log('📊 Data saved:', data.data);
-
-    toast.success('Analysis complete!', {
-      description: 'Redirecting to results...'
-    });
-
-    // Callback if provided
-    if (onAnalysisComplete) {
-      onAnalysisComplete(data);
-    }
-
-    // Navigate to results
-    setTimeout(() => {
-      navigate('/results');
-    }, 500);
-  };
-
-  // Reset form
-  const handleReset = () => {
-    setUrlInput('');
-    setTextInput('');
-    setSelectedFile(null);
-    setError('');
-    setUploadProgress(0);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
         {/* Header */}
-        <div className="text-center mb-8">
-          <button
-            onClick={() => navigate('/')}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </button>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            AI News Intelligence Analysis
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Analyze news articles from any source. Get comprehensive insights including PESTLE analysis, 
-            credibility scoring, market impact, and hidden motives.
-          </p>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">News Analysis</h2>
+                <p className="text-blue-100 text-sm">AI-powered insights from any news source</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+              <ShieldCheck className="w-4 h-4" />
+              <span className="text-sm font-medium">Secure Analysis</span>
+            </div>
+          </div>
         </div>
 
-        {/* Input Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          
-          {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 bg-gray-50">
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <div className="flex">
             <button
               onClick={() => setActiveTab('url')}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
                 activeTab === 'url'
-                  ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <LinkIcon className="w-5 h-5" />
-              <span>URL</span>
+              <div className="flex items-center justify-center space-x-2">
+                <LinkIcon className="w-4 h-4" />
+                <span>URL</span>
+              </div>
             </button>
             <button
               onClick={() => setActiveTab('file')}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
                 activeTab === 'file'
-                  ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <Upload className="w-5 h-5" />
-              <span>File Upload</span>
+              <div className="flex items-center justify-center space-x-2">
+                <Upload className="w-4 h-4" />
+                <span>File Upload</span>
+              </div>
             </button>
             <button
               onClick={() => setActiveTab('text')}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
                 activeTab === 'text'
-                  ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <Type className="w-5 h-5" />
-              <span>Text Input</span>
+              <div className="flex items-center justify-center space-x-2">
+                <Type className="w-4 h-4" />
+                <span>Direct Text</span>
+              </div>
             </button>
-          </div>
-
-          <div className="p-8">
-            {/* Error Display */}
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-red-800 font-medium">Error</p>
-                  <p className="text-red-700 text-sm mt-1">{error}</p>
-                </div>
-              </div>
-            )}
-
-            {/* URL Input Tab */}
-            {activeTab === 'url' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Article URL
-                  </label>
-                  <input
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="https://example.com/article"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isLoading}
-                  />
-                  <p className="mt-2 text-sm text-gray-500">
-                    Enter the full URL of any news article or web page
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* File Upload Tab */}
-            {activeTab === 'file' && (
-              <div className="space-y-4">
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    isDragging
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx,.txt"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    disabled={isLoading}
-                  />
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-700 font-medium mb-2">
-                    {selectedFile ? selectedFile.name : 'Drop your file here or click to browse'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Supported formats: PDF, DOC, DOCX, TXT (Max 10MB)
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    disabled={isLoading}
-                  >
-                    Select File
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Text Input Tab */}
-            {activeTab === 'text' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Paste Article Text
-                  </label>
-                  <textarea
-                    ref={textAreaRef}
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Paste your article text here..."
-                    rows={12}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    disabled={isLoading}
-                  />
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-gray-500">
-                      {textInput.length} / {MAX_TEXT_LENGTH} characters
-                    </p>
-                    {textInput.length > MAX_TEXT_LENGTH && (
-                      <p className="text-sm text-red-600 font-medium">
-                        Text exceeds maximum length
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-8">
-              <button
-                onClick={handleAnalyze}
-                disabled={isLoading}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  'Analyze Now'
-                )}
-              </button>
-              <button
-                onClick={handleReset}
-                disabled={isLoading}
-                className="px-6 py-4 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Reset
-              </button>
-            </div>
-
-            {/* Progress Bar */}
-            {isLoading && uploadProgress > 0 && (
-              <div className="mt-4">
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Processing...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Features */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <FileText className="w-8 h-8 text-blue-600 mb-3" />
-            <h3 className="font-semibold text-gray-900 mb-2">Comprehensive Analysis</h3>
-            <p className="text-sm text-gray-600">
-              Get detailed insights including summary, credibility score, and market impact
-            </p>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <BarChart3 className="w-8 h-8 text-indigo-600 mb-3" />
-            <h3 className="font-semibold text-gray-900 mb-2">PESTLE Framework</h3>
-            <p className="text-sm text-gray-600">
-              Understand political, economic, social, technological, legal, and environmental factors
-            </p>
-          </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <ShieldCheck className="w-8 h-8 text-green-600 mb-3" />
-            <h3 className="font-semibold text-gray-900 mb-2">AI-Powered</h3>
-            <p className="text-sm text-gray-600">
-              Advanced AI models analyze content for accuracy, bias, and hidden motives
-            </p>
+        {/* Content */}
+        <div className="p-6">
+          {activeTab === 'url' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="url-input" className="block text-sm font-medium text-gray-700 mb-2">
+                  Article URL
+                </label>
+                <input
+                  id="url-input"
+                  type="url"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="https://example.com/article"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'file' && (
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                isDragging
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx,.txt"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={isLoading}
+              />
+              
+              {selectedFile ? (
+                <div className="space-y-3">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <FileText className="w-8 h-8 text-green-600" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-900">{selectedFile.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {(selectedFile.size / 1024).toFixed(2)} KB
+                  </p>
+                  <button
+                    onClick={() => setSelectedFile(null)}
+                    className="text-sm text-red-600 hover:text-red-700"
+                    disabled={isLoading}
+                  >
+                    Remove file
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-blue-600 hover:text-blue-700 font-medium"
+                      disabled={isLoading}
+                    >
+                      Click to upload
+                    </button>
+                    <span className="text-gray-600"> or drag and drop</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    PDF, DOCX, or TXT (max 10MB)
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'text' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="text-input" className="block text-sm font-medium text-gray-700 mb-2">
+                  Article Text
+                </label>
+                <textarea
+                  id="text-input"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder="Paste your article text here..."
+                  rows={12}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {textInput.length} characters (minimum 50 required)
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-800">Error</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Action Button */}
+          <div className="mt-6">
+            <button
+              onClick={handleAnalyze}
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <BarChart3 className="w-5 h-5" />
+                  <span>Analyze Article</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
