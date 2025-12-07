@@ -23,7 +23,8 @@ import DailyIntelligenceSignup from '@/components/DailyIntelligenceSignup';
 import CredibilityAssessment from '../components/CredibilityAssessment';
 
 // 🔥 UPDATED: Point to your backend server
-const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app';
+// ✅ Use environment variable for Railway API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
 
 // 🎨 PESTLE Factor Configuration
 const FACTOR_CONFIG: Record<string, { color: string; icon: any; description: string }> = {

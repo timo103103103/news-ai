@@ -8,7 +8,8 @@ import WinnerLoserTeaser from '../components/WinnerLoserTeaser';
 import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
 
 // ✅ CORRECT API endpoint - uses proxy configured in vite.config.ts
-const API_BASE_URL = 'https://news-backend-production-ba81.up.railway.app';
+// ✅ Use environment variable for Railway API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-ai-production-f7d7.up.railway.app';
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();
@@ -182,8 +183,8 @@ const NewsAnalysis = () => {
     setIsLoading(true);
 
     try {
-      // ✅ CORRECT ENDPOINT: /api/analyze/summary
-      const apiUrl = `${API_BASE_URL}/analyze/summary`;
+      // ✅ Direct Railway API call
+      const apiUrl = `${API_BASE_URL}/api/analyze/summary`;
       console.log('🚀 Sending to backend:', apiUrl);
       console.log('📝 Request body:', requestBody);
 
