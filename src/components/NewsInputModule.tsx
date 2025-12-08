@@ -1,6 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Link, FileText, Globe, CheckCircle, Loader2, Sparkles } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import ErrorDisplay from './ErrorDisplay';
+
+// ✅ Supabase Client Setup
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+);
+
+// ✅ API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-backend-production-ba81.up.railway.app';
 
 interface AnalysisResult {
   success: boolean;
@@ -15,9 +25,6 @@ interface NewsInputModuleProps {
   onTextProcessed?: (text: string, sourceType: string, language: string) => void;
 }
 
-// API Configuration - Use environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'news-backend-production-ba81.up.railway.app';
-
 const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'file' | 'text'>('url');
   const [urlInput, setUrlInput] = useState('');
@@ -26,9 +33,53 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<'network' | 'validation' | 'server' | 'generic'>('generic');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Detect language from text (simple heuristic)
+  // ✅ Check authentication on mount
+  useEffect(() => {
+    checkAuth();
+    
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setIsAuthenticated(true);
+        console.log('✅ User authenticated:', session.user.id);
+      } else {
+        setUserId(null);
+        setIsAuthenticated(false);
+        console.log('❌ User not authenticated');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        setIsAuthenticated(true);
+        console.log('✅ User authenticated:', session.user.id);
+      } else {
+        setUserId(null);
+        setIsAuthenticated(false);
+        console.log('❌ User not authenticated');
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setUserId(null);
+      setIsAuthenticated(false);
+    }
+  };
+
+  // Detect language from text
   const detectLanguage = (text: string): string => {
     if (/[\u4e00-\u9fff]/.test(text)) return 'zh';
     if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'jp';
@@ -39,18 +90,48 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
     return 'en';
   };
 
-  // Call the real API
+  // ✅ Call API with Auth Headers
   const analyzeContent = async (articleText: string, sourceType: 'url' | 'pdf' | 'docx' | 'text'): Promise<AnalysisResult> => {
+    // ✅ CRITICAL: Verify authentication
+    if (!isAuthenticated || !userId) {
+      throw new Error('Authentication required. Please sign in to analyze content.');
+    }
+
+    console.log('🚀 Analyzing content...');
+    console.log('👤 User ID:', userId);
+    console.log('📝 Content length:', articleText.length);
+
+    // ✅ CRITICAL: Include x-user-id header
     const response = await fetch(`${API_BASE_URL}/api/analyze/summary`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-user-id': userId  // ✅ Auth header for credits/rate limiting
       },
       body: JSON.stringify({ text: articleText }),
     });
 
+    console.log('📡 Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      
+      // Handle specific error cases
+      if (response.status === 401) {
+        setErrorType('server');
+        throw new Error('Authentication failed. Please sign in again.');
+      }
+      
+      if (response.status === 402) {
+        setErrorType('server');
+        throw new Error('Insufficient credits. Please upgrade your plan or purchase more credits.');
+      }
+      
+      if (response.status === 429) {
+        setErrorType('server');
+        throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+      }
+      
       setErrorType(response.status >= 500 ? 'server' : 'generic');
       throw new Error(errorData.error || `Server error: ${response.status}`);
     }
@@ -60,7 +141,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
 
     return {
       success: true,
-      analysis: data.data, // Backend returns analysis in data.data
+      analysis: data.data,
       sourceType,
       language,
       sourceText: articleText,
@@ -70,14 +151,13 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
 
   // Navigate to results page with data
   const navigateToResults = (analysisResult: AnalysisResult) => {
-    // Store analysis in sessionStorage for the results page
     sessionStorage.setItem('currentAnalysis', JSON.stringify({
       rawAnalysis: analysisResult.analysis,
       sourceType: analysisResult.sourceType,
       language: analysisResult.language,
       sourceText: analysisResult.sourceText,
       timestamp: new Date().toISOString(),
-      // Dashboard summary data for the results page
+      userId: userId,  // ✅ Store user ID for tracking
       summary: { title: "Intelligence Report", accuracy: 94.7, dataPoints: 127 },
       pestle: { factors: 6, averageScore: 79.7 },
       motive: { patterns: 8, avgIntensity: 76.4 },
@@ -86,7 +166,6 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
       manipulation: { score: 32.4, factors: 5 },
     }));
 
-    // Navigate to results page
     window.location.href = '/results';
   };
   
@@ -95,12 +174,28 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
     if (err.message?.includes('Failed to fetch')) {
       setErrorType('network');
       setError('Unable to connect to the analysis server. Please check your connection and ensure the server is running.');
+    } else if (err.message?.includes('Authentication required')) {
+      setErrorType('validation');
+      setError('Please sign in to use the analysis feature.');
+    } else if (err.message?.includes('Insufficient credits')) {
+      setErrorType('server');
+      setError('You have insufficient credits. Please upgrade your plan or purchase more credits.');
+    } else if (err.message?.includes('Rate limit')) {
+      setErrorType('server');
+      setError('Rate limit exceeded. Please wait a moment before trying again.');
     } else {
       setError(err.message || defaultMessage);
     }
   }
 
   const processURL = async () => {
+    // ✅ Check authentication first
+    if (!isAuthenticated || !userId) {
+      setErrorType('validation');
+      setError('Please sign in to analyze content');
+      return;
+    }
+
     if (!urlInput.trim()) {
       setErrorType('validation');
       setError('Please enter a valid URL');
@@ -134,6 +229,13 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
   };
 
   const processFile = async (file: File) => {
+    // ✅ Check authentication first
+    if (!isAuthenticated || !userId) {
+      setErrorType('validation');
+      setError('Please sign in to analyze content');
+      return;
+    }
+
     if (!file) return;
 
     const allowedTypes = [
@@ -185,6 +287,13 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
   };
 
   const processText = async () => {
+    // ✅ Check authentication first
+    if (!isAuthenticated || !userId) {
+      setErrorType('validation');
+      setError('Please sign in to analyze content');
+      return;
+    }
+
     if (!textInput.trim()) {
       setErrorType('validation');
       setError('Please enter text to analyze');
@@ -248,6 +357,15 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
           <p className="text-blue-100">
             Get instant PESTLE analysis, impact insights, and intelligence reports powered by AI
           </p>
+          
+          {/* ✅ Auth status indicator */}
+          {!isAuthenticated && (
+            <div className="mt-4 bg-yellow-500/20 border border-yellow-300/30 rounded-lg p-3">
+              <p className="text-yellow-100 text-sm">
+                ⚠️ Please sign in to use the analysis feature
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="p-6">
@@ -255,33 +373,36 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
           <div className="flex border-b border-gray-200 mb-6">
             <button
               onClick={() => setActiveTab('url')}
+              disabled={!isAuthenticated}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'url'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Link className="w-4 h-4" />
               Website URL
             </button>
             <button
               onClick={() => setActiveTab('file')}
+              disabled={!isAuthenticated}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'file'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Upload className="w-4 h-4" />
               File Upload
             </button>
             <button
               onClick={() => setActiveTab('text')}
+              disabled={!isAuthenticated}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'text'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <FileText className="w-4 h-4" />
               Paste Text
@@ -305,13 +426,13 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                       onChange={(e) => setUrlInput(e.target.value)}
                       placeholder="https://news.example.com/article"
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isProcessing}
+                      disabled={isProcessing || !isAuthenticated}
                       onKeyPress={(e) => e.key === 'Enter' && processURL()}
                     />
                   </div>
                   <button
                     onClick={processURL}
-                    disabled={isProcessing || !urlInput.trim()}
+                    disabled={isProcessing || !urlInput.trim() || !isAuthenticated}
                     className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (
@@ -332,9 +453,9 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                 </label>
                 <div 
                   className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                    isProcessing ? 'border-gray-200 bg-gray-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 cursor-pointer'
+                    isProcessing || !isAuthenticated ? 'border-gray-200 bg-gray-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 cursor-pointer'
                   }`}
-                  onClick={() => !isProcessing && fileInputRef.current?.click()}
+                  onClick={() => !isProcessing && isAuthenticated && fileInputRef.current?.click()}
                 >
                   <input
                     ref={fileInputRef}
@@ -342,7 +463,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                     accept=".pdf,.docx,.doc,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,text/plain"
                     onChange={handleFileChange}
                     className="hidden"
-                    disabled={isProcessing}
+                    disabled={isProcessing || !isAuthenticated}
                   />
                   <div className="flex flex-col items-center justify-center w-full text-gray-500">
                     {isProcessing ? (
@@ -351,7 +472,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                       <Upload className="w-12 h-12 mb-3 text-gray-400" />
                     )}
                     <span className="text-base font-medium">
-                      {isProcessing ? 'Processing document...' : 'Click to upload or drag and drop'}
+                      {isProcessing ? 'Processing document...' : isAuthenticated ? 'Click to upload or drag and drop' : 'Sign in to upload files'}
                     </span>
                     <span className="text-sm text-gray-400 mt-1">
                       PDF, DOC, DOCX, or TXT files (max 10MB)
@@ -373,7 +494,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                   placeholder="Paste your news article text here for AI analysis..."
                   rows={8}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  disabled={isProcessing}
+                  disabled={isProcessing || !isAuthenticated}
                 />
                 <div className="flex justify-between items-center mt-3">
                   <span className="text-sm text-gray-500">
@@ -381,7 +502,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
                   </span>
                   <button
                     onClick={processText}
-                    disabled={isProcessing || !textInput.trim()}
+                    disabled={isProcessing || !textInput.trim() || !isAuthenticated}
                     className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (

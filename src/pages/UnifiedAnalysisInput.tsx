@@ -1,9 +1,16 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, ArrowLeft, Type, BarChart3, ShieldCheck } from 'lucide-react';
+import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, Type, BarChart3, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@supabase/supabase-js';
 
-// ✅ CRITICAL: Use ONLY environment variable - NO fallback, NO hardcoded URLs
+// ✅ Supabase Client Setup
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+);
+
+// ✅ API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AnalysisInputProps {
@@ -19,7 +26,51 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ✅ Check authentication on mount
+  useEffect(() => {
+    checkAuth();
+    
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setIsAuthenticated(true);
+        console.log('✅ User authenticated:', session.user.id);
+      } else {
+        setUserId(null);
+        setIsAuthenticated(false);
+        console.log('❌ User not authenticated');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        setIsAuthenticated(true);
+        console.log('✅ User authenticated:', session.user.id);
+      } else {
+        setUserId(null);
+        setIsAuthenticated(false);
+        console.log('❌ User not authenticated');
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setUserId(null);
+      setIsAuthenticated(false);
+    }
+  };
 
   // Validation functions
   const isValidUrl = (string: string) => {
@@ -33,6 +84,15 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
   const validateInput = () => {
     setError('');
+    
+    // ✅ CRITICAL: Check authentication first
+    if (!isAuthenticated || !userId) {
+      setError('Please sign in to analyze content');
+      toast.error('Authentication required', {
+        description: 'Please sign in to use the analysis feature'
+      });
+      return false;
+    }
     
     if (activeTab === 'url' && !urlInput.trim()) {
       setError('Please enter a valid URL');
@@ -62,11 +122,10 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
     return true;
   };
 
-  // Handle URL analysis
+  // ✅ Handle URL analysis with Auth Headers
   const handleUrlAnalysis = async () => {
     if (!validateInput()) return;
 
-    // ✅ Check if API URL is configured
     if (!API_BASE_URL) {
       toast.error('Configuration Error', {
         description: 'API endpoint not configured. Please check environment variables.'
@@ -79,17 +138,19 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
     try {
       console.log('🔗 Sending URL to backend:', API_BASE_URL);
+      console.log('👤 User ID:', userId);
       
-      // ✅ CORRECT: Use environment variable with /api prefix
       const endpoint = `${API_BASE_URL}/api/analyze/summary`;
       
       console.log('📡 Full endpoint:', endpoint);
       console.log('📝 Request payload:', { url: urlInput });
 
+      // ✅ CRITICAL: Include x-user-id header
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
         },
         body: JSON.stringify({
           url: urlInput,
@@ -101,6 +162,31 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       if (!response.ok) {
         const errorData = await response.json();
         console.log('❌ Error response:', errorData);
+        
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast.error('Authentication failed', {
+            description: 'Please sign in again'
+          });
+          // Optional: redirect to login
+          // navigate('/login');
+          return;
+        }
+        
+        if (response.status === 402) {
+          toast.error('Insufficient credits', {
+            description: 'Please upgrade your plan or purchase more credits'
+          });
+          throw new Error('Insufficient credits. Please upgrade your plan.');
+        }
+        
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded', {
+            description: 'Please wait a moment before trying again'
+          });
+          throw new Error('Rate limit exceeded. Please try again later.');
+        }
+        
         throw new Error(errorData.message || `Server error: ${response.status}`);
       }
 
@@ -130,11 +216,10 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
     }
   };
 
-  // Handle file analysis
+  // ✅ Handle file analysis with Auth Headers
   const handleFileAnalysis = async () => {
     if (!validateInput() || !selectedFile) return;
 
-    // ✅ Check if API URL is configured
     if (!API_BASE_URL) {
       toast.error('Configuration Error', {
         description: 'API endpoint not configured. Please check environment variables.'
@@ -149,19 +234,46 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      console.log('📁 Uploading file:', selectedFile.name);
+      console.log('📄 Uploading file:', selectedFile.name);
+      console.log('👤 User ID:', userId);
       console.log('🔗 Backend URL:', API_BASE_URL);
 
-      // ✅ CORRECT: Use environment variable with /api prefix
       const endpoint = `${API_BASE_URL}/api/analyze/file`;
       
+      // ✅ CRITICAL: Include x-user-id header
       const response = await fetch(endpoint, {
         method: 'POST',
+        headers: {
+          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
+        },
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast.error('Authentication failed', {
+            description: 'Please sign in again'
+          });
+          return;
+        }
+        
+        if (response.status === 402) {
+          toast.error('Insufficient credits', {
+            description: 'Please upgrade your plan or purchase more credits'
+          });
+          throw new Error('Insufficient credits. Please upgrade your plan.');
+        }
+        
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded', {
+            description: 'Please wait a moment before trying again'
+          });
+          throw new Error('Rate limit exceeded. Please try again later.');
+        }
+        
         throw new Error(errorData.message || `Server error: ${response.status}`);
       }
 
@@ -188,11 +300,10 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
     }
   };
 
-  // Handle text analysis
+  // ✅ Handle text analysis with Auth Headers
   const handleTextAnalysis = async () => {
     if (!validateInput()) return;
 
-    // ✅ Check if API URL is configured
     if (!API_BASE_URL) {
       toast.error('Configuration Error', {
         description: 'API endpoint not configured. Please check environment variables.'
@@ -205,15 +316,17 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
     try {
       console.log('📝 Analyzing text...');
+      console.log('👤 User ID:', userId);
       console.log('🔗 Backend URL:', API_BASE_URL);
 
-      // ✅ CORRECT: Use environment variable with /api prefix
       const endpoint = `${API_BASE_URL}/api/analyze/summary`;
 
+      // ✅ CRITICAL: Include x-user-id header
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
         },
         body: JSON.stringify({
           text: textInput,
@@ -222,6 +335,29 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast.error('Authentication failed', {
+            description: 'Please sign in again'
+          });
+          return;
+        }
+        
+        if (response.status === 402) {
+          toast.error('Insufficient credits', {
+            description: 'Please upgrade your plan or purchase more credits'
+          });
+          throw new Error('Insufficient credits. Please upgrade your plan.');
+        }
+        
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded', {
+            description: 'Please wait a moment before trying again'
+          });
+          throw new Error('Rate limit exceeded. Please try again later.');
+        }
+        
         throw new Error(errorData.message || `Server error: ${response.status}`);
       }
 
@@ -256,7 +392,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
         setError('Please select a PDF, DOCX, or TXT file');
         return;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         setError('File size must be less than 10MB');
         return;
       }
@@ -326,9 +462,20 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
             </div>
             <div className="flex items-center space-x-2 bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
               <ShieldCheck className="w-4 h-4" />
-              <span className="text-sm font-medium">Secure Analysis</span>
+              <span className="text-sm font-medium">
+                {isAuthenticated ? 'Authenticated' : 'Sign In Required'}
+              </span>
             </div>
           </div>
+          
+          {/* ✅ Auth status warning */}
+          {!isAuthenticated && (
+            <div className="bg-yellow-500/20 border border-yellow-300/30 rounded-lg p-3 mt-4">
+              <p className="text-yellow-100 text-sm">
+                ⚠️ Please sign in to use the analysis feature
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -391,7 +538,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                   onChange={(e) => setUrlInput(e.target.value)}
                   placeholder="https://example.com/article"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading}
+                  disabled={isLoading || !isAuthenticated}
                 />
               </div>
             </div>
@@ -403,7 +550,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                 isDragging
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-300 hover:border-gray-400'
-              }`}
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -414,7 +561,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                 accept=".pdf,.docx,.txt"
                 onChange={handleFileChange}
                 className="hidden"
-                disabled={isLoading}
+                disabled={isLoading || !isAuthenticated}
               />
               
               {selectedFile ? (
@@ -429,7 +576,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                   <button
                     onClick={() => setSelectedFile(null)}
                     className="text-sm text-red-600 hover:text-red-700"
-                    disabled={isLoading}
+                    disabled={isLoading || !isAuthenticated}
                   >
                     Remove file
                   </button>
@@ -443,7 +590,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="text-blue-600 hover:text-blue-700 font-medium"
-                      disabled={isLoading}
+                      disabled={isLoading || !isAuthenticated}
                     >
                       Click to upload
                     </button>
@@ -470,7 +617,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
                   placeholder="Paste your article text here..."
                   rows={12}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  disabled={isLoading}
+                  disabled={isLoading || !isAuthenticated}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {textInput.length} characters (minimum 50 required)
@@ -494,7 +641,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
           <div className="mt-6">
             <button
               onClick={handleAnalyze}
-              disabled={isLoading}
+              disabled={isLoading || !isAuthenticated}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isLoading ? (
@@ -505,7 +652,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
               ) : (
                 <>
                   <BarChart3 className="w-5 h-5" />
-                  <span>Analyze Article</span>
+                  <span>{isAuthenticated ? 'Analyze Article' : 'Sign In to Analyze'}</span>
                 </>
               )}
             </button>

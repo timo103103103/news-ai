@@ -1,509 +1,482 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Check, Star } from 'lucide-react';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import SubscriptionStatus from '@/components/account/SubscriptionStatus';
-import BillingManagement from '@/components/account/BillingManagement';
+import { useEffect, useState } from 'react';
+import { 
+  Check, 
+  Zap, 
+  X, 
+  Shield, 
+  TrendingUp, 
+  Users, 
+  Target, 
+  BrainCircuit, 
+  History, 
+  Activity 
+} from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-// Load Stripe - will be used for future enhancements
-// const stripePromise = loadStripe('pk_test_51S6htKGkPJUojqkr014sSAlaOkD7NXbkKf5atqjDr9UaKBofyjIcVpSr3XW02oE9fCm0T1ZRnyo8LxgE2o6INTQX00LCjyn4eH');
+// --- Types & Data ---
+type BillingCycle = 'monthly' | 'yearly';
+type PlanId = 'starter' | 'pro' | 'business';
 
-interface PricingTier {
+interface Plan {
+  id: PlanId;
   name: string;
-  price: string;
-  period: string;
+  monthly: { price: string };
+  yearly: { price: string; save: string };
+  scansPerMonth: number;
+  tagline: string;
   description: string;
   features: string[];
-  cta: string;
   popular?: boolean;
-  priceId?: string;
-  type: 'basic' | 'premium';
+  buttonText: string;
 }
 
-const pricingTiers: PricingTier[] = [
+const plans: Plan[] = [
   {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    description: 'Perfect for getting started with basic news analysis',
+    id: 'starter',
+    name: 'Starter',
+    monthly: { price: '$9' },
+    yearly: { price: '$90', save: 'Save $18' },
+    scansPerMonth: 40,
+    tagline: 'For Casual Readers',
+    description: 'Essential news summaries and basic credibility checks.',
+    buttonText: 'Start Basic Access',
     features: [
-      'Basic news summary',
-      'Limited PESTLE analysis',
-      '5 articles per month',
-      'Basic sentiment analysis',
-      'Community support'
+      '40 Scans / Month',
+      'Executive Summaries',
+      'Basic Credibility Score',
+      'Simple PESTLE Overview',
+      'Standard Support',
     ],
-    cta: 'Get Started',
-    type: 'basic',
   },
   {
-    name: 'Monthly',
-    price: '$9.99',
-    period: 'month',
-    description: 'Unlock advanced features for serious analysis',
-    features: [
-      'Everything in Free',
-      'Full PESTLE analysis',
-      'Motive analysis with heatmaps',
-      'Unlimited articles',
-      'Priority support',
-      'Advanced sentiment analysis',
-      'Export reports'
-    ],
-    cta: 'Subscribe',
+    id: 'pro',
+    name: 'Pro Analyst',
+    monthly: { price: '$29' },
+    yearly: { price: '$290', save: 'Save $58' },
+    scansPerMonth: 200,
+    tagline: 'For Serious Traders',
+    description: 'Full AI suite: Stock impact, hidden motives, and historical patterns.',
+    buttonText: 'Unlock Pro Intelligence',
     popular: true,
-    priceId: 'price_1STKLkGkPJUojqkrEmacyNbL',
-    type: 'premium',
+    features: [
+      '200 Scans / Month',
+      'Market Impact (Bull/Bear Signals)',
+      'Motive & Manipulation Detector',
+      'Chronos Pattern Matching',
+      'Full Strategic PESTLE Analysis',
+    ],
   },
   {
-    name: 'Premium',
-    price: '$99.99',
-    period: 'year',
-    description: 'Complete solution for professional analysts',
+    id: 'business',
+    name: 'Business',
+    monthly: { price: '$79' },
+    yearly: { price: '$790', save: 'Save $158' },
+    scansPerMonth: 800,
+    tagline: 'For Research Teams',
+    description: 'High-volume processing, API access, and team collaboration.',
+    buttonText: 'Scale Your Operation',
     features: [
-      'Everything in Monthly',
-      'Party impact analysis',
-      'Stock market impact insights',
-      'Manipulation score detection',
-      'Advanced data visualization',
-      'Premium support',
-      'Custom integrations',
-      'White-label reports'
+      '800 Scans / Month',
+      'Multi-Seat License',
+      'API Access',
+      'CSV / PDF Data Export',
+      'Dedicated Account Manager',
     ],
-    cta: 'Go Premium',
-    type: 'premium',
-  }
+  },
 ];
 
-const testimonials = [
-  {
-    name: 'Sarah Johnson',
-    role: 'Financial Analyst',
-    company: 'Investment Corp',
-    content: 'DeepRead has transformed how we analyze news impact on markets. The premium features are worth every penny.',
-    rating: 5
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Risk Manager',
-    company: 'Tech Startup',
-    content: 'The manipulation score detection alone has saved us from making poor investment decisions.',
-    rating: 5
-  },
-  {
-    name: 'Emily Rodriguez',
-    role: 'News Editor',
-    company: 'Media Group',
-    content: 'The PESTLE analysis is incredibly comprehensive. Our editorial team relies on it daily.',
-    rating: 5
-  }
+interface Pack {
+  id: 'pack50' | 'pack200';
+  label: string;
+  price: string;
+  perScan: string;
+}
+
+const packs: Pack[] = [
+  { id: 'pack50', label: '50 Scans', price: '$7', perScan: '$0.14/scan' },
+  { id: 'pack200', label: '200 Scans', price: '$20', perScan: '$0.10/scan' },
 ];
 
 const faqs = [
-  {
-    question: 'Can I change my subscription plan anytime?',
-    answer: 'Yes, you can upgrade or downgrade your subscription at any time. Changes take effect immediately.',
-  },
-  {
-    question: 'Is there a free trial for paid plans?',
-    answer: 'We offer a 7-day free trial for our Monthly plan. No credit card required.',
-  },
-  {
-    question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit cards, PayPal, and bank transfers for annual plans.',
-  },
-  {
-    question: 'Can I cancel my subscription?',
-    answer: 'Yes, you can cancel anytime. You\'ll continue to have access until the end of your billing period.',
-  }
+  { q: 'What happens if I hit my scan limit?', a: 'Analysis stops until the next month, or you can instantly buy a "Scan Pack" top-up that never expires.' },
+  { q: 'Can I cancel my subscription?', a: 'Yes, cancel anytime from your dashboard. You keep access until the end of your billing period.' },
+  { q: 'What is "Chronos Isomorphism"?', a: 'Our AI compares current news to historical events to predict likely outcomes based on past patterns.' },
+  { q: 'Do you offer an API?', a: 'Yes, API access is available exclusively on the Business plan for integrating our data into your own trading bots.' },
 ];
 
+// --- Component ---
+
 export default function Pricing() {
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('yearly');
   const [loading, setLoading] = useState<string>('');
   const [message, setMessage] = useState<string>('');
-  const [selectedTier, setSelectedTier] = useState<string>('');
-  const [viewFilter, setViewFilter] = useState<'all' | 'premium' | 'basic'>('all');
-  const { setTier } = useSubscription();
-  const navigate = useNavigate();
-  const [verifying, setVerifying] = useState(false);
-  const [premiumView, setPremiumView] = useState(false);
-  const [subscription, setSubscription] = useState<any | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const canceled = urlParams.get('canceled');
-    const sessionId = urlParams.get('session_id');
-    if (window.location.hash === '#premium') {
-      setPremiumView(true);
-      setViewFilter('premium');
-    }
-
-    if (success === 'true') {
-      setMessage('Payment successful! Your subscription has been activated.');
-      // Check subscription status
-      if (sessionId) {
-        setVerifying(true);
-        checkSubscriptionStatus(sessionId);
-      }
-    } else if (canceled === 'true') {
-      setMessage('Payment canceled. You can try again anytime.');
-    }
-
-    // Clean up URL
+    if (urlParams.get('success') === 'true') setMessage('✅ Payment successful! Your account has been upgraded.');
+    if (urlParams.get('canceled') === 'true') setMessage('⚠️ Payment canceled. No charges were made.');
     window.history.replaceState({}, document.title, window.location.pathname);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  const checkSubscriptionStatus = async (sessionId: string) => {
+  const envPrice = (plan: PlanId, cycle: BillingCycle) =>
+    (import.meta.env as any)[`VITE_STRIPE_PRICE_${plan.toUpperCase()}_${cycle.toUpperCase()}`];
+
+  const envPack = (pack: Pack['id']) =>
+    (import.meta.env as any)[pack === 'pack50' ? 'VITE_STRIPE_PRICE_PACK_50' : 'VITE_STRIPE_PRICE_PACK_200'];
+
+  const handleCheckout = async (priceId: string, tier: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return setMessage('⚠️ Please log in or sign up to upgrade.');
+
+    setLoading(tier);
     try {
-      const response = await fetch(`/api/stripe/subscription-status?session_id=${sessionId}`);
-      const data = await response.json();
-      
-      if (data.status === 'success') {
-        setTier(data.tier);
-        setVerifying(false);
-        setPremiumView(true);
-        navigate('/pricing#premium', { replace: true });
-      } else {
-        setVerifying(false);
-        setMessage('Payment verification pending. Please wait or retry verification.');
-      }
-    } catch (error) {
-      console.error('Error checking subscription status:', error);
-      setVerifying(false);
-      setMessage('Payment verification failed. You can retry or open billing portal.');
-    }
-  };
-
-  useEffect(() => {
-    if (premiumView) {
-      (async () => {
-        try {
-          const res = await fetch('/api/account/subscription');
-          if (!res.ok) {
-            setSubscription(null);
-            setMessage('Unable to load subscription details.');
-            return;
-          }
-          const data = await res.json();
-          const normalized = {
-            plan: (data && data.plan) || 'premium',
-            status: (data && data.status) || 'active',
-            currentPeriodEnd: (data && data.currentPeriodEnd) || new Date().toISOString(),
-            cancelAtPeriodEnd: !!(data && data.cancelAtPeriodEnd),
-            paymentMethodLast4: data && data.paymentMethodLast4,
-          };
-          setSubscription(normalized);
-        } catch {}
-      })();
-    }
-  }, [premiumView]);
-
-  const handleSubscribe = async (tier: PricingTier) => {
-    if (tier.name === 'Free') {
-      setTier('free');
-      return;
-    }
-
-    if (tier.name === 'Premium') {
-      // For premium, we'll use the monthly price ID for now
-      // In a real app, you'd create a separate annual price in Stripe
-      setLoading(tier.name);
-      setSelectedTier(tier.name);
-      
-      // Simulate premium subscription
-      setTimeout(() => {
-        setTier('premium');
-        setLoading('');
-        setSelectedTier('');
-        navigate('/pricing#premium', { replace: true });
-      }, 2000);
-      return;
-    }
-
-    if (!tier.priceId) return;
-
-    setLoading(tier.name);
-    setSelectedTier(tier.name);
-
-    try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      const res = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: tier.priceId,
-          tier: tier.name.toLowerCase(),
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, tier, userId: user.id }),
       });
-
-      const { url } = await response.json();
-      
-      // Redirect to Stripe Checkout
-      if (url) {
-        window.location.href = url;
-      } else {
-        alert('Failed to create checkout session. Please try again.');
-        setLoading('');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setLoading('');
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch (e) {
+      setMessage('❌ Connection error. Please try again.');
     }
+    setLoading('');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {verifying && (
-          <div className="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 border animate-pulse">
-              <p className="text-gray-900 font-medium">Verifying your payment…</p>
-              <p className="text-sm text-gray-600">This will only take a moment.</p>
-            </div>
-          </div>
-        )}
-        {/* Message Display */}
-        {message && (
-          <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg transition-opacity">
-            <p className="text-green-800 text-center">{message}</p>
-          </div>
-        )}
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
+      
+      {/* 🔔 Notification Toast */}
+      {message && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl animate-fade-in-down flex items-center gap-2">
+          <span>{message}</span>
+          <button onClick={() => setMessage('')} className="ml-2 hover:text-slate-300"><X size={16}/></button>
+        </div>
+      )}
 
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Choose Your Plan
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        
+        {/* 🚀 Header Section */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-indigo-600 font-semibold tracking-wide uppercase text-sm mb-3">
+            Pricing Plans
+          </h2>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
+            Unlock Institutional-Grade Intelligence
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Unlock the full potential of AI-powered news analysis with our flexible pricing plans
+          <p className="text-xl text-slate-600 leading-relaxed">
+            Stop trading on noise. Get the <span className="font-semibold text-slate-900">Market Impact</span>, <span className="font-semibold text-slate-900">Hidden Motives</span>, and <span className="font-semibold text-slate-900">Predictive Patterns</span> you need to win.
           </p>
         </div>
 
-        {(premiumView) && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-12 border border-indigo-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Premium Subscription</h2>
-            <p className="text-gray-700 mb-4">Your premium access is active. Explore full features and manage billing.</p>
-            {subscription && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <SubscriptionStatus subscription={subscription} onRefresh={() => {}} />
-                <BillingManagement subscription={subscription} onRefresh={() => {}} />
-              </div>
-            )}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/results?upgraded=true&tier=premium', { replace: true })}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Start Using Premium
-              </button>
-              <button
-                onClick={() => setViewFilter('premium')}
-                className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                View Benefits
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Plan Toggle */}
-        <div className="flex items-center justify-center mb-8" role="tablist" aria-label="Plan type">
-          <button
-            onClick={() => setViewFilter('all')}
-            role="tab"
-            aria-selected={viewFilter === 'all'}
-            className={`px-4 py-2 rounded-l-lg border ${viewFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-900 border-gray-300'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setViewFilter('premium')}
-            role="tab"
-            aria-selected={viewFilter === 'premium'}
-            className={`px-4 py-2 border-t border-b ${viewFilter === 'premium' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-900 border-gray-300'}`}
-          >
-            Premium
-          </button>
-          <button
-            onClick={() => setViewFilter('basic')}
-            role="tab"
-            aria-selected={viewFilter === 'basic'}
-            className={`px-4 py-2 rounded-r-lg border ${viewFilter === 'basic' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-900 border-gray-300'}`}
-          >
-            Basic
-          </button>
-        </div>
-
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          {pricingTiers
-            .filter(t => viewFilter === 'all' ? true : t.type === viewFilter)
-            .map((tier) => (
-            <div
-              key={tier.name}
-              className={`relative rounded-2xl p-8 transition-all duration-300 ${
-                tier.type === 'premium'
-                  ? 'bg-white border-2 border-indigo-600 shadow-2xl ring-1 ring-indigo-200'
-                  : 'bg-white border border-gray-200 shadow-sm hover:shadow-md'
+        {/* 🎚️ Billing Toggle */}
+        <div className="flex justify-center mb-16">
+          <div className="relative bg-white p-1 rounded-full border border-slate-200 shadow-sm inline-flex">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                billingCycle === 'monthly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              {tier.type === 'premium' && (
-                <div className="absolute -top-4 left-4">
-                  <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold tracking-wide">Premium</span>
-                </div>
-              )}
-              {tier.popular && (
-                <div className="absolute -top-4 right-4">
-                  <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">Most Popular</span>
-                </div>
-              )}
-              
-              <div className="mb-8">
-                <h3 className={`text-2xl font-bold mb-1 ${tier.type === 'premium' ? 'text-gray-900' : 'text-gray-900'}`}>{tier.name}</h3>
-                <p className="text-gray-600 mb-4">{tier.description}</p>
-                <div className="flex items-baseline">
-                  <span className={`text-5xl font-bold ${tier.type === 'premium' ? 'text-gray-900' : 'text-gray-900'}`}>{tier.price}</span>
-                  <span className="text-gray-500 ml-2">/{tier.period}</span>
-                </div>
-              </div>
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
+                billingCycle === 'yearly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Yearly
+              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                billingCycle === 'yearly' ? 'bg-indigo-500 text-white' : 'bg-emerald-100 text-emerald-700'
+              }`}>
+                Save 17%
+              </span>
+            </button>
+          </div>
+        </div>
 
-              {tier.type === 'premium' ? (
-                <div className="mb-6 rounded-lg bg-indigo-50 border border-indigo-100 p-4">
-                  <p className="text-sm font-medium text-indigo-700 mb-2">Highlights</p>
-                  <ul className="space-y-2">
-                    {tier.features.slice(0, 3).map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-indigo-900">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              <ul className={`space-y-3 mb-8 ${tier.type === 'premium' ? 'divide-y divide-indigo-100' : ''}`}>
-                {tier.features.map((feature, index) => (
-                  <li key={index} className={`flex items-start ${tier.type === 'premium' ? 'pt-2' : ''}`}>
-                    <Check className={`${tier.type === 'premium' ? 'h-5 w-5 text-indigo-600' : 'h-5 w-5 text-green-600'} mr-3 mt-0.5 flex-shrink-0`} />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => handleSubscribe(tier)}
-                disabled={loading === tier.name}
-                className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
-                  tier.type === 'premium'
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-xl'
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                } ${loading === tier.name ? 'opacity-50 cursor-not-allowed' : ''}`}
+        {/* 🃏 Plan Cards */}
+        <div className="grid md:grid-cols-3 gap-8 mb-24 relative">
+          {plans.map((plan) => {
+            const price = billingCycle === 'monthly' ? plan.monthly.price : plan.yearly.price;
+            const period = billingCycle === 'monthly' ? '/mo' : '/yr';
+            
+            return (
+              <div 
+                key={plan.id}
+                className={`relative flex flex-col bg-white rounded-2xl transition-all duration-300 ${
+                  plan.popular 
+                    ? 'border-2 border-indigo-600 shadow-2xl scale-105 z-10' 
+                    : 'border border-slate-200 shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                }`}
               >
-                {loading === tier.name ? 'Processing...' : tier.cta}
-              </button>
-            </div>
-          ))}
-        </div>
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full shadow-lg">
+                    Most Popular
+                  </div>
+                )}
 
+                <div className="p-8 flex-1">
+                  <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
+                  <p className="text-sm font-medium text-indigo-600 mb-4">{plan.tagline}</p>
+                  
+                  <div className="flex items-baseline my-6">
+                    <span className="text-5xl font-extrabold text-slate-900 tracking-tight">{price}</span>
+                    <span className="text-slate-500 ml-1 font-medium">{period}</span>
+                  </div>
 
-        {/* Testimonials */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            What Our Users Say
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-lg">
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{testimonial.content}"</p>
-                <div>
-                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-600">{testimonial.role} at {testimonial.company}</p>
+                  <p className="text-slate-600 mb-8 leading-relaxed text-sm">
+                    {plan.description}
+                  </p>
+
+                  <button
+                    onClick={() => handleCheckout(envPrice(plan.id, billingCycle), plan.id)}
+                    disabled={!!loading}
+                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg ${
+                      plan.popular 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200' 
+                        : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                    }`}
+                  >
+                    {loading === plan.id ? 'Processing...' : plan.buttonText}
+                  </button>
+
+                  <div className="mt-8 space-y-4">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Includes:
+                    </p>
+                    {plan.features.map((feature) => (
+                      <div key={feature} className="flex items-start gap-3">
+                        <div className={`mt-0.5 p-0.5 rounded-full ${plan.popular ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600'}`}>
+                          <Check size={14} strokeWidth={3} />
+                        </div>
+                        <span className="text-sm text-slate-700 font-medium">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* FAQ */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Frequently Asked Questions
-          </h2>
-          
-          <div className="max-w-3xl mx-auto space-y-6">
-            {faqs.map((faq, index) => (
-              <div key={index} className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{faq.question}</h3>
-                <p className="text-gray-600">{faq.answer}</p>
-              </div>
-            ))}
+        {/* 📊 Feature Comparison Matrix */}
+        <div className="mb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900">Detailed Feature Breakdown</h2>
+            <p className="text-slate-600 mt-2">See exactly what intelligence you unlock at each level.</p>
           </div>
 
-          {/* Feature Comparison (moved to final component of last section) */}
-          <div className="mt-12 overflow-x-auto transition-all duration-300 ease-in-out max-w-full">
-            <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-              Compare Plans
-            </h2>
-            <table className="min-w-[720px] w-full table-fixed">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-6 font-semibold text-gray-900 w-2/5 text-xs sm:text-sm md:text-base">Features</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-900 w-1/5 text-xs sm:text-sm md:text-base">Free</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-900 w-1/5 text-xs sm:text-sm md:text-base">Monthly</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-900 w-1/5 text-xs sm:text-sm md:text-base">Premium</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { feature: 'News Summary', free: true, monthly: true, premium: true },
-                  { feature: 'PESTLE Analysis', free: 'Limited', monthly: true, premium: true },
-                  { feature: 'Articles per Month', free: '5', monthly: 'Unlimited', premium: 'Unlimited' },
-                  { feature: 'Motive Analysis', free: false, monthly: true, premium: true },
-                  { feature: 'Party Impact', free: false, monthly: false, premium: true },
-                  { feature: 'Stock Impact', free: false, monthly: false, premium: true },
-                  { feature: 'Manipulation Score', free: false, monthly: false, premium: true },
-                  { feature: 'Export Reports', free: false, monthly: true, premium: true },
-                  { feature: 'Priority Support', free: false, monthly: true, premium: true },
-                  { feature: 'Custom Integrations', free: false, monthly: false, premium: true },
-                ].map((row, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="py-4 px-6 font-medium text-gray-900 text-xs sm:text-sm md:text-base">{row.feature}</td>
-                    <td className="py-4 px-6 text-center text-xs sm:text-sm md:text-base">
-                      {typeof row.free === 'boolean' ? (
-                        row.free ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <span className="text-gray-400">—</span>
-                      ) : (
-                        <span className="text-gray-600">{row.free}</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-center text-xs sm:text-sm md:text-base">
-                      {typeof row.monthly === 'boolean' ? (
-                        row.monthly ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <span className="text-gray-400">—</span>
-                      ) : (
-                        <span className="text-gray-600">{row.monthly}</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-center text-xs sm:text-sm md:text-base">
-                      {typeof row.premium === 'boolean' ? (
-                        row.premium ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <span className="text-gray-400">—</span>
-                      ) : (
-                        <span className="text-gray-600">{row.premium}</span>
-                      )}
-                    </td>
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <th className="p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">Feature</th>
+                    <th className="p-6 text-center text-slate-900 font-bold w-1/5">Starter</th>
+                    <th className="p-6 text-center text-indigo-600 font-bold text-lg w-1/5 bg-indigo-50/50">Pro</th>
+                    <th className="p-6 text-center text-slate-900 font-bold w-1/5">Business</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {/* Core Metrics */}
+                  <FeatureRow 
+                    icon={<Zap className="text-amber-500" />}
+                    title="Monthly Scan Volume"
+                    starter="40"
+                    pro="200"
+                    business="800"
+                    description="Number of news articles you can analyze per month."
+                  />
+                  <FeatureRow 
+                    icon={<Activity className="text-slate-500" />}
+                    title="Executive Summaries"
+                    starter={true}
+                    pro={true}
+                    business={true}
+                    description="AI-generated summaries of complex articles."
+                  />
+                  
+                  {/* Strategic Intelligence */}
+                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Strategic Intelligence</td></tr>
+                  
+                  <FeatureRow 
+                    icon={<TrendingUp className="text-indigo-600" />}
+                    title="Market Impact (Stocks)"
+                    starter={false}
+                    pro={true}
+                    business={true}
+                    description="Bull/Bear signals for specific tickers."
+                  />
+                   <FeatureRow 
+                    icon={<Shield className="text-red-500" />}
+                    title="Motive & Bias Detector"
+                    starter={false}
+                    pro={true}
+                    business={true}
+                    description="Uncover hidden agendas and manipulation techniques."
+                  />
+                  <FeatureRow 
+                    icon={<Users className="text-blue-500" />}
+                    title="Stakeholder Mapping"
+                    starter={false}
+                    pro={true}
+                    business={true}
+                    description="Identify winners, losers, and power dynamics."
+                  />
+                  
+                  {/* Advanced Analytics */}
+                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Advanced Analytics</td></tr>
+
+                  <FeatureRow 
+                    icon={<BrainCircuit className="text-purple-600" />}
+                    title="PESTLE Strategy Scan"
+                    starter="Basic"
+                    pro="Full Strategic"
+                    business="Full Strategic"
+                    description="Deep dive into Political, Economic, and Social factors."
+                  />
+                  <FeatureRow 
+                    icon={<History className="text-emerald-600" />}
+                    title="Chronos Isomorphism"
+                    starter={false}
+                    pro={true}
+                    business={true}
+                    description="Match current events to historical patterns."
+                  />
+                  <FeatureRow 
+                    icon={<Target className="text-pink-600" />}
+                    title="Thermodynamic Entropy"
+                    starter={false}
+                    pro={true}
+                    business={true}
+                    description="Signal-to-noise ratio analysis."
+                  />
+
+                  {/* Enterprise */}
+                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Enterprise Features</td></tr>
+                  
+                  <FeatureRow 
+                    title="API Access"
+                    starter={false}
+                    pro={false}
+                    business={true}
+                  />
+                  <FeatureRow 
+                    title="Data Export (PDF/CSV)"
+                    starter={false}
+                    pro={false}
+                    business={true}
+                  />
+                   <FeatureRow 
+                    title="Support Level"
+                    starter="Standard"
+                    pro="Priority"
+                    business="Dedicated Manager"
+                  />
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        {/* 📦 Add-ons */}
+        <div className="max-w-4xl mx-auto mb-20">
+           <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-lg">
+             <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+               <div>
+                 <h3 className="text-2xl font-bold text-slate-900">Need More Capacity?</h3>
+                 <p className="text-slate-600 mt-1">Top up your account instantly. Scan packs <span className="font-bold text-indigo-600">never expire</span>.</p>
+               </div>
+             </div>
+             <div className="grid md:grid-cols-2 gap-6">
+                {packs.map((pack) => (
+                  <div key={pack.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-indigo-200 transition-colors">
+                    <div>
+                      <div className="font-bold text-lg text-slate-900">{pack.label}</div>
+                      <div className="text-xs text-slate-500 font-medium">{pack.perScan}</div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-xl font-bold text-slate-900">{pack.price}</div>
+                      <button 
+                        onClick={() => handleCheckout(envPack(pack.id), pack.id)}
+                        className="px-4 py-2 bg-white text-indigo-600 border border-indigo-200 font-semibold rounded-lg hover:bg-indigo-50 transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                ))}
+             </div>
+           </div>
+        </div>
+
+        {/* ❓ FAQ */}
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqs.map((f, i) => (
+              <div key={i} className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.q}</h3>
+                <p className="text-slate-600 leading-relaxed">{f.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
+  );
+}
+
+// Helper component for the table rows
+function FeatureRow({ 
+  icon, 
+  title, 
+  starter, 
+  pro, 
+  business, 
+  description 
+}: { 
+  icon?: React.ReactNode, 
+  title: string, 
+  starter: boolean | string, 
+  pro: boolean | string, 
+  business: boolean | string,
+  description?: string 
+}) {
+  const renderCell = (value: boolean | string, isPro: boolean = false) => {
+    if (typeof value === 'boolean') {
+      return value ? (
+        <div className="flex justify-center">
+          <div className={`p-1 rounded-full ${isPro ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`}>
+            <Check size={18} strokeWidth={3} />
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center">
+           <X size={18} className="text-slate-300" />
+        </div>
+      );
+    }
+    return <span className={`font-medium ${isPro ? 'text-indigo-700' : 'text-slate-700'}`}>{value}</span>;
+  };
+
+  return (
+    <tr className="hover:bg-slate-50 transition-colors group">
+      <td className="p-6 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          {icon && <span className="opacity-80 group-hover:opacity-100 transition-opacity">{icon}</span>}
+          <div>
+            <div className="font-semibold text-slate-900">{title}</div>
+            {description && <div className="text-xs text-slate-500 mt-0.5 font-normal">{description}</div>}
+          </div>
+        </div>
+      </td>
+      <td className="p-6 text-center border-b border-slate-100">{renderCell(starter)}</td>
+      <td className="p-6 text-center border-b border-indigo-100 bg-indigo-50/30">{renderCell(pro, true)}</td>
+      <td className="p-6 text-center border-b border-slate-100">{renderCell(business)}</td>
+    </tr>
   );
 }
