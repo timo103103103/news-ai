@@ -1,138 +1,144 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { useState, useEffect } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import { supabase } from "../lib/supabase"
+import useAuthStore from "../stores/authStore"
 
 export default function Login() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { setUser } = useAuthStore()
 
-  // ✅ 如果已經登入 → 直接跳首頁
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // ✅ SESSION SYNC AFTER GOOGLE LOGIN
   useEffect(() => {
     const syncSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate("/");
+      const { data } = await supabase.auth.getSession()
+      if (data.session?.user) {
+        const user = data.session.user
+
+        setUser({
+          id: user.id,
+          email: user.email || "",
+          plan: "free", // ✅ backend can overwrite later
+          credits: 10,
+        })
+
+        navigate("/")
       }
-    };
-    syncSession();
-
-    // ✅ 監聽登入狀態（Google OAuth 回跳最重要）
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate("/");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  // ✅ Email 登入
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
     }
+    syncSession()
+  }, [navigate, setUser])
 
-    setLoading(false);
-  };
+  // ✅ EMAIL LOGIN
+  const handleLogin = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-  // ✅ Google OAuth 登入
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
+      const user = data.user
+
+      setUser({
+        id: user.id,
+        email: user.email || "",
+        plan: "free",
+        credits: 10,
+      })
+
+      navigate("/")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ✅ GOOGLE LOGIN
   const handleGoogleLogin = async () => {
-    setError(null);
-
-    const { error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: window.location.origin + "/login",
       },
-    });
+    })
+  }
 
-    if (error) {
-      setError(error.message);
-    }
-  };
+  // ✅ GITHUB LOGIN
+  const handleGithubLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: window.location.origin + "/login",
+      },
+    })
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-md rounded-xl bg-white shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Welcome back</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
+        <h1 className="text-2xl font-bold mb-6 text-center">Welcome Back</h1>
 
-        {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
+        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
 
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              className="mt-1 w-full rounded-md border px-3 py-2"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+        <input
+          type="email"
+          placeholder="Email"
+          className="border p-2 w-full mb-3 rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              className="mt-1 w-full rounded-md border px-3 py-2"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700 transition"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
-        <div className="my-6 flex items-center">
-          <div className="flex-1 border-t" />
-          <span className="px-4 text-xs text-gray-400">OR</span>
-          <div className="flex-1 border-t" />
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          className="border p-2 w-full mb-4 rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         <button
-          onClick={handleGoogleLogin}
-          className="w-full rounded-md border py-2 flex items-center justify-center gap-2 hover:bg-gray-50"
+          onClick={handleLogin}
+          disabled={loading}
+          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
         >
-          Sign in with Google
+          {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign up
+        <div className="my-4 text-center text-gray-400 text-sm">or continue with</div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleGoogleLogin}
+            className="flex-1 border py-2 rounded hover:bg-gray-100"
+          >
+            Google
+          </button>
+
+          <button
+            onClick={handleGithubLogin}
+            className="flex-1 border py-2 rounded hover:bg-gray-100"
+          >
+            GitHub
+          </button>
+        </div>
+
+        <p className="text-center mt-4 text-sm">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-indigo-600 hover:underline">
+            Sign Up
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
