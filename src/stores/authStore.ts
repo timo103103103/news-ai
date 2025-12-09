@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase, User, AuthError } from '@/lib/supabase'
-import { Session } from '@supabase/supabase-js'
+import { Session } from '../lib/supabase'
 
 interface AuthState {
   user: User | null

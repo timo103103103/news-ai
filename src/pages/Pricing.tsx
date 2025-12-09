@@ -269,114 +269,98 @@ export default function Pricing() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider w-1/3">Feature</th>
-                    <th className="p-6 text-center text-slate-900 font-bold w-1/5">Starter</th>
-                    <th className="p-6 text-center text-indigo-600 font-bold text-lg w-1/5 bg-indigo-50/50">Pro</th>
-                    <th className="p-6 text-center text-slate-900 font-bold w-1/5">Business</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {/* Core Metrics */}
-                  <FeatureRow 
-                    icon={<Zap className="text-amber-500" />}
-                    title="Monthly Scan Volume"
-                    starter="40"
-                    pro="200"
-                    business="800"
-                    description="Number of news articles you can analyze per month."
-                  />
-                  <FeatureRow 
-                    icon={<Activity className="text-slate-500" />}
-                    title="Executive Summaries"
-                    starter={true}
-                    pro={true}
-                    business={true}
-                    description="AI-generated summaries of complex articles."
-                  />
-                  
-                  {/* Strategic Intelligence */}
-                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Strategic Intelligence</td></tr>
-                  
-                  <FeatureRow 
-                    icon={<TrendingUp className="text-indigo-600" />}
-                    title="Market Impact (Stocks)"
-                    starter={false}
-                    pro={true}
-                    business={true}
-                    description="Bull/Bear signals for specific tickers."
-                  />
-                   <FeatureRow 
-                    icon={<Shield className="text-red-500" />}
-                    title="Motive & Bias Detector"
-                    starter={false}
-                    pro={true}
-                    business={true}
-                    description="Uncover hidden agendas and manipulation techniques."
-                  />
-                  <FeatureRow 
-                    icon={<Users className="text-blue-500" />}
-                    title="Stakeholder Mapping"
-                    starter={false}
-                    pro={true}
-                    business={true}
-                    description="Identify winners, losers, and power dynamics."
-                  />
-                  
-                  {/* Advanced Analytics */}
-                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Advanced Analytics</td></tr>
-
-                  <FeatureRow 
-                    icon={<BrainCircuit className="text-purple-600" />}
-                    title="PESTLE Strategy Scan"
-                    starter="Basic"
-                    pro="Full Strategic"
-                    business="Full Strategic"
-                    description="Deep dive into Political, Economic, and Social factors."
-                  />
-                  <FeatureRow 
-                    icon={<History className="text-emerald-600" />}
-                    title="Chronos Isomorphism"
-                    starter={false}
-                    pro={true}
-                    business={true}
-                    description="Match current events to historical patterns."
-                  />
-                  <FeatureRow 
-                    icon={<Target className="text-pink-600" />}
-                    title="Thermodynamic Entropy"
-                    starter={false}
-                    pro={true}
-                    business={true}
-                    description="Signal-to-noise ratio analysis."
-                  />
-
-                  {/* Enterprise */}
-                  <tr className="bg-slate-50/50"><td colSpan={4} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Enterprise Features</td></tr>
-                  
-                  <FeatureRow 
-                    title="API Access"
-                    starter={false}
-                    pro={false}
-                    business={true}
-                  />
-                  <FeatureRow 
-                    title="Data Export (PDF/CSV)"
-                    starter={false}
-                    pro={false}
-                    business={true}
-                  />
-                   <FeatureRow 
-                    title="Support Level"
-                    starter="Standard"
-                    pro="Priority"
-                    business="Dedicated Manager"
-                  />
-                </tbody>
-              </table>
+            <div className="hidden md:grid grid-cols-4 bg-slate-50 border-b border-slate-200">
+              <div className="p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider">Feature</div>
+              <div className="p-6 text-center text-slate-900 font-bold">Starter</div>
+              <div className="p-6 text-center text-indigo-600 font-bold text-lg bg-indigo-50/50">Pro</div>
+              <div className="p-6 text-center text-slate-900 font-bold">Business</div>
+            </div>
+            <div className="divide-y divide-slate-100">
+              <FeatureRow 
+                icon={<Zap className="text-amber-500" />}
+                title="Monthly Scan Volume"
+                starter="40"
+                pro="200"
+                business="800"
+                description="Number of news articles you can analyze per month."
+              />
+              <FeatureRow 
+                icon={<Activity className="text-slate-500" />}
+                title="Executive Summaries"
+                starter={true}
+                pro={true}
+                business={true}
+                description="AI-generated summaries of complex articles."
+              />
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Strategic Intelligence</div>
+              <FeatureRow 
+                icon={<TrendingUp className="text-indigo-600" />}
+                title="Market Impact (Stocks)"
+                starter={false}
+                pro={true}
+                business={true}
+                description="Bull/Bear signals for specific tickers."
+              />
+              <FeatureRow 
+                icon={<Shield className="text-red-500" />}
+                title="Motive & Bias Detector"
+                starter={false}
+                pro={true}
+                business={true}
+                description="Uncover hidden agendas and manipulation techniques."
+              />
+              <FeatureRow 
+                icon={<Users className="text-blue-500" />}
+                title="Stakeholder Mapping"
+                starter={false}
+                pro={true}
+                business={true}
+                description="Identify winners, losers, and power dynamics."
+              />
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Advanced Analytics</div>
+              <FeatureRow 
+                icon={<BrainCircuit className="text-purple-600" />}
+                title="PESTLE Strategy Scan"
+                starter="Basic"
+                pro="Full Strategic"
+                business="Full Strategic"
+                description="Deep dive into Political, Economic, and Social factors."
+              />
+              <FeatureRow 
+                icon={<History className="text-emerald-600" />}
+                title="Chronos Isomorphism"
+                starter={false}
+                pro={true}
+                business={true}
+                description="Match current events to historical patterns."
+              />
+              <FeatureRow 
+                icon={<Target className="text-pink-600" />}
+                title="Thermodynamic Entropy"
+                starter={false}
+                pro={true}
+                business={true}
+                description="Signal-to-noise ratio analysis."
+              />
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Enterprise Features</div>
+              <FeatureRow 
+                title="API Access"
+                starter={false}
+                pro={false}
+                business={true}
+              />
+              <FeatureRow 
+                title="Data Export (PDF/CSV)"
+                starter={false}
+                pro={false}
+                business={true}
+              />
+              <FeatureRow 
+                title="Support Level"
+                starter="Standard"
+                pro="Priority"
+                business="Dedicated Manager"
+              />
             </div>
           </div>
         </div>
@@ -464,8 +448,8 @@ function FeatureRow({
   };
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors group">
-      <td className="p-6 border-b border-slate-100">
+    <div className="grid md:grid-cols-4 items-center group">
+      <div className="p-6">
         <div className="flex items-center gap-3">
           {icon && <span className="opacity-80 group-hover:opacity-100 transition-opacity">{icon}</span>}
           <div>
@@ -473,10 +457,10 @@ function FeatureRow({
             {description && <div className="text-xs text-slate-500 mt-0.5 font-normal">{description}</div>}
           </div>
         </div>
-      </td>
-      <td className="p-6 text-center border-b border-slate-100">{renderCell(starter)}</td>
-      <td className="p-6 text-center border-b border-indigo-100 bg-indigo-50/30">{renderCell(pro, true)}</td>
-      <td className="p-6 text-center border-b border-slate-100">{renderCell(business)}</td>
-    </tr>
+      </div>
+      <div className="p-6 text-center">{renderCell(starter)}</div>
+      <div className="p-6 text-center bg-indigo-50/30">{renderCell(pro, true)}</div>
+      <div className="p-6 text-center">{renderCell(business)}</div>
+    </div>
   );
 }

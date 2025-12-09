@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { SubscriptionTier } from '@/contexts/SubscriptionContext';
 import { User, Settings, CreditCard, Folder } from 'lucide-react';
+import LogoUploader from '@/components/LogoUploader';
 
 interface UserProfile {
   id: string;
@@ -183,6 +184,10 @@ const Account = () => {
                     >
                       {subscription.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}
                     </a>
+                  </div>
+                  <div className="pt-6">
+                    <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Branding</h4>
+                    <LogoUploader onUploaded={() => { /* re-render via localStorage */ }} />
                   </div>
                 </div>
               </div>

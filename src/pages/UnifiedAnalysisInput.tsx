@@ -2,10 +2,10 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Link as LinkIcon, FileText, AlertCircle, Loader2, Type, BarChart3, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase'
 
 // ✅ Supabase Client Setup
-const supabase = createClient(
+const supabase = import { supabase } from '@/lib/supabase'
   import.meta.env.VITE_SUPABASE_URL || '',
   import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 );
@@ -150,8 +150,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
-        },
+          'Authorization': `Bearer ${session?.access_token}`,
         body: JSON.stringify({
           url: urlInput,
         }),
@@ -244,7 +243,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: formData,
       });
@@ -326,7 +325,7 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId!  // ✅ Auth header for credits/rate limiting
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
           text: textInput,

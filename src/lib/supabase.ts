@@ -1,18 +1,34 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://zgiwqbpalykrztvvekcg.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnaXdxYnBhbHlrcnp0dnZla2NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyODkzMjYsImV4cCI6MjA3ODg2NTMyNn0.5IZUMcthWc9QTUJihd8-0785PLCk3v9zfyjxAFun7Cw'
+// ✅ 環境變數安全檢查（開發時就直接爆錯，不讓你踩雷）
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-export interface User {
-  id: string
-  email: string
-  created_at: string
-  updated_at: string
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Missing Supabase environment variables!')
+  console.error('VITE_SUPABASE_URL:', supabaseUrl)
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey)
+  throw new Error('Missing Supabase environment variables')
 }
 
-export interface AuthError {
-  message: string
-  status?: number
+// ✅ 全站唯一 Supabase Client（關鍵：避免 Multiple Instances）
+let supabase: SupabaseClient
+
+if (!(window as any).__supabase) {
+  (window as any).__supabase = createClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'sb-nexveris-auth', // ✅ 固定 key，避免多 Client 衝突
+      },
+    }
+  )
 }
+
+supabase = (window as any).__supabase as SupabaseClient
+
+export { supabase }

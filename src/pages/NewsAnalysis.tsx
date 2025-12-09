@@ -1,3 +1,4 @@
+import { supabase } from '../lib/supabase';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,24 +7,10 @@ import {
   ChevronRight, BrainCircuit, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@supabase/supabase-js';
-import SummaryCard from '../components/SummaryCard'; // Keep for structure if needed, or replace with inline preview
+import SummaryCard from '../components/SummaryCard';
 import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
 
-// ✅ Supabase Client Setup
-const getSupabaseClient = () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Missing Supabase credentials!');
-    return null;
-  }
-  return createClient(supabaseUrl, supabaseAnonKey);
-};
-
-const supabase = getSupabaseClient();
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-backend-production-ba81.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();
@@ -53,6 +40,7 @@ const NewsAnalysis = () => {
     if (!supabase) return;
     
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 Auth state changed:', event, session?.user?.id);
       if (session?.user) {
         setUserId(session.user.id);
         setIsAuthenticated(true);
@@ -73,10 +61,13 @@ const NewsAnalysis = () => {
       return;
     }
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔐 Initial auth check:', session?.user?.id, sessionError);
       if (session?.user) {
         setUserId(session.user.id);
         setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Auth check error:', error);
@@ -152,58 +143,141 @@ const NewsAnalysis = () => {
     setUrlValid(validateUrl(v));
   };
 
-  // ✅ API Submission
+  // ✅ API Submission - FIXED: No duplicate session calls
   const handleSubmit = async () => {
-    setError('');
+    try {
+      setError('');
 
-    if (!isAuthenticated || !userId) {
-      toast.error('Authentication Required', {
-        description: 'Please sign in to access the Intelligence Protocol.'
-      });
-      return;
-    }
-
-    let requestBody: { text?: string; url?: string } = {};
-
-    if (activeTab === 'url') {
-      if (!urlInput.trim() || !validateUrl(urlInput)) {
-        setError('Please enter a valid URL protocol (https://)');
+      if (!supabase) {
+        setError('系統配置錯誤：Supabase 未初始化');
+        toast.error('系統配置錯誤');
         return;
       }
-      requestBody.url = urlInput.trim();
-    } else if (activeTab === 'file') {
-      if (!selectedFile) { setError('Please upload a document'); return; }
-      try {
-        const fileContent = await selectedFile.text();
-        requestBody.text = `Document: ${selectedFile.name}\n\n${fileContent}`;
-      } catch {
-        requestBody.text = `Analyze this document: ${selectedFile.name}`;
+
+      // ✅ Get session ONCE at the beginning
+      const { data: { session }, error: sessionError } = 
+        await supabase.auth.getSession();
+
+      console.log('🔐 Session check:', {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        hasToken: !!session?.access_token,
+        userId: session?.user?.id,
+        error: sessionError
+      });
+
+      if (sessionError || !session || !session.access_token) {
+        setError('請先登入再進行分析');
+        toast.error('請先登入再進行分析');
+        navigate('/login');
+        return;
       }
-    } else if (activeTab === 'text') {
-      if (!textInput.trim()) { setError('Please enter text content'); return; }
-      requestBody.text = textInput.trim();
-    }
 
-    setIsLoading(true);
+      if (!session.user?.id) {
+        setError('無法獲取用戶信息，請重新登入');
+        toast.error('無法獲取用戶信息，請重新登入');
+        navigate('/login');
+        return;
+      }
 
-    try {
+      // ✅ Build request body
+      let requestBody: { text?: string; url?: string; userId?: string } = {
+        userId: session.user.id
+      };
+
+      if (activeTab === 'url') {
+        if (!urlInput.trim() || !validateUrl(urlInput)) {
+          setError('請輸入有效的網址');
+          return;
+        }
+        requestBody.url = urlInput.trim();
+      } else if (activeTab === 'file') {
+        if (!selectedFile) { 
+          setError('請上傳文件'); 
+          return; 
+        }
+        try {
+          const fileContent = await selectedFile.text();
+          requestBody.text = `Document: ${selectedFile.name}\n\n${fileContent}`;
+        } catch {
+          requestBody.text = `Analyze this document: ${selectedFile.name}`;
+        }
+      } else if (activeTab === 'text') {
+        if (!textInput.trim()) { 
+          setError('請輸入分析內容'); 
+          return; 
+        }
+        requestBody.text = textInput.trim();
+      }
+
+      setIsLoading(true);
+
+      // ✅ Try to register/sync user first (in case backend doesn't have them)
+      try {
+        await fetch(`${API_BASE_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            supabaseId: session.user.id,
+            email: session.user.email,
+          }),
+        });
+      } catch (registerError) {
+        console.log('⚠️ User registration/sync failed (might already exist):', registerError);
+      }
+
+      console.log('📤 Sending request:', {
+        url: `${API_BASE_URL}/api/analyze/summary`,
+        hasToken: !!session.access_token,
+        tokenPrefix: session.access_token.substring(0, 20) + '...',
+        userId: session.user.id,
+        requestBody
+      });
+
       const apiUrl = `${API_BASE_URL}/api/analyze/summary`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-user-id': userId 
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(requestBody),
       });
 
+      console.log('📥 Response status:', response.status);
+
       if (!response.ok) {
-        if (response.status === 402) throw new Error('Credit limit reached. Please upgrade plan.');
-        if (response.status === 429) throw new Error('Rate limit exceeded. Try again shortly.');
-        throw new Error('Analysis service unavailable.');
+        let errorMessage = 'Analysis service unavailable.';
+        
+        try {
+          const errorData = await response.json();
+          console.error('❌ API Error:', errorData);
+          errorMessage = errorData?.error || errorData?.message || errorMessage;
+        } catch (e) {
+          console.error('❌ Failed to parse error response');
+        }
+
+        if (response.status === 401) {
+          errorMessage = '後端無法驗證用戶。請聯繫管理員檢查後端配置。';
+          toast.error(errorMessage, {
+            description: `User ID: ${session.user.id}`,
+            duration: 5000
+          });
+        } else if (response.status === 402) {
+          errorMessage = 'Credit limit reached. Please upgrade plan.';
+        } else if (response.status === 429) {
+          errorMessage = 'Rate limit exceeded. Try again shortly.';
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      console.log('✅ Analysis response:', data);
+      
       const analysisData = data.data;
 
       // Construct Result Object
@@ -212,7 +286,7 @@ const NewsAnalysis = () => {
         sourceType: activeTab,
         sourceText: requestBody.text || requestBody.url || '',
         timestamp: new Date().toISOString(),
-        userId: userId,
+        userId: session.user.id,
         // Fallbacks for specific visualizations
         summary: analysisData.summary || { title: "Intelligence Report" },
         pestle: analysisData.pestle,
@@ -227,9 +301,10 @@ const NewsAnalysis = () => {
       navigate('/results');
 
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Analysis failed');
-      toast.error(err.message || 'Analysis failed');
+      console.error('❌ Analyze error:', err);
+      const errorMessage = err.message || '分析服務暫時無法使用';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -428,6 +503,15 @@ const NewsAnalysis = () => {
                   <h4 className="text-sm font-bold text-amber-800">Authentication Required</h4>
                   <p className="text-sm text-amber-700">You must be logged in to run the analysis protocol.</p>
                 </div>
+              </div>
+            )}
+
+            {/* Debug Info (Remove in production) */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs font-mono">
+                <div>Auth: {isAuthenticated ? '✅' : '❌'}</div>
+                <div>User ID: {userId || 'N/A'}</div>
+                <div>API URL: {API_BASE_URL}</div>
               </div>
             )}
 

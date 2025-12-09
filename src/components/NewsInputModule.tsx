@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Link, FileText, Globe, CheckCircle, Loader2, Sparkles } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase'
 import ErrorDisplay from './ErrorDisplay';
 
 // ✅ Supabase Client Setup
-const supabase = createClient(
+const supabase = import { supabase } from '@/lib/supabase'
   import.meta.env.VITE_SUPABASE_URL || '',
   import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 );
@@ -106,7 +106,7 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-user-id': userId  // ✅ Auth header for credits/rate limiting
+        'Authorization': `Bearer ${session?.access_token}`,
       },
       body: JSON.stringify({ text: articleText }),
     });

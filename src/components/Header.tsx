@@ -28,8 +28,7 @@ export default function Header() {
           >
             <Logo size={56} showText={false} />
             <div className="text-lg font-extrabold tracking-tight flex items-baseline gap-1">
-              <span className="text-blue-600">Nex</span>
-              <span className="text-purple-600">Veris</span>
+              <span className="text-blue-600">NexVeris</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">AI</span>
             </div>
           </div>
