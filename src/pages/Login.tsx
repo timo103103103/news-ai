@@ -4,6 +4,7 @@ import Logo from '../components/Logo'
 import { Mail, Lock, Eye, EyeOff, Github, Chrome, AlertCircle, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import useAuthStore from '@/stores/authStore'
+import { supabase } from '@/lib/supabase'
 
 interface LoginFormData {
   email: string
@@ -21,7 +22,21 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const { signIn, signInWithOAuth, loading, error, clearError, isAuthenticated } = useAuthStore()
-  
+  useEffect(() => {
+  const syncSession = async () => {
+    const { data } = await supabase.auth.getSession()
+
+    console.log('🔄 Sync session result:', data)
+
+    if (data.session) {
+      console.log('✅ Session found, redirecting...')
+      navigate('/')
+    }
+  }
+
+  syncSession()
+}, [navigate])
+
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
