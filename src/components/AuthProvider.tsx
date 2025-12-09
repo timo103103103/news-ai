@@ -1,46 +1,37 @@
-import { useEffect } from 'react'
-import useAuthStore from '@/stores/authStore'
-import { supabase } from '@/lib/supabase'
+import { useEffect } from "react"
+import { supabase } from "../lib/supabase"
+import useAuthStore from "../stores/authStore"
 
-interface AuthProviderProps {
-  children: React.ReactNode
-}
-
-export default function AuthProvider({ children }: AuthProviderProps) {
-  const setUser = useAuthStore((state) => state.setUser)
-  const setLoading = useAuthStore((state) => state.setLoading)
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const setUser = useAuthStore((s) => s.setUser)
 
   useEffect(() => {
-    // ✅ 初始化同步 session
-    const syncSession = async () => {
-      setLoading(true)
-
+    const sync = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
-      if (session?.user) {
-        setUser(session.user)
+      if (!session?.user) {
+        setUser(null)
+        return
       }
 
-      setLoading(false)
+      const { data: dbUser } = await supabase
+        .from("users")
+        .select("plan, credits")
+        .eq("id", session.user.id)
+        .single()
+
+      setUser({
+        id: session.user.id,
+        email: session.user.email || "",
+        plan: dbUser?.plan || "free",
+        credits: dbUser?.credits ?? 0,
+      })
     }
 
-    syncSession()
-
-    // ✅ 監聽登入 / 登出狀態
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user)
-      } else {
-        setUser(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [setUser, setLoading])
+    sync()
+  }, [setUser])
 
   return <>{children}</>
 }
