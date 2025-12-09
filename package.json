@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "client:dev": "vite",
-    "build": "vite build",
+    "client:dev": "npx vite",
+    "build": "npx vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "npx vite preview",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
     "server:start": "tsx api/server.ts",
