@@ -2,17 +2,25 @@ import { useEffect } from "react"
 import { supabase } from "../lib/supabase"
 import useAuthStore from "../stores/authStore"
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const setUser = useAuthStore((s) => s.setUser)
+  const setLoading = useAuthStore((s) => s.setLoading)
 
   useEffect(() => {
-    const sync = async () => {
+    const init = async () => {
+      setLoading(true)
+
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
       if (!session?.user) {
         setUser(null)
+        setLoading(false)
         return
       }
 
@@ -25,13 +33,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setUser({
         id: session.user.id,
         email: session.user.email || "",
-        plan: dbUser?.plan || "free",
+        plan: (dbUser?.plan as any) || "free",
         credits: dbUser?.credits ?? 0,
       })
+
+      setLoading(false)
     }
 
-    sync()
-  }, [setUser])
+    init()
+  }, [setUser, setLoading])
 
   return <>{children}</>
 }

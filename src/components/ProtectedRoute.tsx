@@ -1,24 +1,25 @@
-import { Navigate } from 'react-router-dom'
-import useAuthStore from '@/stores/authStore'
+import { Navigate } from "react-router-dom"
+import useAuthStore from "../stores/authStore"
 
-interface ProtectedRouteProps {
-  children: React.ReactNode
-}
-
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuthStore()
+export default function ProtectedRoute({
+  children,
+}: {
+  children: JSX.Element
+}) {
+  const user = useAuthStore((s) => s.user)
+  const loading = useAuthStore((s) => s.loading)
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     )
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" replace />
   }
 
-  return <>{children}</>
+  return children
 }

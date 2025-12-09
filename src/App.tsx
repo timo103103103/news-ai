@@ -1,128 +1,101 @@
-import { useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
-import { supabase } from './lib/supabase'
-import useAuthStore from './stores/authStore'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import AuthProvider from './components/AuthProvider'
+import ProtectedRoute from './components/ProtectedRoute'
+
+// Pages
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Pricing from './pages/Pricing'
+import NewsAnalysis from './pages/NewsAnalysis'
+import AnalysisResultPage from './pages/AnalysisResultPage' // ✅ Your existing results page
+import Account from './pages/Account'
+import History from './pages/History'
+import AnalysisDetail from './pages/AnalysisDetail'
+import AuthCallback from './pages/AuthCallback'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import Logout from './pages/Logout'
 
 function App() {
-  const setUser = useAuthStore((s) => s.setUser)
-  const loading = useAuthStore((s) => s.loading)
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/logout" element={<Logout />} />
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+          {/* Protected Routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analyze"
+            element={
+              <ProtectedRoute>
+                <NewsAnalysis />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/news-analysis"
+            element={
+              <ProtectedRoute>
+                <NewsAnalysis />
+              </ProtectedRoute>
+            }
+          />
+          {/* ✅ CRITICAL: Results route using your existing AnalysisResultPage */}
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute>
+                <AnalysisResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analysis/:id"
+            element={
+              <ProtectedRoute>
+                <AnalysisDetail />
+              </ProtectedRoute>
+            }
+          />
 
-        if (!session?.user) {
-          setUser(null)
-          return
-        }
-
-        // ✅ Check if user exists in database
-        const { data: dbUser, error } = await supabase
-          .from('users')
-          .select('plan, credits')
-          .eq('id', session.user.id)
-          .single()
-
-        if (error) {
-          console.log('⚠️ User not in database, creating...', error.message)
-          
-          // ✅ Auto-create user in Supabase if not exists
-          const { error: insertError } = await supabase
-            .from('users')
-            .insert({
-              id: session.user.id,
-              email: session.user.email || '',
-              plan: 'free',
-              credits: 10,
-              created_at: new Date().toISOString(),
-            })
-
-          if (insertError) {
-            console.error('❌ Failed to create user:', insertError)
-          }
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            plan: 'free',
-            credits: 10,
-          })
-          return
-        }
-
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          plan: dbUser?.plan || 'free',
-          credits: dbUser?.credits ?? 0,
-        })
-      } catch (error) {
-        console.error('Auth init error:', error)
-        setUser(null)
-      }
-    }
-
-    initAuth()
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!session?.user) {
-          setUser(null)
-        } else {
-          const { data: dbUser, error } = await supabase
-            .from('users')
-            .select('plan, credits')
-            .eq('id', session.user.id)
-            .single()
-
-          if (error || !dbUser) {
-            // Auto-create if not exists
-            await supabase
-              .from('users')
-              .insert({
-                id: session.user.id,
-                email: session.user.email || '',
-                plan: 'free',
-                credits: 10,
-                created_at: new Date().toISOString(),
-              })
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              plan: 'free',
-              credits: 10,
-            })
-            return
-          }
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            plan: dbUser?.plan || 'free',
-            credits: dbUser?.credits ?? 0,
-          })
-        }
-      }
-    )
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
-  }, [setUser])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
-
-  return <Outlet />
+          {/* Catch all - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  )
 }
 
 export default App
