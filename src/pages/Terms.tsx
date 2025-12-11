@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 export default function Terms() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-24">
       <div className="container mx-auto max-w-4xl px-6 py-12">
         <h1 className="text-3xl font-bold text-slate-900 mb-4">Terms of Service</h1>
         <p className="text-slate-600 mb-8">Last updated: December 11, 2025</p>
@@ -92,4 +92,3 @@ export default function Terms() {
     </div>
   )
 }
-

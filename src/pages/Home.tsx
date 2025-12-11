@@ -17,7 +17,7 @@ import {
   ArrowUpRight, // For Market Up
   ArrowDownRight // For Market Down
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import '../styles/news-intelligence.css';
 import '../styles/analysis-components.css';
@@ -340,7 +340,7 @@ export default function Home() {
                <ul className="space-y-2 text-sm">
                  <li><a href="#features" className="hover:text-blue-400 transition-colors">Features</a></li>
                  <li><a href="#how-it-works" className="hover:text-blue-400 transition-colors">How It Works</a></li>
-                 <li><a href="/pricing" className="hover:text-blue-400 transition-colors">Pricing</a></li>
+                 <li><Link to="/pricing" className="hover:text-blue-400 transition-colors">Pricing</Link></li>
                </ul>
              </div>
              <div>
@@ -354,8 +354,24 @@ export default function Home() {
              <div>
               <h4 className="font-semibold text-white mb-3">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="/privacy" className="hover:text-blue-400 transition-colors">Privacy</a></li>
-                <li><a href="/terms" className="hover:text-blue-400 transition-colors">Terms</a></li>
+                <li>
+                  <a
+                    href="/privacy"
+                    onClick={(e) => { e.preventDefault(); navigate('/privacy') }}
+                    className="hover:text-blue-400 transition-colors"
+                  >
+                    Privacy
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/terms"
+                    onClick={(e) => { e.preventDefault(); navigate('/terms') }}
+                    className="hover:text-blue-400 transition-colors"
+                  >
+                    Terms
+                  </a>
+                </li>
               </ul>
              </div>
            </div>

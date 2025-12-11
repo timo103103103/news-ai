@@ -19,6 +19,8 @@ import AuthCallback from './pages/AuthCallback'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Logout from './pages/Logout'
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 function App() {
   return (
@@ -38,6 +40,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/logout" element={<Logout />} />
+		  <Route path="/privacy" element={<Privacy />} />
+		  <Route path="/terms" element={<Terms />} />
+
 
           {/* Protected Pages */}
           <Route
