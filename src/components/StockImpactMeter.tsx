@@ -219,36 +219,33 @@ const ImpactSummaryChart = ({ tiers }: { tiers: { Direct: TickerImpact[]; Indire
 // --- Main Component (Redesigned Structure) ---
 
 export default function StockImpactMeter({ data, className = '' }: StockImpactMeterProps) {
-  // Mock Data Generation (Unchanged)
+  // ✅ FIXED: Removed mock data generation - only use real data from props
   const [impactData, setImpactData] = useState<Required<StockImpactMeterProps>['data'] | null>(null);
 
   useEffect(() => {
     if (data) {
       setImpactData(data);
     } else {
-      // Fallback Mock Data for Demo
-      setImpactData({
-        overallSentiment: 'Bearish',
-        institutionalFlow: 'Net Short',
-        analystNote: "While retail sentiment is reacting negatively to the headline, institutional order flow suggests accumulation in semiconductor supply chains. The sell-off in major indices appears algorithmic rather than structural.",
-        tickers: [
-          // Tier 1: Direct (Major)
-          { symbol: 'NVDA', name: 'NVIDIA Corp', price: 875.20, change: -2.4, sentiment: 'Bearish', tier: 'Direct', confidence: 92, reasoning: 'Explicitly named in export restriction document.' },
-          { symbol: 'AMD', name: 'Adv. Micro Devices', price: 168.50, change: -3.1, sentiment: 'Bearish', tier: 'Direct', confidence: 88, reasoning: 'Direct competitor with 85% revenue overlap in affected region.' },
-
-          // Tier 2: Indirect (Minor/Sympathy)
-          { symbol: 'TSM', name: 'Taiwan Semi', price: 142.10, change: -1.2, sentiment: 'Neutral', tier: 'Indirect', confidence: 65, reasoning: 'Primary manufacturing partner; supply chain lag expected.' },
-          { symbol: 'INTC', name: 'Intel Corp', price: 34.20, change: 0.8, sentiment: 'Bullish', tier: 'Indirect', confidence: 55, trapWarning: true, reasoning: 'Sector rotation target, but technicals suggest "Bull Trap" at resistance.' },
-
-          // Tier 3: Speculative (Macro/Correlation)
-          { symbol: 'SOXS', name: 'Direxion Semi Bear', price: 24.50, change: 4.5, sentiment: 'Bullish', tier: 'Speculative', confidence: 40, reasoning: 'Inverse ETF correlation indicating hedging activity.' },
-          { symbol: 'GLD', name: 'SPDR Gold Trust', price: 215.00, change: 0.4, sentiment: 'Neutral', tier: 'Speculative', confidence: 30, reasoning: 'Safe haven flight potential if geopolitical tension escalates.' },
-        ]
-      });
+      // ✅ FIXED: Set to null instead of generating fake data
+      setImpactData(null);
     }
   }, [data]);
 
-  if (!impactData) return <div className="p-8 text-center text-gray-400">Analyzing Market Depth...</div>;
+  // ✅ FIXED: Show proper placeholder when no data available
+  if (!impactData) {
+    return (
+      <TierLock feature="stock_impact" className={className}>
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 text-center">
+          <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Market Ripple Analysis</h3>
+          <p className="text-gray-600">No market impact data available for this article.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            The AI analysis did not identify specific stock market impacts for this news event.
+          </p>
+        </div>
+      </TierLock>
+    );
+  }
 
   // Grouping Tickers (Unchanged)
   const tiers = {
@@ -331,9 +328,13 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
             </div>
             <p className="text-xs text-slate-500 mb-4 italic">The epicenter of the news. High confidence needed.</p>
             <div className="flex flex-col gap-4">
-              {tiers.Direct.map((ticker) => (
-                <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
-              ))}
+              {tiers.Direct.length > 0 ? (
+                tiers.Direct.map((ticker) => (
+                  <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 italic">No direct impact tickers identified</p>
+              )}
             </div>
           </div>
 
@@ -347,9 +348,13 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
             </div>
             <p className="text-xs text-slate-500 mb-4 italic">Supply chain or close sector correlation. Monitor flows.</p>
             <div className="flex flex-col gap-4">
-              {tiers.Indirect.map((ticker) => (
-                <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
-              ))}
+              {tiers.Indirect.length > 0 ? (
+                tiers.Indirect.map((ticker) => (
+                  <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 italic">No indirect impact tickers identified</p>
+              )}
             </div>
           </div>
 
@@ -363,9 +368,13 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
             </div>
             <p className="text-xs text-slate-500 mb-4 italic">Macro-driven or hedging plays. Low confidence warning.</p>
             <div className="flex flex-col gap-4">
-              {tiers.Speculative.map((ticker) => (
-                <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
-              ))}
+              {tiers.Speculative.length > 0 ? (
+                tiers.Speculative.map((ticker) => (
+                  <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 italic">No speculative impact tickers identified</p>
+              )}
             </div>
           </div>
         </div>

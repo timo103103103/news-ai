@@ -1,33 +1,23 @@
 import { useState, useEffect } from 'react';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { SubscriptionTier } from '@/contexts/SubscriptionContext';
-import { User, Settings, CreditCard, Folder } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
+import useAuthStore from '@/stores/authStore';
+import { supabase } from '@/lib/supabase';
 import LogoUploader from '@/components/LogoUploader';
 
 interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  name?: string;
   avatar?: string;
-  createdAt: string;
-}
-
-interface SubscriptionDetails {
-  plan: SubscriptionTier;
-  status: 'active' | 'canceled' | 'expired' | 'trial';
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
-  paymentMethodLast4?: string;
+  createdAt?: string;
 }
 
 const Account = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'portfolios' | 'notifications'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'billing'>('overview');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const { tier } = useSubscription();
+  const authUser = useAuthStore((s) => s.user);
 
   useEffect(() => {
     fetchUserData();
@@ -37,25 +27,24 @@ const Account = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // ✅ Mock user profile - replace with real API when available
-      const mockProfile: UserProfile = {
-        id: '1',
-        email: 'user@example.com',
-        name: 'User',
-        createdAt: new Date().toISOString()
-      };
-      setUserProfile(mockProfile);
-
-      // ✅ Use subscription tier from context instead of broken API call
-      const mockSubscription: SubscriptionDetails = {
-        plan: tier as SubscriptionTier,
-        status: 'active',
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        cancelAtPeriodEnd: false
-      };
-      setSubscription(mockSubscription);
-
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setUserProfile(null);
+        setLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('users')
+        .select('name, created_at, avatar')
+        .eq('id', user.id)
+        .single();
+      setUserProfile({
+        id: user.id,
+        email: user.email || '',
+        name: data?.name,
+        avatar: data?.avatar,
+        createdAt: data?.created_at,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -112,11 +101,13 @@ const Account = () => {
                 <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{userProfile.name}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{userProfile.name || 'User'}</h2>
                 <p className="text-gray-600 dark:text-gray-400">{userProfile.email}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  Member since {new Date(userProfile.createdAt).toLocaleDateString()}
-                </p>
+                {userProfile.createdAt && (
+                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                    Member since {new Date(userProfile.createdAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -150,7 +141,7 @@ const Account = () => {
 
           {/* Tab Content */}
           <div className="p-6">
-            {activeTab === 'overview' && subscription && (
+            {activeTab === 'overview' && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Overview</h3>
                 <div className="space-y-4">
@@ -158,21 +149,21 @@ const Account = () => {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Current Plan</span>
                       <span className="text-lg font-bold text-gray-900 dark:text-white capitalize">
-                        {subscription.plan}
+                        {authUser?.plan || 'free'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
                       <span className={`text-sm font-medium ${
-                        subscription.status === 'active' ? 'text-green-600' : 'text-gray-600'
+                        authUser ? 'text-green-600' : 'text-gray-600'
                       }`}>
-                        {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                        {authUser ? 'Active' : 'Guest'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Renewal Date</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Credits</span>
                       <span className="text-sm text-gray-900 dark:text-white">
-                        {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                        {authUser?.credits ?? 0}
                       </span>
                     </div>
                   </div>
@@ -182,7 +173,7 @@ const Account = () => {
                       href="/pricing"
                       className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      {subscription.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}
+                      {authUser?.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}
                     </a>
                   </div>
                   <div className="pt-6">

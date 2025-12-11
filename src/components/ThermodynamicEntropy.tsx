@@ -39,26 +39,47 @@ export default function ThermodynamicEntropy({
 }: EntropyProps) {
   const [hazeEnabled, setHazeEnabled] = useState(true);
 
-  // Use data or fallback
-  const articleTitle = data?.articleTitle || "Article Analysis";
-  const wordCount = data?.wordCount || 850;
-  const factCount = data?.factCount || 124;
-  const speculationCount = data?.speculationCount || 450;
-  const signalToNoise = data?.signalToNoise || Math.round((factCount / wordCount) * 100);
-  const entropyLevel = data?.entropyLevel || Math.round((speculationCount / wordCount) * 100);
-  const caloricValue = data?.caloricValue || Math.min(Math.round(factCount / 5), 100);
-  const cognitiveLoad = data?.cognitiveLoad || "Moderate";
-  const emotionalHeat = data?.emotionalHeat || "Moderate";
-  const recommendation = data?.recommendation || "Focus on factual paragraphs for key insights.";
-  
-  const segments = data?.segments || [
-    { text: "The Federal Reserve announced interest rates will remain unchanged at 5.25%.", type: "fact" as const },
-    { text: "This decision comes after inflation data showed a 0.1% increase last month.", type: "fact" as const },
-    { text: "Experts fear this could lead to a recession by late 2025.", type: "speculation" as const },
-    { text: "Market analysts suggest the chairman might be hiding deeper concerns.", type: "speculation" as const },
-    { text: "Trading volume on NYSE dropped by 40 million shares following the news.", type: "fact" as const },
-    { text: "A storm seems to be brewing on the horizon for tech stocks.", type: "speculation" as const },
-  ];
+  // ✅ FIXED: Show placeholder when no data available
+  if (!data) {
+    return (
+      <div className={className}>
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 text-center">
+          <FlaskConical className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Thermodynamic Signal-Entropy</h3>
+          <p className="text-gray-600">No signal-entropy analysis available for this article.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            This analysis measures the ratio of factual content to speculation.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ FIXED: Validate required data fields
+  if (!data.segments || data.segments.length === 0) {
+    return (
+      <div className={className}>
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 text-center">
+          <FlaskConical className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Incomplete Analysis</h3>
+          <p className="text-gray-600">Insufficient data for entropy visualization.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ FIXED: Use real data directly (no fallback operators)
+  const articleTitle = data.articleTitle;
+  const wordCount = data.wordCount;
+  const factCount = data.factCount;
+  const speculationCount = data.speculationCount;
+  const signalToNoise = data.signalToNoise;
+  const entropyLevel = data.entropyLevel;
+  const caloricValue = data.caloricValue;
+  const cognitiveLoad = data.cognitiveLoad;
+  const emotionalHeat = data.emotionalHeat;
+  const recommendation = data.recommendation;
+  const segments = data.segments;
 
   const gaugeData = [
     { name: 'Entropy (Noise)', value: entropyLevel, fill: '#f43f5e' }, // Red

@@ -70,25 +70,49 @@ export default function ChronosIsomorphism({
   const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (data) {
+    // ✅ FIXED: Only generate chart data if real data exists
+    if (data && data.timePattern) {
       setChartData(generateTimeData(data.timePattern));
+    } else {
+      setChartData([]);
     }
   }, [data]);
 
-  // Use data or fallback
-  const currentEvent = data?.currentEvent || "Current Market Event";
-  const matchedEvent = data?.matchedEvent || "Historical Precedent";
-  const similarityScore = data?.similarityScore || 75;
-  const cyclicality = data?.cyclicality || 65;
-  const outcomes = data?.historicalOutcomes || [
-    { outcome: "V-Shape Recovery", probability: 25 },
-    { outcome: "L-Shape Stagnation", probability: 50 },
-    { outcome: "W-Shape Double Dip", probability: 25 }
-  ];
-  const analystNote = data?.analystNote || "Historical patterns suggest this is not unprecedented.";
+  // ✅ FIXED: Show placeholder when no data available
+  if (!data) {
+    return (
+      <div className={className}>
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+          <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Chronos Isomorphism</h3>
+          <p className="text-gray-600">No historical pattern matching data available for this article.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            This analysis identifies similar historical events and predicts potential outcomes.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  if (!chartData.length) {
-    setChartData(generateTimeData());
+  // ✅ FIXED: Use real data directly (no fallback operators)
+  const currentEvent = data.currentEvent;
+  const matchedEvent = data.matchedEvent;
+  const similarityScore = data.similarityScore;
+  const cyclicality = data.cyclicality;
+  const outcomes = data.historicalOutcomes;
+  const analystNote = data.analystNote;
+
+  // ✅ FIXED: Don't render if critical data is missing
+  if (!chartData.length || !outcomes || outcomes.length === 0) {
+    return (
+      <div className={className}>
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Incomplete Pattern Data</h3>
+          <p className="text-gray-600">Historical pattern analysis is incomplete for this event.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

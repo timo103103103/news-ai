@@ -54,7 +54,7 @@ export default function DailyIntelligenceSignup({ variant = 'landing', className
       transition={{ duration: 0.4 }}
       className={`w-full bg-white shadow-sm border border-gray-200 rounded-lg ${className ?? ''}`}
     >
-      <div className="p-6 md:p-8 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-2 gap-8">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto">
         <div>
           <h2 className="text-2xl md:text-3xl font-serif text-gray-900">Stay Informed. Every Morning.</h2>
           <p className="mt-2 text-sm md:text-base text-gray-700 font-sans">Concise AI-driven briefings on global news and markets with structured signals you can act on.</p>
@@ -116,28 +116,7 @@ export default function DailyIntelligenceSignup({ variant = 'landing', className
           </form>
         </div>
 
-        {showIllustration && (
-          <div ref={illoRef} className="hidden md:block">
-            {illustrationVisible && (
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="bg-gray-50 rounded-md border border-gray-200 p-4">
-                <svg viewBox="0 0 400 260" className="w-full h-auto" aria-hidden="true">
-                  <rect x="16" y="20" width="368" height="220" rx="8" fill="#FAFAFA" stroke="#E5E7EB" />
-                  <rect x="32" y="40" width="240" height="16" rx="2" fill="#E5E7EB" />
-                  <rect x="32" y="64" width="320" height="12" rx="2" fill="#E5E7EB" />
-                  <rect x="32" y="84" width="320" height="12" rx="2" fill="#E5E7EB" />
-                  <rect x="32" y="104" width="320" height="12" rx="2" fill="#E5E7EB" />
-                  <rect x="32" y="132" width="164" height="100" rx="6" fill="#F5F5F5" stroke="#E5E7EB" />
-                  <polyline points="36,220 64,196 92,204 120,184 148,190 176,172" fill="none" stroke="#94A3B8" strokeWidth="2" />
-                  <rect x="210" y="132" width="142" height="100" rx="6" fill="#F5F5F5" stroke="#E5E7EB" />
-                  <rect x="220" y="142" width="42" height="8" rx="2" fill="#E5E7EB" />
-                  <rect x="220" y="156" width="100" height="8" rx="2" fill="#E5E7EB" />
-                  <rect x="220" y="170" width="100" height="8" rx="2" fill="#E5E7EB" />
-                  <rect x="220" y="186" width="82" height="8" rx="2" fill="#E5E7EB" />
-                </svg>
-              </motion.div>
-            )}
-          </div>
-        )}
+        
       </div>
     </motion.section>
   )

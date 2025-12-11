@@ -2,13 +2,16 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AuthProvider from './components/AuthProvider'
 import ProtectedRoute from './components/ProtectedRoute'
 
+// Components
+import Header from './components/Header'
+
 // Pages
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Pricing from './pages/Pricing'
 import NewsAnalysis from './pages/NewsAnalysis'
-import AnalysisResultPage from './pages/AnalysisResultPage' // ✅ Your existing results page
+import AnalysisResultPage from './pages/AnalysisResultPage'
 import Account from './pages/Account'
 import History from './pages/History'
 import AnalysisDetail from './pages/AnalysisDetail'
@@ -21,8 +24,13 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        
+        {/* Header always visible */}
+        <Header />
+
         <Routes>
-          {/* Public Routes */}
+          {/* Public Pages */}
+          <Route path="/" element={<Home />} />  {/* LANDING PAGE - PUBLIC */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/pricing" element={<Pricing />} />
@@ -31,15 +39,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/logout" element={<Logout />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected Pages */}
           <Route
             path="/analyze"
             element={
@@ -48,6 +48,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/news-analysis"
             element={
@@ -56,7 +57,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* ✅ CRITICAL: Results route using your existing AnalysisResultPage */}
+
           <Route
             path="/results"
             element={
@@ -65,6 +66,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/account"
             element={
@@ -73,6 +75,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/history"
             element={
@@ -81,6 +84,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/analysis/:id"
             element={
@@ -90,7 +94,7 @@ function App() {
             }
           />
 
-          {/* Catch all - redirect to home */}
+          {/* Default redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

@@ -50,7 +50,8 @@ interface LandingTemplateProps {
 }
 
 export default function LandingTemplate({ page, allPages }: LandingTemplateProps) {
-  const canonical = `https://nexverisai.com/landing/${page.slug}`;
+  const canonicalBase = (import.meta as any).env?.DEV ? 'http://localhost:5173' : 'https://nexverisai.com';
+  const canonical = `${canonicalBase}/landing/${page.slug}`;
   
   // JSON-LD Schema
   const jsonLd = {
@@ -74,7 +75,7 @@ export default function LandingTemplate({ page, allPages }: LandingTemplateProps
       "name": "News AI",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://nexverisai.com/images/logo.png"
+        "url": (import.meta as any).env?.DEV ? '/favicon.svg' : 'https://nexverisai.com/images/logo.png'
       }
     }
   };

@@ -1,7 +1,22 @@
 import { useState, useMemo } from 'react';
 import { Lock, Zap, Crown, Shield, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 
-export default function WinnerLoserTeaser() {
+// ✅ UPDATED: Accept real data from parent component
+interface WinnerLoserTeaserProps {
+  partyImpact?: {
+    stakeholders: Array<{
+      name: string;
+      power: number;
+      interest: number;
+      sentiment?: 'positive' | 'negative' | 'neutral' | 'mixed';
+      role?: string;
+    }>;
+    majorWinners?: string[];
+    majorLosers?: string[];
+  };
+}
+
+export default function WinnerLoserTeaser({ partyImpact }: WinnerLoserTeaserProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Track premium feature view
@@ -16,17 +31,73 @@ export default function WinnerLoserTeaser() {
 
   const coreEntity = { name: "Core Strategy" };
 
-  const mockWinners = [
-    { name: 'TechCorp', trend: 'up' },
-    { name: 'Innovate', trend: 'up' },
-    { name: 'DataFlow', trend: 'up' }
-  ];
+  // ✅ FIXED: Use real data from props or show placeholder
+  const hasData = partyImpact && 
+    (partyImpact.majorWinners || partyImpact.majorLosers || partyImpact.stakeholders?.length > 0);
 
-  const mockLosers = [
-    { name: 'LegacyCo', trend: 'down' },
-    { name: 'OldTech', trend: 'down' },
-    { name: 'Trad. Inc', trend: 'down' }
-  ];
+  // Extract winners and losers from real data
+  const realWinners = useMemo(() => {
+    if (!partyImpact) return [];
+    
+    // Prioritize majorWinners if available
+    if (partyImpact.majorWinners && partyImpact.majorWinners.length > 0) {
+      return partyImpact.majorWinners.slice(0, 3).map(name => ({
+        name,
+        trend: 'up' as const
+      }));
+    }
+    
+    // Otherwise, use stakeholders with positive sentiment and high power
+    const positiveStakeholders = partyImpact.stakeholders
+      ?.filter(s => s.sentiment === 'positive' && s.power > 60)
+      ?.sort((a, b) => b.power - a.power)
+      ?.slice(0, 3)
+      ?.map(s => ({
+        name: s.name,
+        trend: 'up' as const
+      })) || [];
+    
+    return positiveStakeholders;
+  }, [partyImpact]);
+
+  const realLosers = useMemo(() => {
+    if (!partyImpact) return [];
+    
+    // Prioritize majorLosers if available
+    if (partyImpact.majorLosers && partyImpact.majorLosers.length > 0) {
+      return partyImpact.majorLosers.slice(0, 3).map(name => ({
+        name,
+        trend: 'down' as const
+      }));
+    }
+    
+    // Otherwise, use stakeholders with negative sentiment and high power
+    const negativeStakeholders = partyImpact.stakeholders
+      ?.filter(s => s.sentiment === 'negative' && s.power > 60)
+      ?.sort((a, b) => b.power - a.power)
+      ?.slice(0, 3)
+      ?.map(s => ({
+        name: s.name,
+        trend: 'down' as const
+      })) || [];
+    
+    return negativeStakeholders;
+  }, [partyImpact]);
+
+  // ✅ Show placeholder if no data available
+  if (!hasData || (realWinners.length === 0 && realLosers.length === 0)) {
+    return (
+      <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl shadow-2xl overflow-hidden max-w-lg mx-auto border border-slate-700 p-8">
+        <div className="text-center">
+          <Shield className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">Alliance Network</h3>
+          <p className="text-sm text-slate-500">
+            No clear winners or losers identified in this article.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Helper to calculate position on a circle
   const getPosition = (index: number, total: number, radius: number, offsetAngle: number = 0) => {
@@ -41,22 +112,22 @@ export default function WinnerLoserTeaser() {
     // Winners: Closer (Radius 22%), Larger Size (64px) -> Indicates high influence and strong relationship
     // Losers: Further (Radius 42%), Smaller Size (40px) -> Indicates low influence and distant relationship
     
-    const winnerNodes = mockWinners.map((item, i) => ({
+    const winnerNodes = realWinners.map((item, i) => ({
       ...item,
       type: 'winner',
       sizePx: 64, 
-      ...getPosition(i, mockWinners.length, 22, 0)
+      ...getPosition(i, realWinners.length, 22, 0)
     }));
 
-    const loserNodes = mockLosers.map((item, i) => ({
+    const loserNodes = realLosers.map((item, i) => ({
       ...item,
       type: 'loser',
       sizePx: 40, 
-      ...getPosition(i, mockLosers.length, 42, Math.PI)
+      ...getPosition(i, realLosers.length, 42, Math.PI)
     }));
 
     return [...winnerNodes, ...loserNodes];
-  }, []);
+  }, [realWinners, realLosers]);
 
   return (
     <div 

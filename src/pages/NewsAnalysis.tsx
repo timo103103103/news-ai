@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import SummaryCard from '../components/SummaryCard';
 import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();
@@ -506,14 +506,7 @@ const NewsAnalysis = () => {
               </div>
             )}
 
-            {/* Debug Info (Remove in production) */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs font-mono">
-                <div>Auth: {isAuthenticated ? '✅' : '❌'}</div>
-                <div>User ID: {userId || 'N/A'}</div>
-                <div>API URL: {API_BASE_URL}</div>
-              </div>
-            )}
+            
 
             {/* Action Buttons */}
             <div className="mt-8">
@@ -579,10 +572,7 @@ const NewsAnalysis = () => {
           </div>
         </div>
 
-        {/* 👇 Secondary Signup CTA */}
-        <div className="mt-16">
-          <DailyIntelligenceSignup />
-        </div>
+        
 
       </div>
     </div>

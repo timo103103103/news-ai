@@ -232,78 +232,67 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            {/* Feature 1: PESTLE Scan (Flip Card) */}
-            <div className="flip-card" role="button" tabIndex={0} onClick={() => navigate('/pricing')} onKeyDown={(e) => { if ((e as any).key === 'Enter' || (e as any).key === ' ') navigate('/pricing'); }}>
-              <div className="flip-card-inner">
-                <div className="flip-card-front bg-white p-8 rounded-lg shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                    <Target className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">PESTLE Environmental Scan</h3>
-                  <p className="text-slate-600 leading-relaxed mb-5">Instantly understand the Political, Economic, Social, Technological, Legal, and Environmental impact.</p>
-                  <div className="space-y-2">
-                    <MiniBar label="Political" value={85} color="bg-blue-500" />
-                    <MiniBar label="Economic" value={60} color="bg-green-500" />
-                    <MiniBar label="Technological" value={90} color="bg-purple-500" />
-                  </div>
-                </div>
-                <div className="flip-card-back bg-blue-600 text-white p-8 rounded-lg shadow-lg">
-                  <h3 className="text-xl font-bold mb-2">PESTLE Highlights</h3>
-                  <p className="text-blue-100 mb-4">DeepRead reveals geopolitical risk in seconds. Explore full breakdowns and save time.</p>
-                  <button className="px-5 py-2 rounded-md bg-white text-blue-700 font-semibold hover:bg-blue-50" onClick={(e) => { (e as any).stopPropagation(); navigate('/pricing'); }}>Explore Analysis</button>
-                </div>
+            {/* Feature 1: PESTLE Scan */}
+            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                <Target className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                PESTLE Environmental Scan
+              </h3>
+              <p className="text-slate-600 leading-relaxed mb-5">
+                Instantly understand the Political, Economic, Social, Technological, Legal, and Environmental impact.
+              </p>
+              <div className="space-y-2">
+                <MiniBar label="Political" value={85} color="bg-blue-500" />
+                <MiniBar label="Economic" value={60} color="bg-green-500" />
+                <MiniBar label="Technological" value={90} color="bg-purple-500" />
               </div>
             </div>
 
-            {/* Feature 2: Credibility & Bias (Flip Card) */}
-            <div className="flip-card" role="button" tabIndex={0} onClick={() => navigate('/pricing')} onKeyDown={(e) => { if ((e as any).key === 'Enter' || (e as any).key === ' ') navigate('/pricing'); }}>
-              <div className="flip-card-inner">
-                <div className="flip-card-front bg-white p-8 rounded-lg shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300">
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6">
-                    <ShieldAlert className="w-6 h-6 text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">Credibility & Bias Score</h3>
-                  <p className="text-slate-600 leading-relaxed mb-5">Our AI flags manipulation, checks for author bias, and verifies sources to give you a simple credibility score.</p>
-                  <div className="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-semibold text-slate-700">Manipulation Score</span>
-                      <span className="text-2xl font-bold text-red-600">78</span>
-                    </div>
-                    <p className="text-xs text-red-700 font-semibold">High Risk: Emotionally loaded language and unverified claims detected.</p>
-                  </div>
+            {/* Feature 2: Credibility & Bias */}
+            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                <ShieldAlert className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Credibility & Bias Score
+              </h3>
+              <p className="text-slate-600 leading-relaxed mb-5">
+                Our AI flags manipulation, checks for author bias, and verifies sources to give you a simple credibility score.
+              </p>
+              <div className="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                   <span className="text-sm font-semibold text-slate-700">Manipulation Score</span>
+                   <span className="text-2xl font-bold text-red-600">78</span>
                 </div>
-                <div className="flip-card-back bg-red-600 text-white p-8 rounded-lg shadow-lg">
-                  <h3 className="text-xl font-bold mb-2">Credibility Insights</h3>
-                  <p className="text-red-100 mb-4">See source reliability, author bias, and manipulation flags at a glance.</p>
-                  <button className="px-5 py-2 rounded-md bg-white text-red-700 font-semibold hover:bg-red-50" onClick={(e) => { (e as any).stopPropagation(); navigate('/pricing'); }}>View Details</button>
-                </div>
+                <p className="text-xs text-red-700 font-semibold">High Risk: Emotionally loaded language and unverified claims detected.</p>
               </div>
             </div>
 
-            {/* Feature 3: Market & Stakeholders (Flip Card) */}
-            <div className="flip-card" role="button" tabIndex={0} onClick={() => navigate('/pricing')} onKeyDown={(e) => { if ((e as any).key === 'Enter' || (e as any).key === ' ') navigate('/pricing'); }}>
-              <div className="flip-card-inner">
-                <div className="flip-card-front bg-white p-8 rounded-lg shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">Market & Stakeholder Impact</h3>
-                  <p className="text-slate-600 leading-relaxed mb-5">See who wins and who loses. We identify affected stocks, sectors, and key players.</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
-                      <span className="text-sm font-medium text-gray-900">Intel (INTC)</span>
-                      <span className="flex items-center text-sm font-medium text-green-600"><ArrowUpRight className="w-4 h-4" /> Positive</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
-                      <span className="text-sm font-medium text-gray-900">Samsung (SSNLF)</span>
-                      <span className="flex items-center text-sm font-medium text-red-600"><ArrowDownRight className="w-4 h-4" /> Negative</span>
-                    </div>
-                  </div>
+            {/* Feature 3: Market & Stakeholders */}
+            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Market & Stakeholder Impact
+              </h3>
+              <p className="text-slate-600 leading-relaxed mb-5">
+                See who wins and who loses. We identify affected stocks, sectors, and key players.
+              </p>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
+                  <span className="text-sm font-medium text-gray-900">Intel (INTC)</span>
+                  <span className="flex items-center text-sm font-medium text-green-600">
+                    <ArrowUpRight className="w-4 h-4" /> Positive
+                  </span>
                 </div>
-                <div className="flip-card-back bg-green-600 text-white p-8 rounded-lg shadow-lg">
-                  <h3 className="text-xl font-bold mb-2">Market Impact</h3>
-                  <p className="text-green-100 mb-4">Understand sector winners/losers and stakeholder effects with clarity.</p>
-                  <button className="px-5 py-2 rounded-md bg-white text-green-700 font-semibold hover:bg-green-50" onClick={(e) => { (e as any).stopPropagation(); navigate('/pricing'); }}>See Examples</button>
+                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
+                  <span className="text-sm font-medium text-gray-900">Samsung (SSNLF)</span>
+                  <span className="flex items-center text-sm font-medium text-red-600">
+                    <ArrowDownRight className="w-4 h-4" /> Negative
+                  </span>
                 </div>
               </div>
             </div>
@@ -363,11 +352,11 @@ export default function Home() {
                </ul>
              </div>
              <div>
-               <h4 className="font-semibold text-white mb-3">Legal</h4>
-               <ul className="space-y-2 text-sm">
-                 <li><a href="#" className="hover:text-blue-400 transition-colors">Privacy</a></li>
-                 <li><a href="#" className="hover:text-blue-400 transition-colors">Terms</a></li>
-               </ul>
+              <h4 className="font-semibold text-white mb-3">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/privacy" className="hover:text-blue-400 transition-colors">Privacy</a></li>
+                <li><a href="/terms" className="hover:text-blue-400 transition-colors">Terms</a></li>
+              </ul>
              </div>
            </div>
            <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">

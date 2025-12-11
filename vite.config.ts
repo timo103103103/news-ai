@@ -17,9 +17,13 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   server: {
+    port: 5173,
+    strictPort: true,
+    open: true,
+    host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:3005',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path, // Keep /api prefix - backend expects it
