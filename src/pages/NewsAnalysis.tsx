@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import useAuthStore from '@/stores/authStore';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,6 +7,7 @@ import {
   ArrowLeft, FileUp, Type, Shield, Zap, Target, BarChart3, Lock,
   ChevronRight, BrainCircuit, Globe
 } from 'lucide-react';
+import InputPill from '../components/InputPill';
 import { toast } from 'sonner';
 import SummaryCard from '../components/SummaryCard';
 import DailyIntelligenceSignup from '../components/DailyIntelligenceSignup';
@@ -14,6 +16,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005
 
 const NewsAnalysis = () => {
   const navigate = useNavigate();
+  const authUser = useAuthStore((s) => s.user);
   // State
   const [activeTab, setActiveTab] = useState<'url' | 'file' | 'text'>('url');
   const [urlInput, setUrlInput] = useState('');
@@ -26,6 +29,8 @@ const NewsAnalysis = () => {
   const [urlValid, setUrlValid] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [scanCount, setScanCount] = useState(0);
+  const DAILY_LIMIT_FREE = 1;
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -44,9 +49,13 @@ const NewsAnalysis = () => {
       if (session?.user) {
         setUserId(session.user.id);
         setIsAuthenticated(true);
+        const key = `${session.user.id}:${new Date().toISOString().slice(0,10)}`;
+        const stored = localStorage.getItem(`dailyScanCount:${key}`);
+        setScanCount(stored ? parseInt(stored, 10) || 0 : 0);
       } else {
         setUserId(null);
         setIsAuthenticated(false);
+        setScanCount(0);
       }
     });
 
@@ -66,12 +75,25 @@ const NewsAnalysis = () => {
       if (session?.user) {
         setUserId(session.user.id);
         setIsAuthenticated(true);
+        const key = `${session.user.id}:${new Date().toISOString().slice(0,10)}`;
+        const stored = localStorage.getItem(`dailyScanCount:${key}`);
+        setScanCount(stored ? parseInt(stored, 10) || 0 : 0);
       } else {
         setIsAuthenticated(false);
+        setScanCount(0);
       }
     } catch (error) {
       console.error('Auth check error:', error);
     }
+  };
+
+  const isFreePlan = (authUser?.plan || 'free').toLowerCase() === 'free';
+  const limitReached = isAuthenticated && isFreePlan && scanCount >= DAILY_LIMIT_FREE;
+  const recordScan = (uid: string) => {
+    const key = `${uid}:${new Date().toISOString().slice(0,10)}`;
+    const next = Math.min(DAILY_LIMIT_FREE, (parseInt(localStorage.getItem(`dailyScanCount:${key}`) || '0', 10) || 0) + 1);
+    localStorage.setItem(`dailyScanCount:${key}`, String(next));
+    setScanCount(next);
   };
 
   // ✅ Validation Logic
@@ -170,6 +192,12 @@ const NewsAnalysis = () => {
         setError('請先登入再進行分析');
         toast.error('請先登入再進行分析');
         navigate('/login');
+        return;
+      }
+
+      if (isFreePlan && scanCount >= DAILY_LIMIT_FREE) {
+        setError('Daily limit reached for free accounts (1 per day).');
+        toast.error('Daily limit reached (1/day). Upgrade for more.');
         return;
       }
 
@@ -281,22 +309,18 @@ const NewsAnalysis = () => {
       const analysisData = data.data;
 
       // Construct Result Object
-      const analysisResult = {
-        rawAnalysis: analysisData,
-        sourceType: activeTab,
-        sourceText: requestBody.text || requestBody.url || '',
-        timestamp: new Date().toISOString(),
-        userId: session.user.id,
-        // Fallbacks for specific visualizations
-        summary: analysisData.summary || { title: "Intelligence Report" },
-        pestle: analysisData.pestle,
-        motive: analysisData.motive,
-        party: analysisData.partyImpact,
-        stock: analysisData.marketImpact,
-        manipulation: analysisData.credibility,
-      };
+sessionStorage.setItem(
+  'analysisResult',
+  JSON.stringify({
+    ...analysisData,                 // ⭐ 核心：不改名，不重組
+    sourceType: activeTab,
+    sourceText: requestBody.text || requestBody.url || '',
+    timestamp: new Date().toISOString(),
+    userId: session.user.id,
+  })
+);
 
-      sessionStorage.setItem('analysisResult', JSON.stringify(analysisResult));
+      if (isFreePlan && session.user?.id) recordScan(session.user.id);
       toast.success('Intelligence Protocol Complete');
       navigate('/results');
 
@@ -311,15 +335,15 @@ const NewsAnalysis = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 font-inter selection:bg-indigo-100 dark:selection:bg-neonCyan">
       
       {/* 🔙 Navigation */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 mb-8">
         <button 
           onClick={() => navigate('/')}
-          className="group flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+          className="group flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         >
-          <div className="p-1 rounded-full bg-white border border-slate-200 group-hover:border-indigo-200 shadow-sm">
+          <div className="p-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 group-hover:border-indigo-200 dark:group-hover:border-indigo-500 shadow-sm">
             <ArrowLeft className="w-4 h-4" />
           </div>
           Return to Dashboard
@@ -330,28 +354,24 @@ const NewsAnalysis = () => {
         
         {/* 🚀 Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide mb-6">
-            <Sparkles size={12} />
-            AI Intelligence Protocol V2.0
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-tight">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
             Decode the Narrative. <br className="hidden md:block"/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
               Predict the Impact.
             </span>
           </h1>
-          <p className="text-xl text-slate-600 leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
             Upload any article, document, or URL. Our AI extracts hidden motives, 
             market signals, and PESTLE risks in seconds.
           </p>
         </div>
 
         {/* 🎛️ Command Center (Main Card) */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative z-10">
+        <div className="bg-white dark:bg-slate-900/70 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 backdrop-blur-lg">
           
           {/* Tabs / Input Method Toggle */}
-          <div className="bg-slate-50/50 border-b border-slate-200 p-2">
-            <div className="flex p-1 bg-slate-200/50 rounded-xl">
+          <div className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 p-2">
+            <div className="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl">
               {[
                 { id: 'url', label: 'News URL', icon: LinkIcon },
                 { id: 'file', label: 'Document Upload', icon: FileUp },
@@ -362,8 +382,8 @@ const NewsAnalysis = () => {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${
                     activeTab === tab.id 
-                      ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200' 
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                      ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-300 shadow-md ring-1 ring-slate-200 dark:ring-slate-700' 
+                      : 'text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   <tab.icon size={16} />
@@ -380,29 +400,21 @@ const NewsAnalysis = () => {
             {activeTab === 'url' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Target Source</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Globe className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                  </div>
-                  <input
-                    type="url"
-                    className={`block w-full pl-12 pr-4 py-4 bg-slate-50 border-2 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 transition-all font-mono text-sm ${
-                      urlValid === false ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-indigo-500'
-                    }`}
-                    placeholder="https://bloomberg.com/articles/market-shift..."
-                    value={urlInput}
-                    onChange={handleUrlChange}
-                    disabled={isLoading}
-                  />
-                  {urlValid && (
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <CheckCircle className="h-5 w-5 text-emerald-500" />
-                    </div>
-                  )}
-                </div>
-                <p className="mt-3 text-xs text-slate-500 flex items-center gap-1">
+                <InputPill
+                  value={urlInput}
+                  onChange={(v) => handleUrlChange({ target: { value: v } } as any)}
+                  placeholder="Paste article URL to analyze..."
+                  onSubmit={handleSubmit}
+                  isLoading={isLoading}
+                  disabled={!isAuthenticated || limitReached}
+                  isValid={!!urlValid}
+                />
+                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <Lock size={12} /> Supports paywalled analysis sites & standard news outlets.
                 </p>
+                {isAuthenticated && isFreePlan && (
+                  <p className="mt-1 text-xs font-semibold text-slate-600 dark:text-slate-300">Daily limit: {scanCount}/{DAILY_LIMIT_FREE}</p>
+                )}
               </div>
             )}
 
@@ -413,10 +425,10 @@ const NewsAnalysis = () => {
                 <div
                   className={`border-3 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer relative overflow-hidden ${
                     isDragging 
-                      ? 'border-indigo-500 bg-indigo-50' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
                       : selectedFile 
-                        ? 'border-emerald-500 bg-emerald-50/30'
-                        : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50'
+                        ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900'
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -433,7 +445,7 @@ const NewsAnalysis = () => {
                   
                   {fileProcessing ? (
                     <div className="flex flex-col items-center">
-                      <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+                      <Loader2 className="w-12 h-12 text-indigo-600 dark:text-indigo-400 animate-spin mb-4" />
                       <p className="text-indigo-900 font-semibold">Scanning document structure...</p>
                     </div>
                   ) : selectedFile ? (
@@ -441,8 +453,8 @@ const NewsAnalysis = () => {
                       <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
                         <FileText size={32} />
                       </div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-1">{selectedFile.name}</h3>
-                      <p className="text-sm text-emerald-600 font-medium mb-4">Ready for analysis</p>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{selectedFile.name}</h3>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-4">Ready for analysis</p>
                       <button 
                         onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
                         className="text-xs text-slate-400 hover:text-red-500 hover:underline"
@@ -452,13 +464,13 @@ const NewsAnalysis = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                      <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                         <Upload size={32} />
                       </div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-2">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                         Drop document here, or click to browse
                       </h3>
-                      <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                      <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto">
                         Supports PDF, DOCX, and TXT reports (Max 10MB).
                       </p>
                     </>
@@ -474,13 +486,13 @@ const NewsAnalysis = () => {
                 <div className="relative">
                   <textarea
                     ref={textAreaRef}
-                    className="block w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-0 transition-all font-mono text-sm min-h-[200px] resize-y"
+                    className="block w-full p-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-0 transition-all font-mono text-sm min-h-[200px] resize-y"
                     placeholder="Paste article text, press releases, or earnings call transcripts here..."
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     maxLength={MAX_TEXT_LENGTH}
                   />
-                  <div className="absolute bottom-3 right-3 text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-200 font-mono">
+                  <div className="absolute bottom-3 right-3 text-xs text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 font-mono">
                     {textInput.length}/{MAX_TEXT_LENGTH}
                   </div>
                 </div>
@@ -489,19 +501,19 @@ const NewsAnalysis = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+              <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-red-700 font-medium">{error}</div>
+                <div className="text-sm text-red-700 dark:text-red-300 font-medium">{error}</div>
               </div>
             )}
 
             {/* Auth Warning */}
             {!isAuthenticated && (
-              <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+              <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl flex items-start gap-3">
                 <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-amber-800">Authentication Required</h4>
-                  <p className="text-sm text-amber-700">You must be logged in to run the analysis protocol.</p>
+                  <h4 className="text-sm font-bold text-amber-800 dark:text-amber-300">Authentication Required</h4>
+                  <p className="text-sm text-amber-700 dark:text-amber-300">You must be logged in to run the analysis protocol.</p>
                 </div>
               </div>
             )}
@@ -512,9 +524,9 @@ const NewsAnalysis = () => {
             <div className="mt-8">
               <button 
                 onClick={handleSubmit}
-                disabled={isLoading || !isAuthenticated}
+                disabled={isLoading || !isAuthenticated || limitReached}
                 className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all transform active:scale-[0.99] ${
-                  isLoading || !isAuthenticated
+                  isLoading || !isAuthenticated || limitReached
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
                     : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-indigo-500/30 hover:-translate-y-0.5'
                 }`}
@@ -525,13 +537,10 @@ const NewsAnalysis = () => {
                     Running Intelligence Protocol...
                   </>
                 ) : (
-                  <>
-                    <BrainCircuit size={20} />
-                    Run Analysis
-                  </>
+                  <>Run Analysis</>
                 )}
               </button>
-              <p className="text-center text-xs text-slate-400 mt-4">
+              <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
                 By analyzing, you agree to our Terms of Service. Data is encrypted in transit.
               </p>
             </div>
@@ -539,38 +548,7 @@ const NewsAnalysis = () => {
           </div>
         </div>
 
-        {/* 📊 Feature Teaser Grid (Social Proof/Value Add) */}
-        <div className="mt-16 grid md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-4">
-              <Zap size={20} />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Institutional Speed</h3>
-            <p className="text-sm text-slate-600">
-              Get comprehensive summaries, key takeaways, and entity extraction in under 30 seconds.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mb-4">
-              <BarChart3 size={20} />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Market Impact</h3>
-            <p className="text-sm text-slate-600">
-              Identify Bull/Bear signals for specific tickers and sectors based on sentiment analysis.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center mb-4">
-              <Shield size={20} />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Bias & Motive</h3>
-            <p className="text-sm text-slate-600">
-              Detect hidden political agendas, manipulation tactics, and source credibility scores.
-            </p>
-          </div>
-        </div>
+        
 
         
 

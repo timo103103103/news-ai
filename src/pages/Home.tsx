@@ -1,389 +1,447 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   ArrowRight, 
   BarChart3, 
   Zap, 
   ShieldCheck, 
+  Link as LinkIcon,
+  Globe,
+  Target,
+  Loader2,
+  AlertTriangle,
+  Scale,
   Search,
-  CheckCircle2,
-  Menu,
-  X,
-  ClipboardPaste,
-  Cpu,
-  LayoutDashboard,
-  Target, // For PESTLE
-  TrendingUp, // For Market
-  ShieldAlert, // For Credibility
-  ArrowUpRight, // For Market Up
-  ArrowDownRight // For Market Down
+  LineChart,
+  Star,
+  ChevronDown
 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
-import Logo from '../components/Logo';
-import '../styles/news-intelligence.css';
-import '../styles/analysis-components.css';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { toast } from 'sonner';
+import CyberChain from '../components/CyberChain';
 
-// Helper component for the professional-looking mini-bars
-const MiniBar = ({ label, value, color }: { label: string, value: number, color: string }) => (
-  <div className="flex items-center gap-2">
-    <span className="text-xs font-medium text-gray-600 w-20">{label}</span>
-    <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-      <div className={`${color} h-1.5 rounded-full`} style={{ width: `${value}%` }} />
-    </div>
-    <span className="text-xs font-semibold text-gray-800 w-6 text-right">{value}</span>
-  </div>
-);
-
-// Combined Home component (Professional "Decision Support" Design)
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [urlInput, setUrlInput] = useState('');
-  const [currentText, setCurrentText] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
 
-  // Handle scroll effect for navbar
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Change text once after 3.5 seconds for better anticipation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentText(1);
-    }, 3500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleAnalyzeNews = (e?: React.FormEvent) => {
+  const handleAnalyzeNews = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (urlInput) {
-        console.log("Analyzing:", urlInput);
-        sessionStorage.setItem('analysisUrl', urlInput);
+    try {
+      setError('');
+      if (!urlInput.trim()) {
+        setError('Please enter a valid URL');
+        toast.error('Please enter a valid URL');
+        return;
+      }
+      try { new URL(urlInput.trim()); } catch { 
+        setError('Please enter a valid URL');
+        toast.error('Please enter a valid URL');
+        return; 
+      }
+
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session || !session.access_token || !session.user?.id) {
+        toast.error('Please log in to analyze');
+        navigate('/login');
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        await fetch(`${API_BASE_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            supabaseId: session.user.id,
+            email: session.user.email,
+          }),
+        });
+      } catch {}
+
+      const response = await fetch(`${API_BASE_URL}/api/analyze/summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ url: urlInput.trim(), userId: session.user.id }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Analysis service unavailable.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData?.error || errorData?.message || errorMessage;
+        } catch {}
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      const analysisData = data.data;
+      const analysisResult = {
+        rawAnalysis: analysisData,
+        sourceType: 'url',
+        sourceText: urlInput.trim(),
+        timestamp: new Date().toISOString(),
+        userId: session.user.id,
+        summary: analysisData?.summary || { title: 'Intelligence Report' },
+        pestle: analysisData?.pestle,
+        motive: analysisData?.motive,
+        party: analysisData?.partyImpact,
+        stock: analysisData?.marketImpact,
+        manipulation: analysisData?.credibility,
+      };
+      sessionStorage.setItem('analysisResult', JSON.stringify({
+  ...analysisData,     // 直接保存後端回來的 data
+  sourceType: 'url',
+  sourceText: urlInput.trim(),
+  timestamp: new Date().toISOString(),
+  userId: session.user.id,
+}));
+
+      toast.success('Analysis complete');
+      navigate('/results');
+    } catch (err: any) {
+      const msg = err?.message || 'Analysis failed';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
     }
-    navigate('/news-analysis'); 
   };
 
   return (
-    <div className="news-landing-page font-sans text-slate-900 bg-gray-50">
-      
-      {/* --- Hero Section --- */}
-      <section className="relative pt-20 pb-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-gray-50 -z-10" />
-        
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-12 items-start">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-sans selection:bg-blue-200 dark:selection:bg-blue-500 selection:text-slate-900 dark:selection:text-white overflow-x-hidden transition-colors duration-300">
+
+      {/* Background Effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-400/20 dark:bg-blue-600/20 rounded-full blur-[90px] animate-pulse opacity-70 dark:hidden"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-[90px] animate-pulse opacity-70 dark:hidden" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <main className="container mx-auto px-6 pt-24 pb-12">
+
+        {/* HERO SECTION */}
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center mb-28">
+
+          {/* LEFT COLUMN */}
+          <div className="lg:col-span-7 text-center lg:text-left space-y-8 relative z-10">
+
             
-            {/* Left Side: Headline, CTA, & Stats */}
-            <div className="text-center lg:text-left">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Trusted by 10,000+ analysts worldwide</span>
-              </div>
 
-              {/* Headline with ULTRA-SMOOTH animation */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                <span className="block text-slate-900">Stop Reading.</span>
-                <span className="block">
-                  Start{' '}
-                  <span className="relative inline-block" style={{ minHeight: '1.2em', zIndex: 10 }}>
-                    {/* Understanding - Solid Blue */}
-                    <span 
-                      className="whitespace-nowrap inline-block"
-                      style={{
-                        color: '#2563eb',
-                        opacity: currentText === 0 ? 1 : 0,
-                        transform: currentText === 0 ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.96)',
-                        position: currentText === 0 ? 'relative' : 'absolute',
-                        left: 0,
-                        top: 0,
-                        zIndex: 20,
-                        transition: 'all 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                      }}
-                    >
-                      Understanding
-                    </span>
-                    {/* Seeing the Truth - Gradient */}
-                    <span 
-                      className="whitespace-nowrap inline-block"
-                      style={{
-                        background: 'linear-gradient(to right, #2563eb, #9333ea)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                        opacity: currentText === 1 ? 1 : 0,
-                        transform: currentText === 1 ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.96)',
-                        position: currentText === 1 ? 'relative' : 'absolute',
-                        left: 0,
-                        top: 0,
-                        zIndex: 20,
-                        transition: 'all 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                      }}
-                    >Seeing the Truth</span>
-                  </span>
-                  .
-                </span>
-              </h1>
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white anim-slide-stretch-left">
+              Most people read the <span className="text-red-600 dark:text-red-400 font-extrabold">NEWS</span>. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-x dark:hidden">Others trade the truth</span>
+              <span className="hidden dark:inline text-white">Others trade the truth</span>
+            </h1>
 
-              {/* Sub-headline */}
-              <p className="text-xl text-slate-600 max-w-xl mx-auto lg:mx-0 mb-10 mt-4">AI-powered news analysis that cuts through the noise. Get PESTLE breakdowns, bias detection, and market impact in seconds—not hours.</p>
+            <p className="text-xl text-slate-600 dark:text-slate-400">See what others miss.</p>
 
-              {/* CTA Input */}
-              <form onSubmit={handleAnalyzeNews} className="max-w-lg mx-auto lg:mx-0 mb-10">
-                <div className="relative flex items-center bg-white rounded-full shadow-xl border border-gray-200 p-2">
-                  <Search className="w-5 h-5 text-slate-400 ml-4" />
-                  <input
-                    type="text"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="Paste any news article URL..."
-                    className="flex-1 px-4 py-3 text-slate-900 placeholder-slate-400 outline-none bg-transparent"
-                  />
-                  <button 
-                    type="submit"
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-                  >
-                    Analyze Free
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+            {/* Input Form */}
+            <form onSubmit={handleAnalyzeNews} className="max-w-lg mx-auto lg:mx-0 relative group anim-slide-stretch-left">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-500"></div>
+              <div className="relative flex items-center bg-white dark:bg-slate-900 rounded-full p-2 shadow-2xl border border-slate-200 dark:border-slate-800">
+                <div className="pl-4 text-slate-400 dark:text-slate-400">
+                  <LinkIcon className="w-5 h-5" />
                 </div>
-              </form>
+                <input 
+                  type="text"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="Paste article URL to analyze..." 
+                  className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 px-4 py-3 focus:outline-none text-lg"
+                />
+                <button type="submit" disabled={isLoading} className={`rounded-full px-8 py-3 font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-600/25 ${isLoading ? 'bg-slate-300 text-slate-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 text-white'}`}>
+                  {isLoading ? (<><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>) : (<>Analyze <ArrowRight className="w-4 h-4" /></>)}
+                </button>
+              </div>
+              {error && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-3 ml-4 text-center lg:text-left">{error}</p>
+              )}
               
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-lg mx-auto lg:mx-0 text-left">
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">2M+</div>
-                  <div className="text-sm text-slate-600">Articles Analyzed</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">95%</div>
-                  <div className="text-sm text-slate-600">Accuracy Rate</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">&lt;5s</div>
-                  <div className="text-sm text-slate-600">Analysis Time</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">50+</div>
-                  <div className="text-sm text-slate-600">Data Sources</div>
-                </div>
-              </div>
-            </div>
-            
-            
+            </form>
+          </div>
 
+          {/* RIGHT COLUMN VISUAL */}
+          <div className="lg:col-span-5 relative hidden lg:block perspective-1000">
+            <div className="relative z-10 transform rotate-y-12 rotate-x-6 transition-transform duration-500 hover:rotate-0">
+              <img
+                src="https://zgiwqbpalykrztvvekcg.supabase.co/storage/v1/object/public/Nex/Table.png"
+                alt="Intelligence metrics and strategic verdict"
+                className="w-full shadow-2xl transform-gpu anim-tv-on anim-delay-2500 anim-hidden"
+                style={{ clipPath: 'inset(8px)' }}
+              />
+            </div>
+            <div className="text-center mt-6">
+              <button onClick={() => navigate('/analyze')} className="text-sm font-semibold text-blue-600 dark:text-cyan-400 hover:underline inline-flex items-center gap-1">
+                Try it on one article
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <CyberChain fullWidth theme="purple" direction="horizontal" />
           </div>
         </div>
-      </section>
 
-      {/* --- How It Works Section --- */}
-      <section id="how-it-works" className="py-20 bg-white border-t border-gray-200">
-        <div className="container mx-auto px-6 max-w-5xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              How It Works
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Three simple steps to decode any news article
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                1
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Paste URL</h3>
-              <p className="text-slate-600">Copy any news article link and paste it into our analyzer</p>
+        {/* ==================== ENHANCED INTELLIGENCE GAP SECTION ==================== */}
+        <section className="relative py-20 -mx-6 px-6">
+          <div className="max-w-6xl mx-auto">
+
+            {/* Section Header */}
+            <div className="mb-16 text-center">
+              
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+                Where Most Readers Lose the Edge
+              </h2>
             </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                2
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">AI Analysis</h3>
-              <p className="text-slate-600">Our AI processes the article in under 5 seconds</p>
+            <div className="mb-14 max-w-3xl mx-auto text-center space-y-3">
+              <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300">Why am I always reacting instead of anticipating?</p>
+              <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300">Whose interests am I acting on without realizing it?</p>
             </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                3
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Get Insights</h3>
-              <p className="text-slate-600">View PESTLE analysis, credibility score, and market impact</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* --- Features Section --- */}
-      <section id="features" className="py-24 bg-gray-50 border-t border-gray-200">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Your Instant Intelligence Briefing
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Our analysis report is designed to be simple, professional, and powerful.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            {/* Feature 1: PESTLE Scan */}
-            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                <Target className="w-6 h-6 text-blue-600" />
+
+            {/* Core Grid - Enhanced Cards */}
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+
+              {/* Card 1: Blind Spots */}
+              <div className="group relative bg-white dark:bg-slate-900/70 rounded-2xl border-2 border-slate-200 dark:border-slate-800 p-10 md:p-12 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg dark:hover:shadow-black/40 overflow-hidden">
+                {/* Top gradient accent */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800"></div>
+                
+                {/* Icon */}
+                <div className="mb-6 w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Search className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                
+                {/* Content */}
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white mb-4">
+                  Information Blind Spots
+                </h3>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-5">Most reporting omits complicating facts.</p>
+                
+                {/* Action */}
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                PESTLE Environmental Scan
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-5">
-                Instantly understand the Political, Economic, Social, Technological, Legal, and Environmental impact.
-              </p>
-              <div className="space-y-2">
-                <MiniBar label="Political" value={85} color="bg-blue-500" />
-                <MiniBar label="Economic" value={60} color="bg-green-500" />
-                <MiniBar label="Technological" value={90} color="bg-purple-500" />
+
+              {/* Card 2: Narrative Bias */}
+              <div className="group relative bg-white dark:bg-slate-900/70 rounded-2xl border-2 border-slate-200 dark:border-slate-800 p-10 md:p-12 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg dark:hover:shadow-black/40 overflow-hidden">
+                {/* Top gradient accent */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800"></div>
+                
+                {/* Icon */}
+                <div className="mb-6 w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Scale className="w-8 h-8 text-rose-600 dark:text-rose-400" />
+                </div>
+                
+                {/* Content */}
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white mb-4">
+                  Narrative Bias
+                </h3>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-5">Emotional framing distorts judgment.</p>
+                
+                {/* Action */}
               </div>
+
+              {/* Card 3: Reaction Lag */}
+              <div className="group relative bg-white dark:bg-slate-900/70 rounded-2xl border-2 border-slate-200 dark:border-slate-800 p-10 md:p-12 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 hover:shadow-lg dark:hover:shadow-black/40 overflow-hidden">
+                {/* Top gradient accent */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800"></div>
+                
+                {/* Icon */}
+                <div className="mb-6 w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <LineChart className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                
+                {/* Content */}
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white mb-4">
+                  Reaction Lag
+                </h3>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-5">By the time it trends, the edge is gone.</p>
+                
+                {/* Action */}
+              </div>
+
             </div>
 
-            {/* Feature 2: Credibility & Bias */}
-            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6">
-                <ShieldAlert className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Credibility & Bias Score
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-5">
-                Our AI flags manipulation, checks for author bias, and verifies sources to give you a simple credibility score.
-              </p>
-              <div className="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
-                <div className="flex justify-between items-center mb-2">
-                   <span className="text-sm font-semibold text-slate-700">Manipulation Score</span>
-                   <span className="text-2xl font-bold text-red-600">78</span>
-                </div>
-                <p className="text-xs text-red-700 font-semibold">High Risk: Emotionally loaded language and unverified claims detected.</p>
-              </div>
-            </div>
 
-            {/* Feature 3: Market & Stakeholders */}
-            <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Market & Stakeholder Impact
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-5">
-                See who wins and who loses. We identify affected stocks, sectors, and key players.
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
-                  <span className="text-sm font-medium text-gray-900">Intel (INTC)</span>
-                  <span className="flex items-center text-sm font-medium text-green-600">
-                    <ArrowUpRight className="w-4 h-4" /> Positive
-                  </span>
-                </div>
-                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
-                  <span className="text-sm font-medium text-gray-900">Samsung (SSNLF)</span>
-                  <span className="flex items-center text-sm font-medium text-red-600">
-                    <ArrowDownRight className="w-4 h-4" /> Negative
-                  </span>
-                </div>
-              </div>
-            </div>
+            
+          </div>
+        </section>
 
+        <div className="my-16 w-24 h-px bg-slate-200 dark:bg-slate-800 mx-auto"></div>
+
+        <div className="w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <CyberChain fullWidth theme="purple" direction="horizontal" />
           </div>
         </div>
-      </section>
 
+        {/* ----------------------------------------------------------- */}
+        {/* END NEW SECTION                                             */}
+        {/* ----------------------------------------------------------- */}
 
-      {/* --- Final CTA Section --- */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to Decode the News?
-          </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-            Join thousands of analysts, investors, and decision-makers who trust our AI to cut through media spin.
-          </p>
+        <section id="signal-questions" className="relative py-24 bg-slate-50 dark:bg-slate-900 w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+          <div className="relative z-10">
+          <div className="relative rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70">
+              <div className="max-w-4xl mx-auto px-4">
+                <div className="flex flex-col md:flex-row items-stretch gap-5 md:gap-6">
+                  <div className="group relative flex-1 p-6 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <p className="text-xl font-heading text-slate-900 dark:text-white first-letter:text-5xl first-letter:leading-none first-letter:mr-2">What is this News trying to make you feel?</p>
+                  <p className="mt-3 text-slate-600 dark:text-slate-300">Reaction is rarely the truth.</p>
+                  <div className="mt-0">
+                    <div className="w-full opacity-0 -translate-y-2 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:translate-y-0 group-hover:max-h-72 transition-all rounded-b-2xl rounded-t-none p-0 bg-slate-50 dark:bg-slate-900" style={{ transitionDuration: '800ms' }}>
+                      <p className="px-0 py-4 text-xl font-heading font-semibold tracking-tight text-blue-700 dark:text-cyan-300">Pause — separate emotion from fact.</p>
+                    </div>
+                  </div>
+                  </div>
+                <div className="group relative flex-1 p-6 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <p className="text-xl font-heading text-slate-900 dark:text-white first-letter:text-5xl first-letter:leading-none first-letter:mr-2">
+                    What are they not saying — and why?
+                  </p>
+                  <p className="mt-3 text-slate-600 dark:text-slate-300">What’s missing matters.</p>
+                  <div className="mt-0">
+                    <div className="w-full opacity-0 -translate-y-2 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:translate-y-0 group-hover:max-h-72 transition-all rounded-b-2xl rounded-t-none p-0 bg-slate-50 dark:bg-slate-900" style={{ transitionDuration: '800ms' }}>
+                      <p className="px-0 py-4 text-xl font-heading font-semibold tracking-tight text-cyan-700 dark:text-teal-300">Expose the gaps.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="group relative flex-1 p-6 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <p className="text-xl font-heading text-slate-900 dark:text-white first-letter:text-5xl first-letter:leading-none first-letter:mr-2">
+                    Who wins if you believe this?
+                  </p>
+                  <p className="mt-3 text-slate-600 dark:text-slate-300">Every story serves someone.</p>
+                  <div className="mt-0">
+                    <div className="w-full opacity-0 -translate-y-2 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:translate-y-0 group-hover:max-h-72 transition-all rounded-b-2xl rounded-t-none p-0 bg-slate-50 dark:bg-slate-900" style={{ transitionDuration: '800ms' }}>
+                      <p className="px-0 py-4 text-xl font-heading font-semibold tracking-tight text-purple-700 dark:text-purple-300">Expose hidden incentives.</p>
+                    </div>
+                  </div>
+                </div>
+                </div>
+              </div>
+          </div>
+          </div>
           
-          <button 
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="px-8 py-4 bg-white text-blue-600 font-bold rounded-full hover:bg-blue-50 transition-all shadow-2xl hover:shadow-3xl text-lg flex items-center gap-3 mx-auto"
-          >
-            Start Free Analysis
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <div className="my-12 w-24 h-px bg-slate-200 dark:bg-slate-800 mx-auto"></div>
+          <div className="bg-white dark:bg-slate-900/80 rounded-2xl p-12 md:p-16 border-2 border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-black/40 mt-20 mb-16">
+            <p className="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">Grounded metrics.</p>
+            <h2 className="text-xl md:text-2xl font-medium tracking-tight text-slate-900 dark:text-white text-center mb-8">Finally. Something solid.</h2>
+            <div className="grid md:grid-cols-3 gap-10 text-center">
+              <div className="group">
+                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">78%</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">78%</div>
+                <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">context omitted</div>
+              </div>
+              <div className="group md:border-l md:border-slate-200 dark:md:border-slate-700">
+                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">3.2x</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">3.2x</div>
+                <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">bias detected faster</div>
+              </div>
+              <div className="group md:border-l md:border-slate-200 dark:md:border-slate-700">
+                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">24h</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">24h</div>
+                <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">advance warning</div>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-6">
+            <button onClick={() => navigate('/analyze')} className="text-sm font-semibold text-blue-600 dark:text-cyan-400 hover:underline inline-flex items-center gap-1">
+              Try it on one article
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          
+        </section>
 
-        </div>
-      </section>
-
-      {/* --- Footer --- */}
-      <footer className="bg-slate-900 text-slate-400 py-12">
-        <div className="container mx-auto px-6 max-w-6xl">
-           <div className="grid md:grid-cols-4 gap-8 mb-8">
-             <div>
-               <div className="mb-4">
-                 <Logo size={64} showText={false} />
-               </div>
-               <p className="text-sm">AI-powered news analysis for the modern world.</p>
-             </div>
-             <div>
-               <h4 className="font-semibold text-white mb-3">Product</h4>
-               <ul className="space-y-2 text-sm">
-                 <li><a href="#features" className="hover:text-blue-400 transition-colors">Features</a></li>
-                 <li><a href="#how-it-works" className="hover:text-blue-400 transition-colors">How It Works</a></li>
-                 <li><Link to="/pricing" className="hover:text-blue-400 transition-colors">Pricing</Link></li>
-               </ul>
-             </div>
-             <div>
-               <h4 className="font-semibold text-white mb-3">Company</h4>
-               <ul className="space-y-2 text-sm">
-                 <li><a href="#" className="hover:text-blue-400 transition-colors">About</a></li>
-                 <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
-                 <li><a href="#" className="hover:text-blue-400 transition-colors">Careers</a></li>
-               </ul>
-             </div>
-             <div>
-              <h4 className="font-semibold text-white mb-3">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a
-                    href="/privacy"
-                    onClick={(e) => { e.preventDefault(); navigate('/privacy') }}
-                    className="hover:text-blue-400 transition-colors"
-                  >
-                    Privacy
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/terms"
-                    onClick={(e) => { e.preventDefault(); navigate('/terms') }}
-                    className="hover:text-blue-400 transition-colors"
-                  >
-                    Terms
-                  </a>
-                </li>
-              </ul>
-             </div>
-           </div>
-           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-             <p className="text-sm">&copy; 2025 NexVeris AI. All rights reserved.</p>
-             <div className="flex gap-6 text-sm">
-               <a href="#" className="hover:text-blue-400 transition-colors">Twitter</a>
-               <a href="#" className="hover:text-blue-400 transition-colors">LinkedIn</a>
-             </div>
+        <div className="w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <CyberChain fullWidth theme="purple" direction="horizontal" />
           </div>
         </div>
+
+        {/* FAQ SECTION */}
+        <div className="my-16 w-24 h-px bg-slate-200 dark:bg-slate-800 mx-auto"></div>
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-700/50 bg-gradient-to-r from-slate-100 via-white to-slate-100 dark:from-slate-800/50 dark:via-slate-900/50 dark:to-slate-800/50 shadow-xl p-14 md:p-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
+              <span className="text-slate-900 dark:text-white">Common </span>
+              <span className="text-blue-600 dark:text-cyan-400">questions</span>
+            </h2>
+            {(() => {
+              const faqs = [
+                { question: 'What is NexVeris?', answer: 'A strategic intelligence platform that surfaces market-moving signals from news.' },
+                { question: 'Is my data private?', answer: 'Yes. Sessions are secured; credentials are never exposed.' }
+              ];
+              return (
+                <div className="mt-10 divide-y divide-slate-200 dark:divide-slate-800">
+                  {faqs.map((item, idx) => (
+                    <div key={idx} className="py-6">
+                      <button
+                        className="w-full flex items-center justify-between"
+                        onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                      >
+                        <div className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white">
+                          {item.question}
+                        </div>
+                        <ChevronDown className={`w-6 h-6 text-slate-500 dark:text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
+                      </button>
+                      <div className={`overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 pt-4">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+        <div className="text-center py-20">
+          <h2 className="text-4xl font-bold mb-4 text-slate-900 dark:text-white">Turn Noise Into Knowledge</h2>
+          <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8">
+            Your competitive edge starts with understanding the world better — faster.
+          </p>
+
+          <button
+            onClick={() => navigate("/analyze")}
+            className="px-8 py-3 text-base font-semibold rounded-full bg-blue-600 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 text-white transition-all shadow-lg"
+          >
+            Start Analyzing
+          </button>
+        </div>
+
+      </main>
+
+      {/* FOOTER */}
+      <footer className="py-10 border-t border-slate-200 dark:border-slate-800 text-center text-slate-600 dark:text-slate-500 text-sm">
+        <p className="text-slate-700 dark:text-slate-400">
+          © {new Date().getFullYear()} NexVeris.ai — Intelligent News Analysis Engine
+        </p>
+        <p className="mt-2">
+          <a href="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            Privacy Policy
+          </a>
+          {" • "}
+          <a href="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+            Terms & Conditions
+          </a>
+        </p>
       </footer>
+
     </div>
   );
 }

@@ -150,9 +150,7 @@ const NewsIntelligenceLanding = () => {
                 Analyze <ArrowRight className="w-4 h-4" />
               </button>
             </form>
-            <p className="text-xs text-slate-400 mt-3">
-              Free plan includes 3 basic analyses/day. No credit card required.
-            </p>
+            
           </div>
 
           {/* Social Proof Strip */}

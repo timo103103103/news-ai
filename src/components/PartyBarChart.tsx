@@ -546,7 +546,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
           {/* LEFT: Scatter Plot Matrix */}
           <div className="lg:w-2/3 p-5 border-r border-gray-100">
             <div className="flex items-start">
-              <div className="flex-1 h-[520px]">
+              <div className="flex-1" style={{ height: '520px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />

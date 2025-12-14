@@ -102,20 +102,20 @@ export default function AnalysisDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-slate-100">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-slate-900/60 shadow-sm border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate('/history')}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-slate-700 text-sm font-medium rounded-md text-gray-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to History
             </button>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-slate-400">
                 <Calendar className="w-4 h-4 mr-1 inline" />
                 {formatDate(analysis.date)}
               </span>
@@ -128,31 +128,31 @@ export default function AnalysisDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6 backdrop-blur-lg">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-xl mr-4">
                   {getAnalysisIcon(analysis.type)}
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{analysis.title}</h1>
-                  <p className="text-gray-600 mt-1">{analysis.summary}</p>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{analysis.title}</h1>
+                  <p className="text-gray-600 dark:text-slate-300 mt-1">{analysis.summary}</p>
                 </div>
               </div>
             </div>
 
             {/* Detailed Analysis */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Analysis</h2>
+            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-lg">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Detailed Analysis</h2>
               <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
                   {analysis.content || 'Detailed analysis content will be displayed here. This section contains the comprehensive analysis results with detailed insights, findings, and recommendations based on the input data and analysis type.'}
                 </p>
                 
                 {analysis.rawData && (
                   <div className="mt-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Key Findings</h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Key Findings</h3>
+                    <div className="bg-gray-50 dark:bg-slate-900/40 rounded-lg p-4">
+                      <pre className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap">
                         {JSON.stringify(analysis.rawData, null, 2)}
                       </pre>
                     </div>
@@ -165,17 +165,17 @@ export default function AnalysisDetail() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             {/* Metrics Card */}
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Analysis Metrics</h3>
+            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6 backdrop-blur-lg">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Analysis Metrics</h3>
               {analysis.metrics && (
                 <div className="space-y-4">
                   {analysis.metrics.score && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Overall Score</span>
-                        <span className="text-sm font-semibold text-gray-900">{analysis.metrics.score}%</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Overall Score</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{analysis.metrics.score}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2">
                         <div 
                           className="bg-blue-600 h-2 rounded-full" 
                           style={{ width: `${analysis.metrics.score}%` }}
@@ -187,10 +187,10 @@ export default function AnalysisDetail() {
                   {analysis.metrics.confidence && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Confidence Level</span>
-                        <span className="text-sm font-semibold text-gray-900">{analysis.metrics.confidence}%</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Confidence Level</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{analysis.metrics.confidence}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2">
                         <div 
                           className="bg-green-600 h-2 rounded-full" 
                           style={{ width: `${analysis.metrics.confidence}%` }}
@@ -204,13 +204,13 @@ export default function AnalysisDetail() {
 
             {/* Analysis Factors */}
             {analysis.metrics?.factors && (
-              <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-lg">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Key Factors</h3>
                 <div className="space-y-2">
                   {analysis.metrics.factors.map((factor, index) => (
                     <div key={index} className="flex items-center">
                       <div className="w-2 h-2 bg-blue-600 rounded-full mr-3" />
-                      <span className="text-sm text-gray-700">{factor}</span>
+                      <span className="text-sm text-gray-700 dark:text-slate-300">{factor}</span>
                     </div>
                   ))}
                 </div>
@@ -218,10 +218,10 @@ export default function AnalysisDetail() {
             )}
 
             {/* Actions */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Actions</h3>
               <div className="space-y-3">
-                <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   <FileText className="w-4 h-4 mr-2" />
                   Export Report
                 </button>
@@ -230,7 +230,7 @@ export default function AnalysisDetail() {
                     navigator.clipboard.writeText(window.location.href);
                     alert('Link copied to clipboard!');
                   }}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-slate-700 text-sm font-medium rounded-md text-gray-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Share Analysis
                 </button>

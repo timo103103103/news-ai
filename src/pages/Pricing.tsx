@@ -144,7 +144,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-neonCyan">
       
       {/* 🔔 Notification Toast */}
       {message && (
@@ -158,24 +158,24 @@ export default function Pricing() {
         
         {/* 🚀 Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-indigo-600 font-semibold tracking-wide uppercase text-sm mb-3">
+          <h2 className="text-indigo-600 dark:text-indigo-300 font-semibold tracking-wide uppercase text-sm mb-3">
             Pricing Plans
           </h2>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
             Unlock Institutional-Grade Intelligence
           </h1>
-          <p className="text-xl text-slate-600 leading-relaxed">
-            Stop trading on noise. Get the <span className="font-semibold text-slate-900">Market Impact</span>, <span className="font-semibold text-slate-900">Hidden Motives</span>, and <span className="font-semibold text-slate-900">Predictive Patterns</span> you need to win.
+          <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+            Stop trading on noise. Get the <span className="font-semibold text-slate-900 dark:text-slate-100">Market Impact</span>, <span className="font-semibold text-slate-900 dark:text-slate-100">Hidden Motives</span>, and <span className="font-semibold text-slate-900 dark:text-slate-100">Predictive Patterns</span> you need to win.
           </p>
         </div>
 
         {/* 🎚️ Billing Toggle */}
         <div className="flex justify-center mb-16">
-          <div className="relative bg-white p-1 rounded-full border border-slate-200 shadow-sm inline-flex">
+          <div className="relative bg-white dark:bg-slate-900 p-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm inline-flex">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                billingCycle === 'monthly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-900'
+                billingCycle === 'monthly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Monthly
@@ -183,77 +183,77 @@ export default function Pricing() {
             <button
               onClick={() => setBillingCycle('yearly')}
               className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
-                billingCycle === 'yearly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-900'
+                billingCycle === 'yearly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Yearly
               <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                billingCycle === 'yearly' ? 'bg-indigo-500 text-white' : 'bg-emerald-100 text-emerald-700'
+                billingCycle === 'yearly' ? 'bg-indigo-500 text-white' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
               }`}>
-                Save 17%
+                Save 20%
               </span>
             </button>
           </div>
         </div>
 
-        {/* 🃏 Plan Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-24 relative">
-          {plans.map((plan) => {
-            const price = billingCycle === 'monthly' ? plan.monthly.price : plan.yearly.price;
-            const period = billingCycle === 'monthly' ? '/mo' : '/yr';
-            
+        {/* 💳 Plan Cards */}
+        <div className="grid md:grid-cols-3 gap-10 lg:gap-12 mb-24">
+          {plans.map((p) => {
+            const price = billingCycle === 'monthly' ? p.monthly.price : p.yearly.price;
+            const save = billingCycle === 'yearly' ? p.yearly.save : null;
+
             return (
               <div 
-                key={plan.id}
-                className={`relative flex flex-col bg-white rounded-2xl transition-all duration-300 ${
-                  plan.popular 
-                    ? 'border-2 border-indigo-600 shadow-2xl scale-105 z-10' 
-                    : 'border border-slate-200 shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                key={p.id} 
+                className={`relative bg-white dark:bg-slate-900/70 rounded-3xl shadow-lg border backdrop-blur-lg hover:shadow-2xl transition-all duration-300 overflow-hidden ${
+                  p.popular 
+                    ? 'border-indigo-300 dark:border-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-900/30 transform md:scale-105' 
+                    : 'border-slate-200 dark:border-slate-800'
                 }`}
               >
-                {plan.popular && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full shadow-lg">
-                    Most Popular
+                {p.popular && (
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
+                    <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-6 py-1.5 rounded-full text-xs font-bold shadow-lg uppercase tracking-wide">
+                      Most Popular
+                    </div>
                   </div>
                 )}
 
-                <div className="p-8 flex-1">
-                  <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
-                  <p className="text-sm font-medium text-indigo-600 mb-4">{plan.tagline}</p>
-                  
-                  <div className="flex items-baseline my-6">
-                    <span className="text-5xl font-extrabold text-slate-900 tracking-tight">{price}</span>
-                    <span className="text-slate-500 ml-1 font-medium">{period}</span>
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{p.name}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{p.tagline}</p>
+
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-extrabold text-slate-900 dark:text-white">{price}</span>
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">/{billingCycle === 'monthly' ? 'mo' : 'year'}</span>
+                    </div>
+                    {save && <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">{save}</div>}
                   </div>
 
-                  <p className="text-slate-600 mb-8 leading-relaxed text-sm">
-                    {plan.description}
-                  </p>
-
                   <button
-                    onClick={() => handleCheckout(envPrice(plan.id, billingCycle), plan.id)}
-                    disabled={!!loading}
-                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg ${
-                      plan.popular 
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200' 
-                        : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                    onClick={() => handleCheckout(envPrice(p.id, billingCycle), p.id)}
+                    disabled={loading === p.id}
+                    className={`w-full py-3.5 rounded-xl font-bold text-base transition-all shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+                      p.popular 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                        : 'bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700'
                     }`}
                   >
-                    {loading === plan.id ? 'Processing...' : plan.buttonText}
+                    {loading === p.id ? 'Processing...' : p.buttonText}
                   </button>
 
-                  <div className="mt-8 space-y-4">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Includes:
-                    </p>
-                    {plan.features.map((feature) => (
-                      <div key={feature} className="flex items-start gap-3">
-                        <div className={`mt-0.5 p-0.5 rounded-full ${plan.popular ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-600'}`}>
-                          <Check size={14} strokeWidth={3} />
-                        </div>
-                        <span className="text-sm text-slate-700 font-medium">{feature}</span>
-                      </div>
-                    ))}
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">{p.description}</p>
+
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <ul className="space-y-3">
+                      {p.features.map((feat, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${p.popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`} strokeWidth={3} />
+                          <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -261,21 +261,19 @@ export default function Pricing() {
           })}
         </div>
 
-        {/* 📊 Feature Comparison Matrix */}
-        <div className="mb-24">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900">Detailed Feature Breakdown</h2>
-            <p className="text-slate-600 mt-2">See exactly what intelligence you unlock at each level.</p>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
-            <div className="hidden md:grid grid-cols-4 bg-slate-50 border-b border-slate-200">
-              <div className="p-6 text-sm font-semibold text-slate-500 uppercase tracking-wider">Feature</div>
-              <div className="p-6 text-center text-slate-900 font-bold">Starter</div>
-              <div className="p-6 text-center text-indigo-600 font-bold text-lg bg-indigo-50/50">Pro</div>
-              <div className="p-6 text-center text-slate-900 font-bold">Business</div>
+        {/* 📊 Comparison Table */}
+        <div className="mb-20">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">
+            See Exactly What Intelligence You Unlock
+          </h2>
+          <div className="bg-white dark:bg-slate-900/70 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-lg">
+            <div className="grid md:grid-cols-4 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
+              <div className="p-6 font-bold text-slate-900 dark:text-white">FEATURE</div>
+              <div className="p-6 text-center text-slate-900 dark:text-white font-bold">Starter</div>
+              <div className="p-6 text-center bg-indigo-50/50 dark:bg-indigo-900/20 text-slate-900 dark:text-white font-bold">Pro</div>
+              <div className="p-6 text-center text-slate-900 dark:text-white font-bold">Business</div>
             </div>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               <FeatureRow 
                 icon={<Zap className="text-amber-500" />}
                 title="Monthly Scan Volume"
@@ -285,16 +283,16 @@ export default function Pricing() {
                 description="Number of news articles you can analyze per month."
               />
               <FeatureRow 
-                icon={<Activity className="text-slate-500" />}
+                icon={<Activity className="text-slate-500 dark:text-slate-400" />}
                 title="Executive Summaries"
                 starter={true}
                 pro={true}
                 business={true}
                 description="AI-generated summaries of complex articles."
               />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Strategic Intelligence</div>
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Strategic Intelligence</div>
               <FeatureRow 
-                icon={<TrendingUp className="text-indigo-600" />}
+                icon={<TrendingUp className="text-indigo-600 dark:text-indigo-400" />}
                 title="Market Impact (Stocks)"
                 starter={false}
                 pro={true}
@@ -302,7 +300,7 @@ export default function Pricing() {
                 description="Bull/Bear signals for specific tickers."
               />
               <FeatureRow 
-                icon={<Shield className="text-red-500" />}
+                icon={<Shield className="text-red-500 dark:text-red-400" />}
                 title="Motive & Bias Detector"
                 starter={false}
                 pro={true}
@@ -310,16 +308,16 @@ export default function Pricing() {
                 description="Uncover hidden agendas and manipulation techniques."
               />
               <FeatureRow 
-                icon={<Users className="text-blue-500" />}
+                icon={<Users className="text-blue-500 dark:text-blue-400" />}
                 title="Stakeholder Mapping"
                 starter={false}
                 pro={true}
                 business={true}
                 description="Identify winners, losers, and power dynamics."
               />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Advanced Analytics</div>
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Advanced Analytics</div>
               <FeatureRow 
-                icon={<BrainCircuit className="text-purple-600" />}
+                icon={<BrainCircuit className="text-purple-600 dark:text-purple-400" />}
                 title="PESTLE Strategy Scan"
                 starter="Basic"
                 pro="Full Strategic"
@@ -327,7 +325,7 @@ export default function Pricing() {
                 description="Deep dive into Political, Economic, and Social factors."
               />
               <FeatureRow 
-                icon={<History className="text-emerald-600" />}
+                icon={<History className="text-emerald-600 dark:text-emerald-400" />}
                 title="Chronos Isomorphism"
                 starter={false}
                 pro={true}
@@ -335,14 +333,14 @@ export default function Pricing() {
                 description="Match current events to historical patterns."
               />
               <FeatureRow 
-                icon={<Target className="text-pink-600" />}
+                icon={<Target className="text-pink-600 dark:text-pink-400" />}
                 title="Thermodynamic Entropy"
                 starter={false}
                 pro={true}
                 business={true}
                 description="Signal-to-noise ratio analysis."
               />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">Enterprise Features</div>
+              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Enterprise Features</div>
               <FeatureRow 
                 title="API Access"
                 starter={false}
@@ -367,25 +365,25 @@ export default function Pricing() {
 
         {/* 📦 Add-ons */}
         <div className="max-w-4xl mx-auto mb-20">
-           <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-lg">
+           <div className="bg-white dark:bg-slate-900/70 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-lg">
              <div className="flex flex-col md:flex-row items-center justify-between mb-8">
                <div>
-                 <h3 className="text-2xl font-bold text-slate-900">Need More Capacity?</h3>
-                 <p className="text-slate-600 mt-1">Top up your account instantly. Scan packs <span className="font-bold text-indigo-600">never expire</span>.</p>
+                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Need More Capacity?</h3>
+                 <p className="text-slate-600 dark:text-slate-300 mt-1">Top up your account instantly. Scan packs <span className="font-bold text-indigo-600 dark:text-indigo-300">never expire</span>.</p>
                </div>
              </div>
              <div className="grid md:grid-cols-2 gap-6">
                 {packs.map((pack) => (
-                  <div key={pack.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-indigo-200 transition-colors">
+                  <div key={pack.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:border-indigo-200 dark:hover:border-indigo-500 transition-colors">
                     <div>
-                      <div className="font-bold text-lg text-slate-900">{pack.label}</div>
-                      <div className="text-xs text-slate-500 font-medium">{pack.perScan}</div>
+                      <div className="font-bold text-lg text-slate-900 dark:text-white">{pack.label}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{pack.perScan}</div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-xl font-bold text-slate-900">{pack.price}</div>
+                      <div className="text-xl font-bold text-slate-900 dark:text-white">{pack.price}</div>
                       <button 
                         onClick={() => handleCheckout(envPack(pack.id), pack.id)}
-                        className="px-4 py-2 bg-white text-indigo-600 border border-indigo-200 font-semibold rounded-lg hover:bg-indigo-50 transition-colors"
+                        className="px-4 py-2 bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-semibold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                       >
                         Add
                       </button>
@@ -398,12 +396,12 @@ export default function Pricing() {
 
         {/* ❓ FAQ */}
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {faqs.map((f, i) => (
-              <div key={i} className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.q}</h3>
-                <p className="text-slate-600 leading-relaxed">{f.a}</p>
+              <div key={i} className="bg-white dark:bg-slate-900/70 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow backdrop-blur-lg">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{f.q}</h3>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
               </div>
             ))}
           </div>
@@ -434,17 +432,17 @@ function FeatureRow({
     if (typeof value === 'boolean') {
       return value ? (
         <div className="flex justify-center">
-          <div className={`p-1 rounded-full ${isPro ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`}>
+          <div className={`p-1 rounded-full ${isPro ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300'}`}>
             <Check size={18} strokeWidth={3} />
           </div>
         </div>
       ) : (
         <div className="flex justify-center">
-           <X size={18} className="text-slate-300" />
+           <X size={18} className="text-slate-300 dark:text-slate-700" />
         </div>
       );
     }
-    return <span className={`font-medium ${isPro ? 'text-indigo-700' : 'text-slate-700'}`}>{value}</span>;
+    return <span className={`font-medium ${isPro ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'}`}>{value}</span>;
   };
 
   return (
@@ -453,13 +451,13 @@ function FeatureRow({
         <div className="flex items-center gap-3">
           {icon && <span className="opacity-80 group-hover:opacity-100 transition-opacity">{icon}</span>}
           <div>
-            <div className="font-semibold text-slate-900">{title}</div>
-            {description && <div className="text-xs text-slate-500 mt-0.5 font-normal">{description}</div>}
+            <div className="font-semibold text-slate-900 dark:text-white">{title}</div>
+            {description && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">{description}</div>}
           </div>
         </div>
       </div>
       <div className="p-6 text-center">{renderCell(starter)}</div>
-      <div className="p-6 text-center bg-indigo-50/30">{renderCell(pro, true)}</div>
+      <div className="p-6 text-center bg-indigo-50/30 dark:bg-indigo-900/20">{renderCell(pro, true)}</div>
       <div className="p-6 text-center">{renderCell(business)}</div>
     </div>
   );

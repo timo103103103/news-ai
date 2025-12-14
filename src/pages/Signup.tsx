@@ -145,12 +145,12 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-slate-900/70 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-800 backdrop-blur-lg">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
-            <p className="text-gray-600">Get started with your free account today</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create your account</h2>
+            <p className="text-gray-600 dark:text-slate-300">Get started with your free account today</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -171,8 +171,8 @@ export default function Signup() {
                   value={formData.email}
                   onChange={handleInputChange}
                   className={`block w-full pl-10 pr-3 py-3 border ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                    errors.email ? 'border-red-300' : 'border-gray-300 dark:border-slate-700'
+                  } rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                   placeholder="Enter your email"
                 />
               </div>
@@ -198,8 +198,8 @@ export default function Signup() {
                   value={formData.password}
                   onChange={handleInputChange}
                   className={`block w-full pl-10 pr-10 py-3 border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                    errors.password ? 'border-red-300' : 'border-gray-300 dark:border-slate-700'
+                  } rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                   placeholder="Create a password"
                 />
                 <button
@@ -218,7 +218,7 @@ export default function Signup() {
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-600">Password strength:</span>
+                    <span className="text-xs text-gray-600 dark:text-slate-400">Password strength:</span>
                     <span className={`text-xs font-medium ${getPasswordStrengthColor()}`}>
                       {passwordStrength.score === 0 && 'Very Weak'}
                       {passwordStrength.score === 1 && 'Weak'}
@@ -235,7 +235,7 @@ export default function Signup() {
                       ) : (
                         <X className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      <span className={passwordStrength.requirements.minLength ? 'text-green-600' : 'text-gray-500'}>
+                      <span className={passwordStrength.requirements.minLength ? 'text-green-600' : 'text-gray-500 dark:text-slate-400'}>
                         At least 8 characters
                       </span>
                     </div>
@@ -245,7 +245,7 @@ export default function Signup() {
                       ) : (
                         <X className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      <span className={passwordStrength.requirements.hasUppercase ? 'text-green-600' : 'text-gray-500'}>
+                      <span className={passwordStrength.requirements.hasUppercase ? 'text-green-600' : 'text-gray-500 dark:text-slate-400'}>
                         Contains uppercase letter
                       </span>
                     </div>
@@ -255,7 +255,7 @@ export default function Signup() {
                       ) : (
                         <X className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      <span className={passwordStrength.requirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}>
+                      <span className={passwordStrength.requirements.hasLowercase ? 'text-green-600' : 'text-gray-500 dark:text-slate-400'}>
                         Contains lowercase letter
                       </span>
                     </div>
@@ -265,7 +265,7 @@ export default function Signup() {
                       ) : (
                         <X className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      <span className={passwordStrength.requirements.hasNumber ? 'text-green-600' : 'text-gray-500'}>
+                      <span className={passwordStrength.requirements.hasNumber ? 'text-green-600' : 'text-gray-500 dark:text-slate-400'}>
                         Contains number
                       </span>
                     </div>
@@ -275,7 +275,7 @@ export default function Signup() {
                       ) : (
                         <X className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      <span className={passwordStrength.requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}>
+                      <span className={passwordStrength.requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500 dark:text-slate-400'}>
                         Contains special character
                       </span>
                     </div>
@@ -305,8 +305,8 @@ export default function Signup() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className={`block w-full pl-10 pr-10 py-3 border ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300 dark:border-slate-700'
+                  } rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                   placeholder="Confirm your password"
                 />
                 <button
@@ -338,13 +338,13 @@ export default function Signup() {
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="termsAccepted" className="text-gray-700">
+                <label htmlFor="termsAccepted" className="text-gray-700 dark:text-slate-300">
                   I accept the{' '}
-                  <Link to="/terms" className="text-blue-600 hover:text-blue-500 underline">
+                  <Link to="/terms" className="text-blue-600 dark:text-blue-300 hover:text-blue-500 underline">
                     terms and conditions
                   </Link>
                   {' '}and{' '}
-                  <Link to="/privacy" className="text-blue-600 hover:text-blue-500 underline">
+                  <Link to="/privacy" className="text-blue-600 dark:text-blue-300 hover:text-blue-500 underline">
                     privacy policy
                   </Link>
                 </label>
@@ -373,10 +373,10 @@ export default function Signup() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-300 dark:border-slate-700" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400">Or continue with</span>
               </div>
             </div>
 
@@ -385,7 +385,7 @@ export default function Signup() {
                 type="button"
                 onClick={handleGoogleSignup}
                 disabled={loading}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-900 text-sm font-medium text-gray-500 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -412,7 +412,7 @@ export default function Signup() {
                 type="button"
                 onClick={handleGitHubSignup}
                 disabled={loading}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-900 text-sm font-medium text-gray-500 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Github className="w-5 h-5" />
                 <span className="ml-2">GitHub</span>
@@ -421,11 +421,11 @@ export default function Signup() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                className="font-medium text-blue-600 dark:text-blue-300 hover:text-blue-500 transition-colors"
               >
                 Sign in
               </Link>

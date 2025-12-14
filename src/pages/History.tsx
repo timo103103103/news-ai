@@ -116,14 +116,14 @@ export default function History() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-slate-100">
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-slate-900/60 shadow-sm border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analysis History</h1>
-              <p className="mt-2 text-lg text-gray-600">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analysis History</h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-slate-300">
                 View and manage your previous analyses
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function History() {
               <button
                 onClick={handleRefresh}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -143,17 +143,17 @@ export default function History() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter Section */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-8 backdrop-blur-lg">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-500 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search analyses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -162,14 +162,14 @@ export default function History() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'date' | 'title')}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="date">Sort by Date</option>
                 <option value="title">Sort by Title</option>
               </select>
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </button>
@@ -180,7 +180,7 @@ export default function History() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-flex items-center px-4 py-2 text-gray-600">
+            <div className="inline-flex items-center px-4 py-2 text-gray-600 dark:text-slate-300">
               <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
               Loading analysis history...
             </div>
@@ -195,8 +195,8 @@ export default function History() {
                 <div className="w-5 h-5 bg-red-400 rounded-full" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="text-sm text-red-700 mt-1">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+                <div className="text-sm text-red-700 dark:text-red-300 mt-1">
                   {error}
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default function History() {
             <div className="mt-4">
               <button
                 onClick={fetchHistory}
-                className="text-sm text-red-600 hover:text-red-500 font-medium"
+                className="text-sm text-red-600 dark:text-red-400 hover:text-red-500 font-medium"
               >
                 Try Again
               </button>
@@ -215,7 +215,7 @@ export default function History() {
         {/* Analysis List */}
         {!loading && !error && (
           <>
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden backdrop-blur-lg">
               {analyses.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -230,7 +230,7 @@ export default function History() {
                     <div
                       key={analysis.id}
                       onClick={() => handleAnalysisClick(analysis.id)}
-                      className="p-6 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                      className="p-6 hover:bg-gray-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors duration-200"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
@@ -241,24 +241,24 @@ export default function History() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-medium text-gray-900 truncate">
+                              <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">
                                 {analysis.title}
                               </h3>
                               {analysis.metrics && (
                                 <div className="flex items-center space-x-2 ml-4">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                                     Score: {analysis.metrics.score}%
                                   </span>
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                                     Confidence: {analysis.metrics.confidence}%
                                   </span>
                                 </div>
                               )}
                             </div>
-                            <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                            <p className="mt-1 text-sm text-gray-600 dark:text-slate-300 line-clamp-2">
                               {analysis.summary}
                             </p>
-                            <div className="mt-3 flex items-center text-sm text-gray-500">
+                            <div className="mt-3 flex items-center text-sm text-gray-500 dark:text-slate-400">
                               <Calendar className="w-4 h-4 mr-1" />
                               {formatDate(analysis.date)}
                             </div>
@@ -274,14 +274,14 @@ export default function History() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-8 flex items-center justify-between">
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-700 dark:text-slate-300">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-slate-700 text-sm font-medium rounded-md text-gray-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     Previous
@@ -307,7 +307,7 @@ export default function History() {
                           className={`px-3 py-2 text-sm font-medium rounded-md ${
                             currentPage === pageNum
                               ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                              : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800 border border-gray-300 dark:border-slate-700'
                           }`}
                         >
                           {pageNum}
@@ -319,7 +319,7 @@ export default function History() {
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-slate-700 text-sm font-medium rounded-md text-gray-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                     <ChevronRight className="w-4 h-4 ml-1" />

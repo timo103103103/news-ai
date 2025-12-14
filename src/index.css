@@ -1,11 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: Roboto, "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.5;
   font-weight: 400;
 
@@ -63,6 +64,73 @@
   --icon-stroke-bold: 2.5;
 }
 
+@layer base {
+  body { @apply font-sans; }
+  h1, h2, h3, h4, h5 { @apply font-heading; }
+}
+
+/* Animations */
+@keyframes flipIn {
+  0% { opacity: 0; transform: rotateY(90deg) scale(0.96); }
+  100% { opacity: 1; transform: rotateY(0deg) scale(1); }
+}
+
+@keyframes slideInLeft {
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.anim-flip-in { animation: flipIn 800ms ease-out forwards; transform-style: preserve-3d; }
+.anim-slide-in-left { animation: slideInLeft 600ms ease-out forwards; }
+
+.anim-delay-2000 { animation-delay: 2s; }
+.anim-delay-1500 { animation-delay: 1.5s; }
+.anim-delay-900 { animation-delay: 0.9s; }
+.anim-delay-700 { animation-delay: 0.7s; }
+.anim-delay-500 { animation-delay: 0.5s; }
+.anim-delay-300 { animation-delay: 0.3s; }
+
+@keyframes slideStretchLeft {
+  0% { opacity: 0; transform: translateX(-120px) scaleX(0.96); }
+  70% { opacity: 1; transform: translateX(0) scaleX(0.98); }
+  100% { opacity: 1; transform: translateX(0) scaleX(1); }
+}
+
+.anim-slide-stretch-left { animation: slideStretchLeft 1000ms ease-out forwards; transform-origin: left center; }
+
+@keyframes tvFlashZoom {
+  0% { opacity: 0; transform: scale(0.92); filter: brightness(1.2) contrast(1.05) saturate(1.05); }
+  35% { opacity: 1; transform: scale(1.04); filter: brightness(1.35) contrast(1.1) saturate(1.1); }
+  55% { opacity: 1; transform: scale(1.02); filter: brightness(1.15) contrast(1.05); }
+  100% { opacity: 1; transform: scale(1.08); filter: none; }
+}
+
+.anim-tv-flash-zoom { animation: tvFlashZoom 900ms ease-out forwards; will-change: transform, filter; }
+
+@keyframes flashUp {
+  0% { opacity: 0; transform: translateY(32px) scale(0.92); filter: brightness(1.3) contrast(1.1) saturate(1.1); }
+  35% { opacity: 1; transform: translateY(-6px) scale(1.06); filter: brightness(1.5) contrast(1.15); }
+  70% { opacity: 1; transform: translateY(0) scale(1.03); filter: brightness(1.1) contrast(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1.08); filter: none; }
+}
+
+.anim-flash-up { animation: flashUp 900ms ease-out forwards; transform-origin: center; will-change: transform, filter; }
+
+@keyframes tvTurnOn {
+  0% { opacity: 0; transform: translateY(24px) scaleX(0.95) scaleY(0.05); filter: brightness(1.6) contrast(1.2) saturate(1.15); }
+  15% { opacity: 1; transform: translateY(10px) scaleX(1.05) scaleY(0.25); filter: brightness(1.4) contrast(1.15); }
+  35% { opacity: 1; transform: translateY(-6px) scale(1.08); filter: brightness(1.3) contrast(1.1); }
+  60% { opacity: 1; transform: translateY(0) scale(1.04); filter: brightness(1.15) contrast(1.05); }
+  85% { opacity: 1; transform: translateY(0) scale(1.06); filter: brightness(1.1) contrast(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1.08); filter: none; }
+}
+
+.anim-tv-on { animation: tvTurnOn 1400ms ease-out forwards; transform-origin: center; will-change: transform, filter; }
+.anim-hidden { opacity: 0; }
+.anim-delay-2500 { animation-delay: 2.5s; }
+.anim-delay-2500 { animation-delay: 2.5s; }
+.anim-init-hidden-up { opacity: 0; transform: translateY(32px) scale(0.92); }
+
 @media (max-width: 768px) {
   :root {
     --font-size-h1: 2.250rem;
@@ -90,8 +158,11 @@
   transition: transform 300ms ease-in-out, text-shadow 300ms ease-in-out, box-shadow 300ms ease-in-out;
 }
 .neon-hover:hover {
-  text-shadow: 0 0 8px #00fffc, 0 0 14px #00fffc;
+  text-shadow: 0 0 6px #22d3ee, 0 0 12px #22d3ee;
   transform: scale(1.05);
+}
+.dark .neon-hover:hover {
+  text-shadow: 0 0 10px #00eaff, 0 0 22px #00eaff;
 }
 
 .section-blur {
@@ -102,3 +173,50 @@
   .entry-fade-up { animation: none !important; }
   .neon-hover { transition: none !important; }
 }
+
+@keyframes chainPulse {
+  0% { opacity: 0.85; }
+  50% { opacity: 1; }
+  100% { opacity: 0.85; }
+}
+
+.cyber-chain { position: relative; display: flex; justify-content: center; align-items: center; pointer-events: none; margin: 0 auto; }
+.cyber-vertical { width: 2px; height: var(--length, 64px); }
+.cyber-horizontal { height: 2px; width: var(--length, 160px); }
+.cyber-blue { --cc: #3b82f6; }
+.cyber-cyan { --cc: #06b6d4; }
+.cyber-purple { --cc: #a78bfa; }
+.dark .cyber-blue { --cc: #5ec8ff; }
+.dark .cyber-cyan { --cc: #00eaff; }
+.dark .cyber-purple { --cc: #c084fc; }
+.cyber-chain .chain-line { width: 100%; height: 100%; box-shadow: 0 0 4px var(--cc), 0 0 10px color-mix(in srgb, var(--cc) 50%, white 50%); animation: chainPulse 2s ease-in-out infinite; border-radius: 9999px; mix-blend-mode: normal; }
+.dark .cyber-chain .chain-line { box-shadow: 0 0 10px var(--cc), 0 0 24px color-mix(in srgb, var(--cc) 70%, white 30%); }
+.cyber-vertical .chain-line { background: linear-gradient(to bottom, var(--cc), transparent); }
+.cyber-horizontal .chain-line { background: linear-gradient(to right, var(--cc), transparent); }
+.cyber-chain .chain-node { position: absolute; width: 8px; height: 8px; border-radius: 9999px; background: var(--cc); box-shadow: 0 0 4px var(--cc), 0 0 10px color-mix(in srgb, var(--cc) 50%, white 50%); border: 1px solid rgba(0,0,0,0.08); }
+.dark .cyber-chain .chain-node { box-shadow: 0 0 12px var(--cc), 0 0 26px color-mix(in srgb, var(--cc) 70%, white 30%); border: 1px solid rgba(255,255,255,0.28); }
+.cyber-vertical .chain-node.start { top: -4px; left: -3px; }
+.cyber-vertical .chain-node.end { bottom: -4px; left: -3px; }
+.cyber-horizontal .chain-node.start { left: -4px; top: -3px; }
+.cyber-horizontal .chain-node.end { right: -4px; top: -3px; }
+
+.font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif; }
+.font-inter h1, .font-inter h2, .font-inter h3, .font-inter h4, .font-inter h5, .font-inter h6 { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif; }
+.
+.heading-inter-strong h1, .heading-inter-strong h2, .heading-inter-strong h3, .heading-inter-strong h4, .heading-inter-strong h5, .heading-inter-strong h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.heading-inter-strong h1 { font-weight: 900; }
+.heading-inter-strong h2, .heading-inter-strong h3, .heading-inter-strong h4, .heading-inter-strong h5, .heading-inter-strong h6 { font-weight: 800; }
+
+.cyber-bulleted { list-style: none; padding-left: 0; }
+.cyber-bulleted li { position: relative; padding-left: 22px; }
+.cyber-bulleted li::before { content: ""; position: absolute; left: 0; top: 0.95em; width: 10px; height: 10px; border-radius: 2px; background: linear-gradient(135deg, var(--cb, #06b6d4), color-mix(in srgb, var(--cb, #06b6d4) 50%, white 50%)); box-shadow: 0 0 6px var(--cb), 0 0 12px color-mix(in srgb, var(--cb) 50%, white 50%); transform: translateY(-50%) rotate(45deg); border: 1px solid rgba(0,0,0,0.1); }
+.dark .cyber-bulleted li::before { background: linear-gradient(135deg, var(--cb, #00eaff), color-mix(in srgb, var(--cb, #00eaff) 70%, white 30%)); box-shadow: 0 0 12px var(--cb), 0 0 26px color-mix(in srgb, var(--cb) 70%, white 30%); border: 1px solid rgba(255,255,255,0.28); }
+
+/* REMOVED: This CSS rule was creating duplicate timeline lines and interfering with alignment
+.timeline-blue::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%); background: linear-gradient(to bottom, rgba(59,130,246,0), rgba(59,130,246,0.2) 50%, rgba(59,130,246,0)); pointer-events: none; }
+.dark .timeline-blue::after { background: linear-gradient(to bottom, rgba(59,130,246,0), rgba(59,130,246,0.35) 50%, rgba(59,130,246,0)); }
+*/

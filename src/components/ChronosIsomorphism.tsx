@@ -153,7 +153,7 @@ export default function ChronosIsomorphism({
               </div>
             </div>
 
-            <div className="h-80 w-full">
+            <div style={{ height: '320px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />

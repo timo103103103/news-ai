@@ -84,8 +84,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="bg-white dark:bg-slate-900/70 p-8 rounded-xl shadow-md border border-slate-200 dark:border-slate-800 backdrop-blur-lg w-full max-w-sm">
         <h1 className="text-2xl font-bold mb-6 text-center">Welcome Back</h1>
 
         {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
@@ -93,7 +93,7 @@ export default function Login() {
         <input
           type="email"
           placeholder="Email"
-          className="border p-2 w-full mb-3 rounded"
+          className="border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2 w-full mb-3 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -101,7 +101,7 @@ export default function Login() {
         <input
           type="password"
           placeholder="Password"
-          className="border p-2 w-full mb-4 rounded"
+          className="border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2 w-full mb-4 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -114,27 +114,27 @@ export default function Login() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        <div className="my-4 text-center text-gray-400 text-sm">or continue with</div>
+        <div className="my-4 text-center text-gray-400 dark:text-slate-400 text-sm">or continue with</div>
 
         <div className="flex gap-3">
           <button
             onClick={handleGoogleLogin}
-            className="flex-1 border py-2 rounded hover:bg-gray-100"
+            className="flex-1 border border-gray-300 dark:border-slate-700 py-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             Google
           </button>
 
           <button
             onClick={handleGithubLogin}
-            className="flex-1 border py-2 rounded hover:bg-gray-100"
+            className="flex-1 border border-gray-300 dark:border-slate-700 py-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             GitHub
           </button>
         </div>
 
-        <p className="text-center mt-4 text-sm">
+        <p className="text-center mt-4 text-sm text-slate-700 dark:text-slate-300">
           Don’t have an account?{" "}
-          <Link to="/signup" className="text-indigo-600 hover:underline">
+          <Link to="/signup" className="text-indigo-600 dark:text-indigo-300 hover:underline">
             Sign Up
           </Link>
         </p>

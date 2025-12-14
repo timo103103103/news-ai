@@ -1,5 +1,5 @@
 // -------------------------------------------
-// MotiveDetectionDisplay.tsx
+// MotiveDetectionDisplay.tsx - DARK MODE FIXED
 // -------------------------------------------
 
 import { motion } from "framer-motion";
@@ -147,10 +147,10 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
   // ✅ FIXED: Validate data before rendering
   if (!motiveData || motiveData.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 text-center">
-        <Microscope className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Motive Detection</h3>
-        <p className="text-gray-600">No motive data available for this article.</p>
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8 text-center">
+        <Microscope className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Motive Detection</h3>
+        <p className="text-gray-600 dark:text-gray-400">No motive data available for this article.</p>
       </div>
     );
   }
@@ -194,49 +194,49 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
       {/* 1. DOMINANT ARCHETYPE ANALYSIS */}
       {/* ------------------------------------------- */}
 
-      <div className="pb-6 border-b border-slate-100 mb-6">
+      <div className="pb-6 border-b border-slate-100 dark:border-slate-700 mb-6">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-500 uppercase">
+            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">
               DOMINANT ARCHETYPE
             </h3>
 
             <div className="flex items-center gap-3 mt-2">
-              <Zap className="w-8 h-8 text-purple-600 bg-purple-50 p-1.5 rounded-lg" />
-              <p className="text-3xl font-extrabold text-slate-900">
+              <Zap className="w-8 h-8 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 p-1.5 rounded-lg" />
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
                 {dominantArchetype.name}
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <p className="text-xs text-slate-500">Avg. Intensity</p>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Avg. Intensity</p>
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {avgIntensity}%
             </p>
           </div>
         </div>
 
-        <p className="text-base text-slate-700 italic mb-4 border-l-4 border-purple-300 pl-3">
+        <p className="text-base text-slate-700 dark:text-slate-300 italic mb-4 border-l-4 border-purple-300 dark:border-purple-600 pl-3">
           {dominantArchetype.description}
         </p>
 
         {/* Archetype Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Typical Behavior */}
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <h5 className="font-bold text-orange-600 mb-2 flex items-center gap-2">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <h5 className="font-bold text-orange-600 dark:text-orange-400 mb-2 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" /> Typical Behavior
             </h5>
-            <p className="text-sm text-slate-700">{dominantArchetype.behavior}</p>
+            <p className="text-sm text-slate-700 dark:text-slate-300">{dominantArchetype.behavior}</p>
           </div>
 
           {/* Potential Risk */}
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <h5 className="font-bold text-red-600 mb-2 flex items-center gap-2">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <h5 className="font-bold text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" /> Potential Risk
             </h5>
-            <p className="text-sm text-slate-700">{dominantArchetype.risk}</p>
+            <p className="text-sm text-slate-700 dark:text-slate-300">{dominantArchetype.risk}</p>
           </div>
         </div>
       </div>
@@ -245,14 +245,14 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
       {/* 2. PRIMARY MOTIVE + SECONDARY MOTIVES */}
       {/* ------------------------------------------- */}
 
-      <h4 className="font-extrabold text-2xl text-slate-900 mb-4 flex items-center gap-2">
-        <Microscope className="w-6 h-6 text-blue-600" /> Detected Motive Summary
+      <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <Microscope className="w-6 h-6 text-blue-600 dark:text-blue-400" /> Detected Motive Summary
       </h4>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Primary motive card */}
         <motion.div
-          className="lg:col-span-1 p-6 bg-blue-600 text-white rounded-xl shadow-xl transform hover:scale-[1.01] transition-all"
+          className="lg:col-span-1 p-6 bg-blue-600 dark:bg-blue-700 text-white rounded-xl shadow-xl transform hover:scale-[1.01] transition-all"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -274,45 +274,45 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
           </p>
 
           <div
-            className="h-1 bg-yellow-400 rounded-full"
+            className="h-1 bg-yellow-400 dark:bg-yellow-300 rounded-full"
             style={{ width: `${primaryMotive.score}%` }}
           />
         </motion.div>
 
         {/* Secondary motives */}
         <div className="lg:col-span-1 flex flex-col gap-4">
-          <h5 className="text-lg font-bold text-slate-900">Secondary Drivers:</h5>
+          <h5 className="text-lg font-bold text-slate-900 dark:text-white">Secondary Drivers:</h5>
 
           {secondaryMotives.length > 0 ? (
             secondaryMotives.map((m, index) => (
               <div
                 key={index}
-                className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm"
+                className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm"
               >
                 <div className="flex justify-between items-center">
-                  <span className="text-base font-semibold text-slate-800">
+                  <span className="text-base font-semibold text-slate-800 dark:text-slate-200">
                     {m.name}
                   </span>
-                  <span className="text-xl font-bold text-orange-600">
+                  <span className="text-xl font-bold text-orange-600 dark:text-orange-400">
                     {m.score}%
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">{m.type.toUpperCase()}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{m.type.toUpperCase()}</p>
               </div>
             ))
           ) : (
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm text-center">
-              <p className="text-sm text-slate-500">No secondary motives detected</p>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400">No secondary motives detected</p>
             </div>
           )}
         </div>
 
         {/* Strategic Implications (derived from real data) */}
-        <div className="lg:col-span-1 p-4 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm">
-          <h5 className="font-bold text-blue-700 mb-2 flex items-center gap-2">
+        <div className="lg:col-span-1 p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-sm">
+          <h5 className="font-bold text-blue-700 dark:text-blue-400 mb-2 flex items-center gap-2">
             Strategic Implications
           </h5>
-          <ul className="text-sm text-slate-700 list-disc list-inside space-y-1">
+          <ul className="text-sm text-slate-700 dark:text-slate-300 list-disc list-inside space-y-1">
             {strategicImplications.map((implication, idx) => (
               <li key={idx}>{implication}</li>
             ))}
@@ -324,14 +324,14 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
       {/* 3. PRACTICAL REACTION GUIDE */}
       {/* ------------------------------------------- */}
 
-      <div className="mt-8 pt-6 border-t border-slate-100">
-        <h4 className="font-extrabold text-2xl text-slate-900 mb-4 flex items-center gap-2">
-          <Scale className="w-6 h-6 text-green-600" /> Practical Reaction Guide
+      <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+        <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <Scale className="w-6 h-6 text-green-600 dark:text-green-400" /> Practical Reaction Guide
         </h4>
 
-        <p className="text-slate-600 mb-6">
+        <p className="text-slate-600 dark:text-slate-400 mb-6">
           Based on the primary motive of{" "}
-          <strong>{primaryMotive.name}</strong>, here are some practical
+          <strong className="text-slate-900 dark:text-white">{primaryMotive.name}</strong>, here are some practical
           actions:
         </p>
 
@@ -341,14 +341,14 @@ const MotiveDetectionDisplay = ({ motiveData }: MotiveDetectionDisplayProps) => 
             return (
               <div
                 key={index}
-                className="p-5 bg-white border-2 border-slate-100 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                className="p-5 bg-white dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-700 rounded-xl shadow-md hover:shadow-lg transition-shadow"
               >
-                <h5 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <Icon className="w-5 h-5 text-blue-600" /> {item.title}
+                <h5 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                  <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" /> {item.title}
                 </h5>
 
-                <p className="text-sm text-slate-600">
-                  <strong>You can:</strong> {item.tip}
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <strong className="text-slate-900 dark:text-white">You can:</strong> {item.tip}
                 </p>
               </div>
             );

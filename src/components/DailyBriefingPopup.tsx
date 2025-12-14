@@ -88,41 +88,41 @@ export default function DailyBriefingPopup() {
             role="dialog"
             aria-labelledby="daily-briefing-title"
           >
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-2xl backdrop-blur-lg">
               <div className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="pr-8">
-                    <h3 id="daily-briefing-title" className="text-lg font-bold text-slate-900">Stay Informed. Every Morning.</h3>
-                    <p className="mt-1 text-sm text-slate-600">Concise AI-driven briefings on global news and markets with structured signals you can act on.</p>
-                    <span className="mt-2 inline-block text-[10px] uppercase tracking-wide text-gray-500">FREE DAILY INTELLIGENCE REPORT</span>
+                    <h3 id="daily-briefing-title" className="text-lg font-bold text-slate-900 dark:text-white">Stay Informed. Every Morning.</h3>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Concise AI-driven briefings on global news and markets with structured signals you can act on.</p>
+                    <span className="mt-2 inline-block text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400">FREE DAILY INTELLIGENCE REPORT</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       aria-label="Minimize"
-                      className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100"
+                      className="rounded-md px-2 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                       onClick={() => { setMinimized(true); sessionStorage.setItem('dailyBriefMinimized','true') }}
                     >
                       −
                     </button>
                     <button
                       aria-label="Close"
-                      className="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100"
+                      className="rounded-md px-2 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                       onClick={() => { sessionStorage.setItem('dailyBriefDismissed', 'true'); setVisible(false) }}
                     >
                       ×
                     </button>
                   </div>
                 </div>
-                <ul className="mt-3 list-disc pl-5 space-y-1 text-slate-800 text-sm">
+                <ul className="mt-3 list-disc pl-5 space-y-1 text-slate-800 dark:text-slate-200 text-sm">
                   <li>PESTLE overview</li>
-                  <li>Political motive detection <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5">Premium</span></li>
-                  <li>Market impact signals <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5">Premium</span></li>
-                  <li>Bias &amp; framing analysis <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5">Premium</span></li>
+                  <li>Political motive detection <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5">Premium</span></li>
+                  <li>Market impact signals <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5">Premium</span></li>
+                  <li>Bias &amp; framing analysis <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5">Premium</span></li>
                 </ul>
                 <form onSubmit={handleSubmit} className="mt-4" aria-label="Daily briefing signup">
                   <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" aria-hidden="true" />
                       <input
                         type="email"
                         value={email}
@@ -132,15 +132,15 @@ export default function DailyBriefingPopup() {
                         aria-label="Email address"
                         aria-invalid={touched && !isValid}
                         required
-                        className={`w-full pl-9 pr-3 py-2 rounded-md border text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${touched && !isValid ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full pl-9 pr-3 py-2 rounded-md border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-slate-200 focus:border-gray-900 dark:focus:border-slate-200 ${touched && !isValid ? 'border-red-500' : 'border-gray-300 dark:border-slate-700'}`}
                       />
                     </div>
-                    <button type="submit" disabled={loading} className="rounded-md bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">
+                    <button type="submit" disabled={loading} className="rounded-md bg-gray-900 dark:bg-indigo-600 text-white hover:bg-gray-800 dark:hover:bg-indigo-700 px-4 py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">
                       Get Daily Briefing
                     </button>
                   </div>
-                  {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
-                  <p className="mt-2 text-[11px] text-gray-500">No spam. Unsubscribe anytime. Your email is never shared.</p>
+                  {error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
+                  <p className="mt-2 text-[11px] text-gray-500 dark:text-slate-400">No spam. Unsubscribe anytime. Your email is never shared.</p>
                 </form>
               </div>
             </div>
