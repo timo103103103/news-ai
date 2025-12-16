@@ -12,7 +12,7 @@ type Props = {
 
 export default function InputPill({ value, onChange, placeholder = 'Paste article URL to analyze...', onSubmit, isLoading = false, disabled = false, isValid = false }: Props) {
   return (
-    <div className="relative flex items-center bg-white dark:bg-slate-900 rounded-full p-2 shadow-2xl border border-slate-200 dark:border-slate-800">
+    <div className="relative flex items-center bg-white/90 dark:bg-slate-900/70 backdrop-blur rounded-full p-2 shadow-[0_10px_40px_-10px_rgba(15,23,42,0.25)] ring-1 ring-slate-900/5 dark:ring-slate-300/10">
       <div className="pl-4 text-slate-400 dark:text-slate-400"><LinkIcon className="w-5 h-5" /></div>
       <input
         type="text"

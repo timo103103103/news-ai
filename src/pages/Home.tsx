@@ -1,3 +1,20 @@
+import { Helmet } from "react-helmet-async";
+<Helmet>
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "NexVeris",
+      url: "https://www.nexverisai.com",
+      logo: "https://zgiwqbpalykrztvvekcg.supabase.co/storage/v1/object/public/Nex/NexV%20Logo.png",
+      sameAs: [
+        "https://www.linkedin.com/",
+        "https://twitter.com/"
+      ]
+    })}
+  </script>
+</Helmet>
+
 import { useState } from 'react';
 import { 
   ArrowRight, 
@@ -120,6 +137,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-sans selection:bg-blue-200 dark:selection:bg-blue-500 selection:text-slate-900 dark:selection:text-white overflow-x-hidden transition-colors duration-300">
+<Helmet>
+  {/* 🔥 TITLE = Google 最重要 */}
+  <title>
+    Detect News Bias & Market Impact | NexVeris AI Decision Intelligence
+  </title>
+
+  {/* 🔥 DESCRIPTION = 影響點擊率 */}
+  <meta
+    name="description"
+    content="Analyze news to detect bias, hidden motives, power dynamics, and market impact before narratives move prices. Built for investors and strategic thinkers."
+  />
+
+  {/* 🔥 關鍵字（次要，但有幫助） */}
+  <meta
+    name="keywords"
+    content="news bias analysis, market impact analysis, PESTLE analysis, political motive detection, stock market news intelligence, decision intelligence"
+  />
+</Helmet>
 
       {/* Background Effects */}
       <div className="fixed inset-0 -z-10">
@@ -136,13 +171,22 @@ export default function Home() {
           <div className="lg:col-span-7 text-center lg:text-left space-y-8 relative z-10">
 
             
+{/* Headline */}
+{/* ✅ SEO PRIMARY H1 — invisible to users, clear to Google */}
+<h1 className="sr-only">
+  Turn News Into Decision Intelligence
+</h1>
 
-            {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white anim-slide-stretch-left">
-              Most people read the <span className="text-red-600 dark:text-red-400 font-extrabold">NEWS</span>. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-x dark:hidden">Others trade the truth</span>
-              <span className="hidden dark:inline text-white">Others trade the truth</span>
-            </h1>
+{/* ✅ SEO SUPPORTING H2 */}
+<h2 className="sr-only">
+  Reveal bias, hidden motives, power dynamics, and market consequences before the market reacts.
+</h2>
+{/* Headline */}
+<h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white anim-slide-stretch-left">
+  Most people read the NEWS. <br />
+  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-x dark:hidden">Others trade the truth</span>
+  <span className="hidden dark:inline text-white">Others trade the truth</span>
+</h1>
 
             <p className="text-xl text-slate-600 dark:text-slate-400">See what others miss.</p>
 
@@ -341,18 +385,18 @@ export default function Home() {
             <h2 className="text-xl md:text-2xl font-medium tracking-tight text-slate-900 dark:text-white text-center mb-8">Finally. Something solid.</h2>
             <div className="grid md:grid-cols-3 gap-10 text-center">
               <div className="group">
-                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">78%</div>
-                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">78%</div>
+                <div className="text-6xl md:text-7xl font-black text-emerald-700 mb-3 dark:hidden">78%</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-emerald-300 mb-3">78%</div>
                 <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">context omitted</div>
               </div>
               <div className="group md:border-l md:border-slate-200 dark:md:border-slate-700">
-                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">3.2x</div>
-                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">3.2x</div>
+                <div className="text-6xl md:text-7xl font-black text-indigo-700 mb-3 dark:hidden">3.2x</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-indigo-300 mb-3">3.2x</div>
                 <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">bias detected faster</div>
               </div>
               <div className="group md:border-l md:border-slate-200 dark:md:border-slate-700">
-                <div className="text-6xl md:text-7xl font-black text-slate-900 mb-3 dark:hidden">24h</div>
-                <div className="hidden dark:block text-6xl md:text-7xl font-black text-white mb-3">24h</div>
+                <div className="text-6xl md:text-7xl font-black text-cyan-700 mb-3 dark:hidden">24h</div>
+                <div className="hidden dark:block text-6xl md:text-7xl font-black text-cyan-300 mb-3">24h</div>
                 <div className="text-xs font-normal tracking-normal text-slate-600 dark:text-slate-400">advance warning</div>
               </div>
             </div>

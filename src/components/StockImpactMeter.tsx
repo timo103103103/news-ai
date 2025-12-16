@@ -53,10 +53,10 @@ interface StockImpactMeterProps {
 // --- Helper Components (Unchanged) ---
 
 const ConfidenceBadge = ({ score }: { score: number }) => {
-  let color = 'bg-slate-100 text-slate-600';
-  if (score >= 80) color = 'bg-emerald-100 text-emerald-700';
-  else if (score >= 50) color = 'bg-blue-100 text-blue-700';
-  else color = 'bg-amber-100 text-amber-700';
+  let color = 'bg-slate-100 text-slate-600 dark:bg-slate-800/50 dark:text-slate-300';
+  if (score >= 80) color = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+  else if (score >= 50) color = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+  else color = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
 
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${color}`}>
@@ -76,9 +76,9 @@ const SentimentBadge = ({ type, trapWarning }: { type: Sentiment; trapWarning?: 
   }
 
   const styles = {
-    Bullish: 'bg-green-50 text-green-700 border-green-200',
-    Bearish: 'bg-red-50 text-red-700 border-red-200',
-    Neutral: 'bg-gray-50 text-gray-600 border-gray-200',
+    Bullish: 'bg-green-50 text-green-700 border-green-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
+    Bearish: 'bg-red-50 text-red-700 border-red-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800',
+    Neutral: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700',
   };
 
   return (
@@ -96,7 +96,7 @@ function TickerCard({ ticker, onClick }: { ticker: TickerImpact; onClick: () => 
   return (
     <div
       onClick={onClick}
-      className="group bg-white rounded-lg p-4 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden"
+      className="group bg-white dark:bg-slate-900/60 rounded-lg p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 transition-all cursor-pointer relative overflow-hidden"
     >
       {/* Hover Indication */}
       <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -106,16 +106,16 @@ function TickerCard({ ticker, onClick }: { ticker: TickerImpact; onClick: () => 
       <div className="flex justify-between items-start mb-2">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black text-slate-800 tracking-tight">{ticker.symbol}</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white tracking-tight">{ticker.symbol}</span>
             <SentimentBadge type={ticker.sentiment} trapWarning={ticker.trapWarning} />
           </div>
-          <span className="text-xs text-slate-500 font-medium truncate max-w-[150px] block">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[150px] block">
             {ticker.name}
           </span>
         </div>
 
         <div className="text-right">
-          <div className="text-sm font-bold text-slate-700 font-mono">
+          <div className="text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
             ${ticker.price.toFixed(2)}
           </div>
           <div className={`flex items-center justify-end text-xs font-bold ${isNegative ? 'text-rose-600' : 'text-emerald-600'}`}>
@@ -126,10 +126,10 @@ function TickerCard({ ticker, onClick }: { ticker: TickerImpact; onClick: () => 
       </div>
 
       {/* Logic/Reasoning Block */}
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-start gap-2">
-        <Info className="w-3 h-3 text-slate-400 mt-0.5 flex-shrink-0" />
-        <p className="text-[11px] text-slate-600 leading-snug">
-          <span className="font-semibold text-slate-800">Logic:</span> {ticker.reasoning}
+      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-start gap-2">
+        <Info className="w-3 h-3 text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
+          <span className="font-semibold text-slate-800 dark:text-slate-200">Logic:</span> {ticker.reasoning}
         </p>
       </div>
 
@@ -171,11 +171,11 @@ const ImpactSummaryChart = ({ tiers }: { tiers: { Direct: TickerImpact[]; Indire
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-inner">
+    <div className="p-4 bg-white dark:bg-slate-900/60 rounded-lg border border-slate-200 dark:border-slate-700 shadow-inner">
       <div className="flex items-center gap-2 mb-3">
         <Scale className="w-4 h-4 text-indigo-500" />
-        <h5 className="text-sm font-bold text-slate-700 uppercase">Impact Distribution</h5>
-        <span className="ml-auto text-xs font-medium text-slate-500">Total: {total} Tickers</span>
+        <h5 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase">Impact Distribution</h5>
+        <span className="ml-auto text-xs font-medium text-slate-500 dark:text-slate-400">Total: {total} Tickers</span>
       </div>
       <ResponsiveContainer width="100%" height={150}>
         <BarChart
@@ -183,7 +183,7 @@ const ImpactSummaryChart = ({ tiers }: { tiers: { Direct: TickerImpact[]; Indire
           margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
           layout="vertical"
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
           <XAxis type="number" hide domain={[0, 'dataMax + 1']} />
           <YAxis
             dataKey="name"
@@ -198,9 +198,9 @@ const ImpactSummaryChart = ({ tiers }: { tiers: { Direct: TickerImpact[]; Indire
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 return (
-                  <div className="p-2 bg-white border border-slate-200 rounded shadow-md text-xs font-medium">
-                    <p className="text-slate-800 font-bold">{payload[0].payload.name}</p>
-                    <p className="text-slate-600">Count: {payload[0].value}</p>
+                  <div className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded shadow-md text-xs font-medium">
+                    <p className="text-slate-800 dark:text-slate-200 font-bold">{payload[0].payload.name}</p>
+                    <p className="text-slate-600 dark:text-slate-400">Count: {payload[0].value}</p>
                   </div>
                 );
               }
@@ -263,18 +263,18 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
 
   return (
     <TierLock feature="stock_impact" className={className}>
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden font-sans">
+      <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden font-sans">
 
         {/* --- Header & Summary: The Control Panel --- */}
-        <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-          <div className="flex items-start justify-between">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/60">
+            <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-indigo-600 text-white rounded-lg shadow-sm">
                 <Activity className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-800">Market Ripple Analysis</h3>
-                <p className="text-sm text-slate-500 font-medium">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Market Ripple Analysis</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
                   Impact Scope: **{impactData.tickers.length} Tickers** Identified
                 </p>
               </div>
@@ -288,7 +288,7 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
                 </span>
                 {React.createElement(sentimentIcon, { className: `w-5 h-5 ${sentimentColor}` })}
               </div>
-              <span className="text-xs font-semibold text-slate-600 px-2 py-1 rounded-full bg-slate-100">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800/60">
                 Inst. Flow: **{impactData.institutionalFlow}**
               </span>
             </div>
@@ -297,11 +297,11 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
           <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               {/* Bias-Free Analyst Note (More Prominent) */}
-              <div className="flex items-start gap-3 p-4 bg-indigo-50/70 border border-indigo-200 rounded-lg">
-                <BrainCircuit className="w-4 h-4 text-indigo-600 mt-1 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 bg-indigo-50/70 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+                <BrainCircuit className="w-4 h-4 text-indigo-600 dark:text-indigo-300 mt-1 flex-shrink-0" />
                 <div>
-                  <span className="text-xs font-bold uppercase text-indigo-700">Analyst Perspective (Macro View)</span>
-                  <p className="text-sm text-slate-700 leading-snug mt-0.5">
+                  <span className="text-xs font-bold uppercase text-indigo-700 dark:text-indigo-300">Analyst Perspective (Macro View)</span>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug mt-0.5">
                     "{impactData.analystNote}"
                   </p>
                 </div>
@@ -316,7 +316,7 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
 
         {/* --- Ticker Content: Organized by Tier --- */}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-100">
+        <div className="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-100 dark:divide-slate-800">
           
           {/* Tier 1: DIRECT IMPACT */}
           <div className="p-6">
@@ -339,21 +339,21 @@ export default function StockImpactMeter({ data, className = '' }: StockImpactMe
           </div>
 
           {/* Tier 2: INDIRECT IMPACT */}
-          <div className="p-6 bg-slate-50/50">
+          <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40">
             <div className="flex items-center gap-2 mb-4">
               <GitCommit className="w-5 h-5 text-indigo-500" />
-              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-widest">
+              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">
                 Indirect Shockwave ({tiers.Indirect.length})
               </h4>
             </div>
-            <p className="text-xs text-slate-500 mb-4 italic">Supply chain or close sector correlation. Monitor flows.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 italic">Supply chain or close sector correlation. Monitor flows.</p>
             <div className="flex flex-col gap-4">
               {tiers.Indirect.length > 0 ? (
                 tiers.Indirect.map((ticker) => (
                   <TickerCard key={ticker.symbol} ticker={ticker} onClick={() => openYahooFinance(ticker.symbol)} />
                 ))
               ) : (
-                <p className="text-xs text-slate-400 italic">No indirect impact tickers identified</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No indirect impact tickers identified</p>
               )}
             </div>
           </div>

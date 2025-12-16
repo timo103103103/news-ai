@@ -118,6 +118,7 @@ export default function Pricing() {
     window.history.replaceState({}, document.title, window.location.pathname);
   }, []);
 
+  // Get Stripe price IDs from environment variables
   const envPrice = (plan: PlanId, cycle: BillingCycle) =>
     (import.meta.env as any)[`VITE_STRIPE_PRICE_${plan.toUpperCase()}_${cycle.toUpperCase()}`];
 
@@ -188,90 +189,87 @@ export default function Pricing() {
             >
               Yearly
               <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                billingCycle === 'yearly' ? 'bg-indigo-500 text-white' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                billingCycle === 'yearly' ? 'bg-white/20 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
               }`}>
-                Save 20%
+                Save up to 20%
               </span>
             </button>
           </div>
         </div>
 
-        {/* 💳 Plan Cards */}
-        <div className="grid md:grid-cols-3 gap-10 lg:gap-12 mb-24">
-          {plans.map((p) => {
-            const price = billingCycle === 'monthly' ? p.monthly.price : p.yearly.price;
-            const save = billingCycle === 'yearly' ? p.yearly.save : null;
+        {/* 💳 Pricing Cards */}
+        <div className="grid md:grid-cols-3 gap-8 mb-20">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`relative rounded-3xl p-8 border-2 transition-all duration-300 backdrop-blur-lg ${
+                plan.popular
+                  ? 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border-indigo-300 dark:border-indigo-600 shadow-2xl scale-105'
+                  : 'bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:scale-105'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold uppercase rounded-full shadow-lg">
+                  Most Popular
+                </div>
+              )}
 
-            return (
-              <div 
-                key={p.id} 
-                className={`relative bg-white dark:bg-slate-900/70 rounded-3xl shadow-lg border backdrop-blur-lg hover:shadow-2xl transition-all duration-300 overflow-hidden ${
-                  p.popular 
-                    ? 'border-indigo-300 dark:border-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-900/30 transform md:scale-105' 
-                    : 'border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                {p.popular && (
-                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-6 py-1.5 rounded-full text-xs font-bold shadow-lg uppercase tracking-wide">
-                      Most Popular
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{plan.tagline}</p>
+              </div>
+
+              <div className="text-center mb-6">
+                <div className="text-5xl font-extrabold text-slate-900 dark:text-white mb-2">
+                  {billingCycle === 'monthly' ? plan.monthly.price : plan.yearly.price.split('/')[0]}
+                </div>
+                <div className="text-slate-600 dark:text-slate-400">
+                  {billingCycle === 'yearly' ? (
+                    <div>
+                      <span className="text-sm">per year</span>
+                      <div className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">{plan.yearly.save}</div>
                     </div>
-                  </div>
-                )}
-
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{p.name}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{p.tagline}</p>
-
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-extrabold text-slate-900 dark:text-white">{price}</span>
-                      <span className="text-slate-500 dark:text-slate-400 font-medium">/{billingCycle === 'monthly' ? 'mo' : 'year'}</span>
-                    </div>
-                    {save && <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">{save}</div>}
-                  </div>
-
-                  <button
-                    onClick={() => handleCheckout(envPrice(p.id, billingCycle), p.id)}
-                    disabled={loading === p.id}
-                    className={`w-full py-3.5 rounded-xl font-bold text-base transition-all shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
-                      p.popular 
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
-                        : 'bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {loading === p.id ? 'Processing...' : p.buttonText}
-                  </button>
-
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">{p.description}</p>
-
-                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <ul className="space-y-3">
-                      {p.features.map((feat, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${p.popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`} strokeWidth={3} />
-                          <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  ) : (
+                    <span className="text-sm">per month</span>
+                  )}
                 </div>
               </div>
-            );
-          })}
+
+              <p className="text-center text-slate-600 dark:text-slate-300 mb-6 min-h-[60px]">{plan.description}</p>
+
+              <button
+                onClick={() => handleCheckout(envPrice(plan.id, billingCycle), plan.id)}
+                disabled={loading === plan.id}
+                className={`w-full py-3 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-xl mb-6 ${
+                  plan.popular
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+                    : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
+                }`}
+              >
+                {loading === plan.id ? 'Processing...' : plan.buttonText}
+              </button>
+
+              <ul className="space-y-3">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`} strokeWidth={3} />
+                    <span className="text-slate-700 dark:text-slate-300 text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* 📊 Comparison Table */}
+        {/* 📊 Feature Comparison Table */}
         <div className="mb-20">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">
-            See Exactly What Intelligence You Unlock
-          </h2>
-          <div className="bg-white dark:bg-slate-900/70 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-lg">
-            <div className="grid md:grid-cols-4 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
-              <div className="p-6 font-bold text-slate-900 dark:text-white">FEATURE</div>
-              <div className="p-6 text-center text-slate-900 dark:text-white font-bold">Starter</div>
-              <div className="p-6 text-center bg-indigo-50/50 dark:bg-indigo-900/20 text-slate-900 dark:text-white font-bold">Pro</div>
-              <div className="p-6 text-center text-slate-900 dark:text-white font-bold">Business</div>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white text-center mb-10">Compare All Features</h2>
+          <div className="bg-white dark:bg-slate-900/70 rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 backdrop-blur-lg">
+            <div className="grid md:grid-cols-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80">
+              <div className="p-6 font-bold text-slate-900 dark:text-white">Features</div>
+              <div className="p-6 text-center font-bold text-slate-900 dark:text-white">Starter</div>
+              <div className="p-6 text-center font-bold bg-indigo-50/50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100">Pro Analyst</div>
+              <div className="p-6 text-center font-bold text-slate-900 dark:text-white">Business</div>
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               <FeatureRow 

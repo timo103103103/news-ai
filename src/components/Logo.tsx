@@ -12,7 +12,7 @@ interface LogoProps {
 
 // ✅ 你的新 Supabase Logo（主來源）
 const DEFAULT_LOGO =
-  'https://zgiwqbpalykrztvvekcg.supabase.co/storage/v1/object/public/Nex/NexVeris%20AI-bg.png'
+  'https://zgiwqbpalykrztvvekcg.supabase.co/storage/v1/object/public/Nex/NexV%20Logo.png'
 
 // ✅ 後備顯示用（第二層失敗才用）
 const FALLBACK_LOGO = '/brand/nexveris-gold.png'

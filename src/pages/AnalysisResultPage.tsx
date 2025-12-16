@@ -1,4 +1,4 @@
-// AnalysisResultPage.tsx - COMPLETE FIX: Charts render + Stock market visible
+// AnalysisResultPage.tsx - FIXED: All runtime crashes resolved
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import {
@@ -15,10 +15,12 @@ import ManipulationScoreGauge from '@/components/ManipulationScoreGauge';
 import WinnerLoserTeaser from '@/components/WinnerLoserTeaser';
 import ChronosIsomorphism from '@/components/ChronosIsomorphism';
 import ThermodynamicEntropy from '@/components/ThermodynamicEntropy';
+import OuroborosResonance from '@/components/OuroborosResonance';
 import { TierLock } from '@/components/TierLock';
 import DailyIntelligenceSignup from '@/components/DailyIntelligenceSignup';
 import CredibilityAssessment from '@/components/CredibilityAssessment';
-
+import PowerAmplificationMap from '@/components/PowerAmplificationMap';
+import { Building2 } from 'lucide-react'; // If not already imported
 import {
   ArrowLeft, Download, Share2, Zap, Globe, Shield,
   TrendingUp, Activity, Lock, CheckCircle2, FileText,
@@ -48,7 +50,11 @@ interface AnalysisData {
   };
   motive?: any;
   partyImpact?: any;
-  marketImpact?: any;
+  /* AnalysisResultPage.tsx - Inside interface AnalysisData */
+
+// ... other properties
+marketImpact?: any; // Updated to safely accept the new structure
+// ...
   credibility?: {
     manipulationScore?: number;
     credibilityScore?: number;
@@ -57,6 +63,7 @@ interface AnalysisData {
   };
   chronos?: any;
   entropy?: any;
+  ouroboros?: any;
 }
 
 const FACTOR_CONFIG: Record<string, { color: string; icon: any; description: string }> = {
@@ -92,12 +99,6 @@ const FACTOR_CONFIG: Record<string, { color: string; icon: any; description: str
   },
 };
 
-const getImpactText = (impact: string, score: number) => {
-  if (score >= 70 || impact === 'high') return 'High Impact';
-  if (score >= 40 || impact === 'medium') return 'Medium Impact';
-  return 'Low Impact';
-};
-
 // WorkflowStep component
 const WorkflowStep = ({
   icon: Icon,
@@ -116,9 +117,7 @@ const WorkflowStep = ({
 }) => {
   return (
     <div className="relative flex gap-6 md:gap-10">
-      {/* Fixed-width timeline column for perfect alignment */}
       <div className="relative flex flex-col items-center flex-shrink-0 w-12">
-        {/* Step circle/icon */}
         <motion.div
           initial={{ scale: 0.85, opacity: 0 }}
           animate={isActive ? { scale: [1, 1.06, 1], opacity: 1 } : { scale: 1, opacity: 1 }}
@@ -128,9 +127,7 @@ const WorkflowStep = ({
           <Icon className="w-5 h-5" />
         </motion.div>
 
-        {/* Vertical connector line - ALWAYS SHOW (removed !isLast condition) */}
         <div className={`flex-grow w-1 my-2 relative overflow-hidden rounded-full ${isActive ? 'bg-blue-300 dark:bg-blue-900' : 'bg-slate-200 dark:bg-slate-700'}`}>
-          {/* Animated fill */}
           <motion.div
             className="absolute top-0 left-0 w-full bg-blue-500 rounded-full"
             initial={{ height: "0%" }}
@@ -138,11 +135,9 @@ const WorkflowStep = ({
             viewport={{ once: true, margin: "-100px 0px" }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
           />
-          {/* Gradient overlay for depth */}
           <div className="absolute inset-0 opacity-30 rounded-full" style={{ backgroundImage: 'linear-gradient(to bottom, transparent 0%, rgba(59,130,246,0.35) 50%, transparent 100%)' }} />
-          {/* Diamond marker for visual interest */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 dark:bg-blue-300 rotate-45 rounded-sm shadow-[0_0_6px_rgba(59,130,246,0.25)] dark:shadow-[0_0_10px_rgba(59,130,246,0.6)] animate-pulse" />
-          </div>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 dark:bg-blue-300 rotate-45 rounded-sm shadow-[0_0_6px_rgba(59,130,246,0.25)] dark:shadow-[0_0_10px_rgba(59,130,246,0.6)] animate-pulse" />
+        </div>
       </div>
 
       <div className="flex-grow pb-16">
@@ -156,7 +151,7 @@ const WorkflowStep = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px 0px" }}
           transition={{ duration: 0.45 }}
-          className="bg-white dark:bg-slate-900/70 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden backdrop-blur-lg"
+          className="bg-white dark:bg-slate-900/70 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 backdrop-blur-lg"
         >
           {children}
         </motion.div>
@@ -165,7 +160,7 @@ const WorkflowStep = ({
   );
 };
 
-// PESTLE Component with FIXED chart dimensions
+// PESTLE Component
 const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: AnalysisData['pestle'], isPremium: boolean, onSelectFactor: (f: string | null) => void }) => {
   const radarData = Object.entries(FACTOR_CONFIG).map(([factor, config]) => {
     const fKey = factor.toLowerCase() as keyof typeof pestle;
@@ -190,6 +185,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
   const radarRef = useRef<HTMLDivElement | null>(null);
   const [barVisible, setBarVisible] = useState(false);
   const [radarVisible, setRadarVisible] = useState(false);
+  
   const splitFactors = (arr: string[]) => {
     const pros: string[] = [];
     const cons: string[] = [];
@@ -223,16 +219,9 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
     return () => { c1 && c1(); c2 && c2(); };
   }, []);
 
-  const getImpactBadge = (fullValue: number, impact: string) => {
-    if (fullValue > 70 || impact === 'high') return <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-semibold rounded-full border border-red-200 dark:border-red-800">HIGH</span>;
-    if (fullValue > 40 || impact === 'medium') return <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-semibold rounded-full border border-yellow-200 dark:border-yellow-800">MEDIUM</span>;
-    return <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold rounded-full border border-green-200 dark:border-green-800">LOW</span>;
-  };
-
   return (
     <div className="p-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Bar Chart - FIXED with explicit height */}
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -241,57 +230,14 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
             <div className="text-xs text-gray-500 dark:text-gray-400">Click a bar to expand</div>
           </div>
 
-          {/* FIXED: Added explicit min-height and height */}
-          <div ref={barRef} style={{ minHeight: '360px', height: '360px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
+          <div ref={barRef} style={{ minHeight: '440px', height: '440px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={radarData} layout="vertical" margin={{ top: 8, right: 24, left: 60, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-slate-700" />
-                <XAxis
-                  type="number"
-                  domain={[0, 100]}
-                  tick={(props: any) => {
-                    const { x, y, payload } = props;
-                    return (
-                      <text
-                        x={x}
-                        y={y}
-                        textAnchor="middle"
-                        fontSize={13}
-                        className="fill-slate-700 dark:fill-slate-300"
-                      >
-                        {payload?.value}
-                      </text>
-                    );
-                  }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="factor"
-                  tick={(props: any) => {
-                    const { x, y, payload } = props;
-                    const active = hoverFactor === payload?.value;
-                    return (
-                      <text
-                        x={x}
-                        y={y}
-                        textAnchor="end"
-                        fontSize={active ? 16 : 13}
-                        fontWeight={active ? 700 : 400}
-                        className="fill-slate-800 dark:fill-slate-200"
-                      >
-                        {payload?.value}
-                      </text>
-                    );
-                  }}
-                  className="dark:fill-gray-300"
-                  width={90}
-                />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 13 }} />
+                <YAxis type="category" dataKey="factor" tick={{ fontSize: 13 }} width={90} />
                 <RechartsTooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255,255,255,0.95)', 
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px'
-                  }}
+                  contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                   formatter={(value: number) => [`${value}/100`, 'Impact Score']} 
                 />
                 <Bar
@@ -307,13 +253,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
                   cursor="pointer"
                 >
                   {radarData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      stroke={hoverFactor === entry.factor ? entry.color : undefined}
-                      strokeWidth={hoverFactor === entry.factor ? 2 : 0}
-                      style={hoverFactor === entry.factor ? { filter: `drop-shadow(0 0 8px ${entry.color})` } : undefined}
-                    />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
@@ -321,51 +261,15 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
           </div>
         </div>
 
-        {/* Radar Chart - FIXED with explicit height */}
         <div className="space-y-4">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">360° PESTLE Profile</h4>
           
-          {/* FIXED: Added explicit min-height and height */}
-          <div ref={radarRef} style={{ minHeight: '380px', height: '380px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
+          <div ref={radarRef} style={{ minHeight: '440px', height: '440px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} outerRadius="95%" margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
                 <PolarGrid stroke="#cbd5e1" className="dark:stroke-slate-700" />
-                <PolarAngleAxis
-                  dataKey="factor"
-                  tick={(props: any) => {
-                    const { x, y, payload, textAnchor } = props;
-                    const active = hoverFactor === payload?.value;
-                    return (
-                      <text
-                        x={x}
-                        y={y}
-                        textAnchor={textAnchor}
-                        fontSize={active ? 16 : 13}
-                        fontWeight={active ? 700 : 400}
-                        className="fill-slate-700 dark:fill-slate-300"
-                      >
-                        {payload?.value}
-                      </text>
-                    );
-                  }}
-                />
-                <PolarRadiusAxis
-                  domain={[0, 100]}
-                  tick={(props: any) => {
-                    const { x, y, payload, textAnchor } = props;
-                    return (
-                      <text
-                        x={x}
-                        y={y}
-                        textAnchor={textAnchor}
-                        fontSize={13}
-                        className="fill-slate-700 dark:fill-slate-300"
-                      >
-                        {payload?.value}
-                      </text>
-                    );
-                  }}
-                />
+                <PolarAngleAxis dataKey="factor" tick={{ fontSize: 13 }} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 13 }} />
                 <Radar 
                   name="Impact" 
                   dataKey="value" 
@@ -374,20 +278,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
                   fillOpacity={0.3}
                   isAnimationActive={radarVisible}
                   animationDuration={500}
-                  dot={(props: any) => {
-                    const { cx, cy, payload } = props;
-                    const isGlow = hoverFactor === payload.factor;
-                    return (
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={isGlow ? 5 : 3}
-                        fill={isGlow ? '#3b82f6' : '#64748b'}
-                        className={isGlow ? 'animate-pulse' : undefined}
-                        style={isGlow ? { filter: 'drop-shadow(0 0 8px #3b82f6)' } : undefined}
-                      />
-                    );
-                  }}
+                  dot={{ r: 3, fill: '#64748b' }}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -395,8 +286,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
         </div>
       </div>
 
-      {/* Factor Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {radarData.map((item, idx) => (
           <motion.button
             key={idx}
@@ -406,39 +296,76 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
             }}
             onHoverStart={() => setHoverFactor(item.factor)}
             onHoverEnd={() => setHoverFactor(null)}
-            whileHover={{ scale: 1.02 }}
-            className={`p-4 rounded-xl border-2 transition-all text-left font-inter ${
+            className={`p-4 rounded-xl border-2 transition-colors text-left ${
               selectedFactor === item.factor
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600 shadow-lg'
-                : 'bg-white dark:bg-slate-900/30 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
+                ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-300 dark:border-slate-600'
+                : 'bg-white dark:bg-slate-900/30 border-gray-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/40'
             }`}
           >
-            {(() => { const { pros, cons } = splitFactors(item.factors || []); return (
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm font-semibold" style={{ color: item.color }}>{item.factor}</div>
-                  <div className="text-2xl font-black mt-1 text-slate-900 dark:text-white">{item.value}</div>
-                </div>
-                <div className={`col-span-2 border-l border-slate-200 dark:border-slate-700 pl-4 ${!isPremium ? 'filter blur-[2px] select-none' : ''}`}>
-                  <div className="mb-3">
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[13px] font-semibold">Upside Drivers</div>
-                    <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
-                      {(pros.length ? pros : [FACTOR_CONFIG[item.factor].description]).slice(0,3).map((p, i) => (
-                        <li key={`pro-${i}`}>{p}</li>
-                      ))}
-                    </ul>
-                  </div>
+            {(() => { 
+              const { pros, cons } = splitFactors(item.factors || []); 
+              return (
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-[13px] font-semibold">Downside Risks</div>
-                    <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
-                      {(cons.length ? cons : []).slice(0,3).map((c, i) => (
-                        <li key={`con-${i}`}>{c}</li>
-                      ))}
-                    </ul>
+                    <div className="text-sm font-semibold" style={{ color: item.color }}>{item.factor}</div>
+                    <div className="text-2xl font-black mt-1 text-slate-900 dark:text-white">{item.value}</div>
                   </div>
+                  <div className="col-span-2 border-l border-slate-200 dark:border-slate-700 pl-4">
+                    {!isPremium ? (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center py-8">
+                          <Lock className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Premium Feature</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                      <div className="mb-3">
+                        <div className="pl-3 border-l-2 border-emerald-500 dark:border-emerald-400 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase">Upside Drivers</div>
+                        <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
+                          {(pros.length ? pros : [FACTOR_CONFIG[item.factor].description]).slice(0,2).map((p, i) => (
+                            <li key={`pro-${i}`} className="break-words">{p}</li>
+                          ))}
+                        </ul>
+                        {pros.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFactor(item.factor);
+                              onSelectFactor(item.factor);
+                            }}
+                            className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                          >
+                            View more
+                          </button>
+                        )}
+                      </div>
+                      <div>
+                        <div className="pl-3 border-l-2 border-rose-500 dark:border-rose-400 text-rose-700 dark:text-rose-300 text-xs font-semibold tracking-wide uppercase">Downside Risks</div>
+                        <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
+                          {(cons.length ? cons : []).slice(0,2).map((c, i) => (
+                            <li key={`con-${i}`} className="break-words">{c}</li>
+                          ))}
+                        </ul>
+                        {cons.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFactor(item.factor);
+                              onSelectFactor(item.factor);
+                            }}
+                            className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline"
+                          >
+                            View more
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            ); })()}
+              );
+            })()}
           </motion.button>
         ))}
       </div>
@@ -449,7 +376,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
 // Main Component
 const AnalysisResultPage = () => {
   const { tier } = useSubscription();
-  const isPremium = tier === 'premium' || tier === 'enterprise';
+  const isPremium = tier === 'pro' || tier === 'business';
 
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -460,15 +387,17 @@ const AnalysisResultPage = () => {
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   useEffect(() => {
+    // ✅ FIX #3: Guard sessionStorage for SSR
+    if (typeof window === 'undefined') return;
+
     const stored = sessionStorage.getItem('analysisResult');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         setAnalysisData({
-  ...parsed,
-  ...(parsed.rawAnalysis || {}),
-});
-
+          ...parsed,
+          ...(parsed.rawAnalysis || {}),
+        });
       } catch (e) {
         console.error('Failed to parse analysisResult', e);
       }
@@ -494,27 +423,23 @@ const AnalysisResultPage = () => {
 
   const { summary, credibility, pestle, marketImpact, partyImpact, chronos, entropy, motive } = analysisData;
 
-  // ✅ Calculate Core Signal Intensity from real data
+  // ✅ Single source of truth for Hidden Motives data
+  const hm = analysisData?.rawAnalysis?.hiddenMotives ?? analysisData?.hiddenMotives ?? null;
+
+  // ✅ Calculate Core Signal Intensity
   const calculateSignalIntensity = () => {
-    // Use entropy.signalToNoise (primary) or summary.accuracy (fallback)
     const signalScore = entropy?.signalToNoise ?? summary?.accuracy ?? 0;
-    
-    // Convert 0-100 to 0-10 scale
     const intensity = (signalScore / 10).toFixed(1);
     
-    // Determine label
     let label = 'LOW';
     if (signalScore >= 70) label = 'HIGH';
     else if (signalScore >= 40) label = 'MEDIUM';
     
-    return {
-      score: intensity,
-      label: label,
-      rawScore: signalScore
-    };
+    return { score: intensity, label: label, rawScore: signalScore };
   };
 
   const signalIntensity = calculateSignalIntensity();
+  
   const getSignalColor = (score: number, label: string) => {
     const rounded = Math.round(score * 2) / 2;
     if (label === 'HIGH') {
@@ -531,32 +456,26 @@ const AnalysisResultPage = () => {
     const l = Math.max(38, Math.min(62, 50 - steps * 1.0));
     return `hsl(140, 45%, ${l}%)`;
   };
+  
   const signalColor = getSignalColor(parseFloat(String(signalIntensity.score)), signalIntensity.label);
+
+  // ✅ FIX #1: Move structuredVerdict BEFORE takeawayPoints
+  const structuredVerdict = {
+    timeframe: summary?.timeframe ?? "Not detected in source",
+    locationEntities: summary?.relatedEntities ?? "Not detected in source",
+    takeawayNote: summary?.executiveSummary || "Executive summary not available."
+  };
+
   const takeawayPoints = (summary?.keyPoints && summary.keyPoints.length > 0)
     ? summary.keyPoints
-    : (structuredVerdict.takeawayNote || '')
+    : structuredVerdict.takeawayNote
         .split(/[.;]\s+/)
         .map((s: string) => s.trim())
         .filter((s: string) => s)
         .slice(0, 5);
 
-  const structuredVerdict = {
-    timeframe: summary?.timeframe ?? "Not detected in source",
-   locationEntities: summary?.relatedEntities ?? "Not detected in source",
-    takeawayNote: summary?.executiveSummary || "Executive summary not available."
-  };
-
-  console.log('📊 Analysis Data Check:', {
-    hasMarketImpact: !!marketImpact,
-    hasPartyImpact: !!partyImpact,
-    hasMotive: !!motive,
-    marketImpact,
-    partyImpact
-  });
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
         <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 origin-[0%] transform" style={{ scaleX }} />
         <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
@@ -587,9 +506,7 @@ const AnalysisResultPage = () => {
         </div>
       </header>
 
-      <main ref={mainRef} className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-
-        {/* Intro / Exec Summary */}
+      <main ref={mainRef} className="max-w-7xl mx-auto px-6 py-12 space-y-12">
         <section className="bg-white dark:bg-slate-900/70 rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-slate-800 backdrop-blur-lg">
           <div className="flex justify-between items-start mb-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-bold uppercase">
@@ -606,26 +523,23 @@ const AnalysisResultPage = () => {
           </p>
         </section>
 
-        {/* Workflow Steps */}
         <section className="space-y-12">
-          
-          {/* Step 1: Strategic Verdict */}
-          <WorkflowStep icon={Zap} title="1. Strategic Verdict" subtitle="The actionable synthesis of the core signal." isActive={true}>
+          <WorkflowStep icon={Zap} title="1. Strategic Verdict" subtitle="The bottom line — what this means, why it matters, and how serious it is." isActive={true}>
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6 border-slate-100 dark:border-slate-800">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <div className="p-3 bg-white dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
                   <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase mb-1 flex items-center gap-1">
                     <Clock className="w-3 h-3"/> Time
                   </p>
                   <p className="text-lg font-extrabold text-slate-900 dark:text-white">{structuredVerdict.timeframe}</p>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <div className="p-3 bg-white dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
                   <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase mb-1 flex items-center gap-1">
                     <Globe className="w-3 h-3"/> Location / Entities
                   </p>
                   <p className="text-lg font-extrabold text-slate-900 dark:text-white">{structuredVerdict.locationEntities}</p>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <div className="p-3 bg-white dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
                   <p className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase mb-1 flex items-center gap-1">
                     <Zap className="w-3 h-3"/> Core Signal Intensity
                   </p>
@@ -640,9 +554,9 @@ const AnalysisResultPage = () => {
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm font-bold uppercase mb-4">
                     <FileText className="w-3 h-3" /> Takeaway Note
                   </div>
-                  <ul className="mb-4 space-y-2 cyber-bulleted">
+                  <ul className="mb-4 space-y-2">
                     {takeawayPoints.map((pt: string, i: number) => (
-                      <li key={i} className="text-sm text-slate-800 dark:text-slate-200">{pt}</li>
+                      <li key={i} className="text-sm text-slate-800 dark:text-slate-200">• {pt}</li>
                     ))}
                   </ul>
                   {!isPremium && <WinnerLoserTeaser />}
@@ -651,23 +565,18 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 2: Verification */}
-          <WorkflowStep icon={Shield} title="2. Verification Layer" subtitle="Assessing source credibility, bias, and manipulation risk." isActive={true}>
+          <WorkflowStep icon={Shield} title="2. Source & Bias Check" subtitle="How reliable this information is — and how the narrative may be shaping your reaction." isActive={true}>
             <div className="p-6">
               {credibility ? (
                 <>
                   <CredibilityAssessment 
                     credibilityScore={credibility.credibilityScore ?? 0} 
                     redFlags={credibility.biasIndicators ?? []} 
-                    sourceInfo={{ 
-                      isReputable: (credibility.credibilityScore ?? 0) >= 70, 
-                      hasAuthor: true, 
-                      hasCitations: true 
-                    }} 
+                    sourceInfo={{ isReputable: (credibility.credibilityScore ?? 0) >= 70, hasAuthor: true, hasCitations: true }} 
                   />
                   <ManipulationScoreGauge 
-                    manipulationScore={credibility.manipulationScore ?? 0} 
-                    biasIndicators={credibility.biasIndicators ?? []} 
+                    manipulationScore={(credibility?.manipulationScore ?? 0) as number} 
+                    biasIndicators={(credibility?.biasIndicators ?? []) as string[]} 
                   />
                 </>
               ) : (
@@ -676,16 +585,14 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 3: Macro Drivers (PESTLE) */}
-          <WorkflowStep icon={Globe} title="3. Macro Drivers" subtitle="Scanning the PESTLE landscape for external pressures and context." isActive={true}>
+          <WorkflowStep icon={Globe} title="3. Big Picture Forces" subtitle="The political, economic, and social forces quietly influencing this story." isActive={true}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white flex items-center">PESTLE Force Analysis</h4>
+                <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white">PESTLE Force Analysis</h4>
                 <div className="flex items-center text-sm font-bold text-red-600 dark:text-red-400">
                   Avg Impact: {(() => {
                     const values = pestle ? Object.values(pestle).map(p => p?.score ?? 0) : [0,0,0,0,0,0];
-                    const avg = Math.round(values.reduce((s,n)=>s+n,0)/6);
-                    return avg;
+                    return Math.round(values.reduce((s,n)=>s+n,0)/6);
                   })()} | Critical Threat
                 </div>
               </div>
@@ -693,18 +600,34 @@ const AnalysisResultPage = () => {
                 A visual comparison of factor magnitude (Bar Chart) and a profile of external pressures (Radar Chart).
               </p>
 
-              <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 backdrop-blur-lg">
-                <PestleBarAndRadar pestle={pestle} isPremium={isPremium} onSelectFactor={(f) => setSelectedFactor(f)} />
-              </div>
+              {/* ✅ FIX #2: Guard PESTLE before rendering */}
+              {pestle ? (
+                <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 backdrop-blur-lg">
+                  <PestleBarAndRadar pestle={pestle} isPremium={isPremium} onSelectFactor={(f) => setSelectedFactor(f)} />
+                </div>
+              ) : (
+                <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+                  <Globe className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400">PESTLE data not available for this article.</p>
+                </div>
+              )}
 
-              {/* Selected Factor Details */}
               {selectedFactor && pestle && (
-                <div className="mt-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-slate-900/30 dark:to-blue-900/20 rounded-lg p-6 border border-blue-100 dark:border-blue-800">
+                <div className="mt-6 bg-white dark:bg-slate-900/60 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   {(() => {
                     const factorKey = selectedFactor.toLowerCase() as keyof typeof pestle;
                     const fData = pestle[factorKey];
                     const conf = FACTOR_CONFIG[selectedFactor as keyof typeof FACTOR_CONFIG];
                     if (!fData) return <div className="text-slate-600 dark:text-slate-400">No detailed data for this factor.</div>;
+                    const positives: string[] = [];
+                    const negatives: string[] = [];
+                    const posWords = ['opportunity','growth','increase','support','favorable','stability','benefit','improve','positive'];
+                    const negWords = ['risk','decline','decrease','sanction','uncertainty','cost','regulation','pressure','constraint','volatility','conflict','delay','negative'];
+                    (fData.factors || []).forEach(s => {
+                      const t = (s || '').toLowerCase();
+                      if (posWords.some(w => t.includes(w))) positives.push(s);
+                      else if (negWords.some(w => t.includes(w))) negatives.push(s);
+                    });
                     return (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-2">
@@ -743,7 +666,7 @@ const AnalysisResultPage = () => {
                               </div>
                             </div>
                           ) : (
-                            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+                            <div className="bg-slate-50 dark:bg-slate-900/40 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                               <div className="flex items-center gap-3 mb-4">
                                 <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                                 <div>
@@ -756,6 +679,26 @@ const AnalysisResultPage = () => {
                               <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors">
                                 Upgrade to Premium →
                               </button>
+                            </div>
+                          )}
+                          {isPremium && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                              <div className="bg-white dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                <div className="pl-3 border-l-2 border-emerald-500 dark:border-emerald-400 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase">Upside Drivers</div>
+                                <ul className="mt-2 text-[13px] font-normal text-slate-700 dark:text-slate-300 list-none ml-0 space-y-1">
+                                  {(positives.length ? positives : [conf.description]).map((p, i) => (
+                                    <li key={`sel-pro-${i}`} className="break-words">{p}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div className="bg-white dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                <div className="pl-3 border-l-2 border-rose-500 dark:border-rose-400 text-rose-700 dark:text-rose-300 text-xs font-semibold tracking-wide uppercase">Downside Risks</div>
+                                <ul className="mt-2 text-[13px] font-normal text-slate-700 dark:text-slate-300 list-none ml-0 space-y-1">
+                                  {(negatives.length ? negatives : []).map((c, i) => (
+                                    <li key={`sel-con-${i}`} className="break-words">{c}</li>
+                                  ))}
+                                </ul>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -781,21 +724,256 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 4: Motive Detection */}
-          <WorkflowStep icon={Microscope} title="4. Motive Detection" subtitle="Uncovering the hidden agenda and underlying bias behind the narrative." isActive={true}>
-            <div className="p-6">
-              {isPremium ? (
-                motive?.motives && motive.motives.length > 0 ? (
-                  <MotiveDetectionDisplay motiveData={motive.motives} />
+          <WorkflowStep 
+            icon={Microscope} 
+            title="4. Hidden Motives" 
+            subtitle="What this narrative is really optimizing for — beyond what it says." 
+            isActive={true} 
+          >
+            <div className="p-6 space-y-8">
+              <div className="bg-white dark:bg-slate-900/70 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+                  Dominant Narrative Driver
+                </p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                  {hm?.dominantDriver?.type || "Unknown Driver"}
+                  <span className="ml-3 text-blue-600 dark:text-blue-400 text-lg">
+                    {hm?.dominantDriver?.confidence ?? 0}%
+                  </span>
+                </h3>
+                <p className="mt-2 text-slate-700 dark:text-slate-300 text-sm max-w-2xl">
+                  {hm?.dominantDriver?.explanation || 
+                   "No explanation available for the dominant driver."}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-3">
+                  Incentive Stack
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { 
+                      label: "Economic", 
+                      key: "economic",
+                      value: hm?.incentiveStack?.economic ?? 0,
+                      color: "bg-blue-600" 
+                    },
+                    { 
+                      label: "Social Positioning", 
+                      key: "socialPositioning",
+                      value: hm?.incentiveStack?.socialPositioning ?? 0,
+                      color: "bg-indigo-500" 
+                    },
+                    { 
+                      label: "Political Signaling", 
+                      key: "politicalSignaling",
+                      value: hm?.incentiveStack?.politicalSignaling ?? 0,
+                      color: "bg-amber-500" 
+                    },
+                    { 
+                      label: "Ideological Control", 
+                      key: "ideologicalControl",
+                      value: hm?.incentiveStack?.ideologicalControl ?? 0,
+                      color: "bg-purple-500" 
+                    }
+                  ].map((m) => (
+                    <div
+                      key={m.key}
+                      className="bg-white dark:bg-slate-900/70 rounded-lg p-4 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
+                          {m.label}
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{m.value}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${m.color} transition-all duration-300`}
+                          style={{ width: `${m.value}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+             <div className="bg-white dark:bg-slate-900/70 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+  <h4 className="text-sm font-bold uppercase text-blue-600 dark:text-blue-300 mb-4">
+    Behavioral Pattern
+  </h4>
+  
+  {/* Check if we have any behavioral data */}
+  {(() => {
+    const bp = hm?.behavioralPattern;
+    const hasFraming = bp?.framingTechniques?.length > 0;
+    const hasOmissions = bp?.omissions?.length > 0;
+    const hasTriggers = bp?.emotionalTriggers?.length > 0;
+    const hasAnyData = hasFraming || hasOmissions || hasTriggers;
+
+    if (!hasAnyData) {
+      return (
+        <p className="text-sm text-slate-500 dark:text-slate-400 italic">
+          No behavioral patterns detected in this article.
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Framing Techniques */}
+        {hasFraming && (
+          <div>
+            <h5 className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              Framing Techniques
+            </h5>
+            <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside pl-2">
+              {bp.framingTechniques.map((tech, i) => (
+                <li key={i}>{tech}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        {/* Critical Omissions */}
+        {hasOmissions && (
+          <div>
+            <h5 className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+              Critical Omissions
+            </h5>
+            <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside pl-2">
+              {bp.omissions.map((om, i) => (
+                <li key={i}>{om}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        {/* Emotional Triggers */}
+        {hasTriggers && (
+          <div>
+            <h5 className="text-xs font-semibold text-blue-600 dark:text-blue-300 mb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+              Emotional Triggers
+            </h5>
+            <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside pl-2">
+              {bp.emotionalTriggers.map((trig, i) => (
+                <li key={i}>{trig}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  })()}
+</div>
+              
+              {/* ================================ 
+                  🔥 Power Amplification Map 
+                  ================================ */}
+              <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Power Amplification Map
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
+                    This map shows which actors have both the incentive and the platform power
+                    to amplify this narrative. Larger segments indicate stronger alignment
+                    between economic interest and distribution power.
+                  </p>
+                </div>
+
+                {/* Check if hiddenMotives data exists */}
+                {hm?.powerAmplification?.actors ? (
+                  <>
+                    {/* Dynamic Power Amplification Visualization */}
+                    <PowerAmplificationMap
+                      actors={hm.powerAmplification.actors ?? []}
+                    />
+
+                    {/* Supporting Context */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                      <div className="rounded-lg bg-white dark:bg-slate-900/70 p-4 border border-slate-200 dark:border-slate-800">
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200 mb-2">
+                          How to read this
+                        </h4>
+                        <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2 list-disc list-inside">
+                          <li>Each circle represents a dominant power actor</li>
+                          <li>Ring size reflects total influence (alignment × distribution)</li>
+                          <li>Satellite icons show related actors in the same category</li>
+                          <li>Click any actor to see detailed breakdown</li>
+                        </ul>
+                      </div>
+
+                      <div className="rounded-lg bg-white dark:bg-gradient-to-br dark:from-blue-900/20 dark:to-indigo-900/20 p-4 border border-slate-200 dark:border-blue-500/30">
+                        <h4 className="text-sm font-semibold text-blue-600 dark:text-white mb-2">Why this matters</h4>
+                        <p className="text-sm text-slate-700 dark:text-slate-100">When incentives and amplification power concentrate, narratives are more likely to persist — even when factual certainty is weak. This creates information cascades that can distort market signals.</p>
+                      </div>
+                    </div>
+
+                    {/* Strategic Consequence Box */}
+                    {hm?.strategicConsequence && (
+                      <div className="mt-4 rounded-xl p-6 border border-slate-200 bg-white dark:bg-gradient-to-r dark:from-blue-900/30 dark:to-indigo-900/30 dark:border-blue-700/40">
+                        <h4 className="text-sm font-bold uppercase text-blue-600 dark:text-white mb-2">STRATEGIC CONSEQUENCE</h4>
+                        <div className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                          <p>
+                            <span className="font-semibold">Short-term:</span>{' '}
+                            {hm.strategicConsequence.shortTermEffect}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Medium-term risk:</span>{' '}
+                            {hm.strategicConsequence.mediumTermRisk}
+                          </p>
+                          {hm.strategicConsequence.longTermDistortion && (
+                            <p>
+                              <span className="font-semibold">Long-term distortion:</span>{' '}
+                              {hm.strategicConsequence.longTermDistortion}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <div className="p-8 text-center text-slate-500 dark:text-slate-400">Motive data not available.</div>
-                )
+                  <div className="text-center py-12">
+                    <div className="text-slate-500 mb-4">
+                      <Building2 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No power amplification data available for this article.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </WorkflowStep>
+
+          {/* Step 5: Stakeholder Strategy Map */}
+          <WorkflowStep icon={Target} title="5. Who Really Has Power" subtitle=" Who can influence outcomes, who is affected, and who actually matters." isActive={true}>
+            <div className="p-6">
+              {/* ALWAYS SHOW if premium, regardless of data */}
+              {isPremium ? (
+                <>
+                  <div>
+                    <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-purple-500" /> Power-Interest Strategy Map
+                    </h4>
+                    {partyImpact ? (
+                      <PartyBarChart partyImpactData={partyImpact} />
+                    ) : (
+                      <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+                        <Target className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                        <p className="text-slate-600 dark:text-slate-400">No stakeholder impact data available.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">The analysis did not identify specific stakeholder impacts.</p>
+                      </div>
+                    )}
+                  </div>
+                </>
               ) : (
-                <TierLock feature="motive_analysis" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
+                <TierLock feature="stakeholder_impact" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
                   <div className="p-8 text-center">
-                    <Lock className="w-12 h-12 text-blue-300 dark:text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Unlock Motive Analysis</h3>
-                    <p className="text-slate-600 dark:text-slate-300">See the <strong>hidden agenda</strong> and primary bias driving this information.</p>
+                    <Target className="w-12 h-12 text-purple-300 dark:text-purple-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Access Stakeholder Strategy</h3>
+                    <p className="text-slate-600 dark:text-slate-300">See power-interest positioning and optimal engagement strategies.</p>
                     <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
                       Upgrade to Premium
                     </button>
@@ -805,10 +983,9 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 5: Market Projections - FIXED TO ALWAYS SHOW */}
-          <WorkflowStep icon={TrendingUp} title="5. Market Projections" subtitle="Quantifying the financial and political impact on specific assets and entities." isActive={true}>
+          {/* Step 6: Market Ripple Analysis */}
+          <WorkflowStep icon={TrendingUp} title="6. Market Impact" subtitle="How this development could affect stocks, sectors, and capital flows." isActive={true}>
             <div className="p-6">
-              {/* ALWAYS SHOW if premium, regardless of data */}
               {isPremium ? (
                 <>
                   {/* Stock Impact Section */}
@@ -823,22 +1000,6 @@ const AnalysisResultPage = () => {
                         <TrendingUp className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                         <p className="text-slate-600 dark:text-slate-400">No market impact data available for this article.</p>
                         <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">The AI analysis did not identify specific stock market impacts.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Party Impact Section */}
-                  <div className="mt-6">
-                    <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                      <Target className="w-5 h-5 text-purple-500" /> Power-Interest Strategy Map
-                    </h4>
-                    {partyImpact ? (
-                      <PartyBarChart partyImpactData={partyImpact} />
-                    ) : (
-                      <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-                        <Target className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                        <p className="text-slate-600 dark:text-slate-400">No stakeholder impact data available.</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">The analysis did not identify specific stakeholder impacts.</p>
                       </div>
                     )}
                   </div>
@@ -858,37 +1019,76 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 6: Predictive Modeling - FIXED layout */}
-          <WorkflowStep icon={Clock} title="6. Predictive Modeling" subtitle="Looking ahead using historical isomorphism and narrative entropy." isActive={true} isLast={true}>
-            {/* FIXED: Removed divide-x, added gap-6 and colored backgrounds */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-6 bg-purple-50/50 dark:bg-purple-900/10 rounded-xl">
-                <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Aperture className="w-5 h-5 text-purple-600 dark:text-purple-400"/> Narrative Entropy
-                </h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Measures the predictability and stability of the information over time. Low entropy suggests high stability.
-                </p>
-                {entropy ? <ThermodynamicEntropy data={entropy} /> : 
-                  <div className="p-4 text-slate-500 dark:text-slate-400">Entropy data not available.</div>
-                }
-              </div>
-              <div className="p-6 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl">
-                <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400"/> Historical Patterns (Chronos)
-                </h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Identifies similar events in history (isomorphisms) to project potential outcomes.
-                </p>
-                {chronos ? <ChronosIsomorphism data={chronos} /> : 
-                  <div className="p-4 text-slate-500 dark:text-slate-400">Chronos data not available.</div>
-                }
-              </div>
-            </div>
-          </WorkflowStep>
+
+
+          <WorkflowStep icon={GitBranch} // Changed the icon to represent branching futures
+  title="7.  What Happens Next" 
+  subtitle="Likely paths forward based on history, information quality, and feedback effects." 
+  isActive={true} 
+  isLast={true}
+>
+  <div className="p-6 h-full">
+    {/* Use a larger grid for the three models */}
+    {isPremium ? (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[700px]">
+        
+        {/* 1. CHRONOS ISOMORPHISM (The Past: Scenario Modeling) */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border border-slate-200 dark:border-slate-800 relative overflow-visible">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-blue-500"></div>
+          <div className="absolute -top-3 left-4">
+            <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-emerald-600 text-white rounded-b-md shadow-sm">PAST</div>
+          </div>
+          {chronos ? (
+            <ChronosIsomorphism data={chronos} />
+          ) : (
+            <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Chronos data not available.</div>
+          )}
+        </div>
+
+        {/* 2. THERMODYNAMIC ENTROPY (The Truth: Credibility Check) */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border border-slate-200 dark:border-slate-800 relative overflow-visible">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500"></div>
+          <div className="absolute -top-3 left-4">
+            <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-blue-600 text-white rounded-b-md shadow-sm">PRESENT</div>
+          </div>
+          {entropy ? (
+            <ThermodynamicEntropy data={entropy} />
+          ) : (
+            <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Entropy data not available.</div>
+          )}
+        </div>
+
+        {/* 3. OUROBOROS RESONANCE (The Future: Causal Chains) - THE NEW MODEL (Highlighted) */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border-2 border-purple-500/20 relative overflow-visible">
+          {/* Subtle colored border to highlight the central prediction */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-rose-500 to-rose-500"></div>
+          <div className="absolute -top-3 left-4">
+            <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-rose-600 text-white rounded-b-md shadow-sm">FUTURE</div>
+          </div>
+          {analysisData?.ouroboros ? (
+            <OuroborosResonance data={analysisData.ouroboros} /> 
+          ) : (
+            <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Ouroboros data not available.</div>
+          )}
+        </div>
+
+      </div>
+    ) : (
+      <TierLock feature="predictive_modeling" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
+        <div className="p-8 text-center">
+          <Clock className="w-12 h-12 text-blue-300 dark:text-blue-500 mx-auto mb-4" />
+          <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Unlock Predictive Trajectory</h3>
+          <p className="text-slate-600 dark:text-slate-300">See the combined historical context, causal chain, and credibility check for a complete future outlook.</p>
+          <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
+            Upgrade to Premium
+          </button>
+        </div>
+      </TierLock>
+    )}
+  </div>
+</WorkflowStep>
         </section>
 
-        {/* Footer CTA */}
         <section className="bg-slate-900 dark:bg-slate-800 text-white py-16 mt-12 rounded-2xl border border-slate-800 dark:border-slate-700">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-extrabold mb-4">Get the Full Intelligence Picture.</h2>
@@ -898,10 +1098,8 @@ const AnalysisResultPage = () => {
             <DailyIntelligenceSignup />
           </div>
         </section>
-
       </main>
 
-      {/* Upgrade sticky CTA */}
       {!isPremium && (
         <div className="fixed right-6 bottom-6 z-50">
           <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-4 shadow-2xl flex items-center gap-4">
@@ -923,7 +1121,6 @@ const AnalysisResultPage = () => {
   );
 };
 
-// Wrapper with provider
 const AnalysisResultPageWrapper = () => (
   <SubscriptionProvider>
     <AnalysisResultPage />

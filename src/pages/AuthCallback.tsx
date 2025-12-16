@@ -3,38 +3,26 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import useAuthStore from '@/stores/authStore'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
+  const setUser = useAuthStore((state) => state.setUser)
   const setSession = useAuthStore((state) => state.setSession)
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         console.log('🔐 AuthCallback: Starting auth callback handler')
-        console.log('🔐 Current URL:', window.location.href)
         
         // Check for hash fragment (OAuth redirect)
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
         const error = hashParams.get('error')
-        const errorDescription = hashParams.get('error_description')
-        
-        console.log('🔐 Hash params:', { 
-          hasAccessToken: !!accessToken, 
-          hasRefreshToken: !!refreshToken,
-          error,
-          errorDescription 
-        })
         
         // Check for OAuth error
         if (error) {
-          console.error('🔐 OAuth error:', error, errorDescription)
-          toast.error('Login failed', {
-            description: errorDescription || error
-          })
+          console.error('🔐 OAuth error:', error)
           navigate('/login')
           return
         }
@@ -42,7 +30,6 @@ export default function AuthCallback() {
         if (accessToken && refreshToken) {
           console.log('🔐 OAuth flow - setting session with tokens')
           
-          // OAuth flow - token in URL hash
           const { data: { session }, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
@@ -50,62 +37,88 @@ export default function AuthCallback() {
 
           if (sessionError) {
             console.error('🔐 Session error:', sessionError)
-            toast.error('Login failed', {
-              description: sessionError.message
-            })
             navigate('/login')
             return
           }
 
-          if (session) {
+          if (session?.user) {
             console.log('🔐 Session established:', session.user?.email)
+            
+            // Fetch user tier from database
+            const { data: dbUser } = await supabase
+              .from("users")
+              .select("plan, billing_cycle, scans_used_this_month, scans_limit")
+              .eq("id", session.user.id)
+              .single()
+
+            const validTiers = ['free', 'starter', 'pro', 'business']
+            const validatedPlan = validTiers.includes(dbUser?.plan) 
+              ? dbUser.plan 
+              : 'free'
+
             setSession(session)
-            toast.success('Successfully logged in!', {
-              description: 'Welcome back!'
+            setUser({
+              id: session.user.id,
+              email: session.user.email || "",
+              plan: validatedPlan as 'free' | 'starter' | 'pro' | 'business',
+              billingCycle: dbUser?.billing_cycle || null,
+              scansUsed: dbUser?.scans_used_this_month ?? 0,
+              scansLimit: dbUser?.scans_limit ?? 10,
             })
-            navigate('/')
+            
+            console.log('✅ Redirecting to home...')
+            navigate('/', { replace: true })
           } else {
-            console.error('🔐 No session created')
             navigate('/login')
           }
         } else {
-          console.log('🔐 No OAuth tokens in hash, checking for existing session')
+          console.log('🔐 No OAuth tokens, checking existing session')
           
-          // Regular callback flow - check for existing session
-          const { data: { session }, error: getSessionError } = await supabase.auth.getSession()
+          const { data: { session } } = await supabase.auth.getSession()
           
-          if (getSessionError) {
-            console.error('🔐 Get session error:', getSessionError)
-            navigate('/login')
-            return
-          }
-
-          if (session) {
+          if (session?.user) {
             console.log('🔐 Existing session found:', session.user?.email)
+            
+            const { data: dbUser } = await supabase
+              .from("users")
+              .select("plan, billing_cycle, scans_used_this_month, scans_limit")
+              .eq("id", session.user.id)
+              .single()
+
+            const validTiers = ['free', 'starter', 'pro', 'business']
+            const validatedPlan = validTiers.includes(dbUser?.plan) 
+              ? dbUser.plan 
+              : 'free'
+
             setSession(session)
-            navigate('/')
+            setUser({
+              id: session.user.id,
+              email: session.user.email || "",
+              plan: validatedPlan as 'free' | 'starter' | 'pro' | 'business',
+              billingCycle: dbUser?.billing_cycle || null,
+              scansUsed: dbUser?.scans_used_this_month ?? 0,
+              scansLimit: dbUser?.scans_limit ?? 10,
+            })
+            
+            navigate('/', { replace: true })
           } else {
-            console.log('🔐 No session found, redirecting to login')
             navigate('/login')
           }
         }
       } catch (error) {
         console.error('🔐 Auth callback error:', error)
-        toast.error('Authentication failed', {
-          description: 'Please try again'
-        })
         navigate('/login')
       }
     }
 
     handleAuthCallback()
-  }, [navigate, setSession])
+  }, [navigate, setSession, setUser])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
       <div className="text-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-        <p className="text-gray-600">Completing authentication...</p>
+        <p className="text-gray-600 dark:text-gray-400">Completing authentication...</p>
       </div>
     </div>
   )

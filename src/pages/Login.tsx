@@ -1,141 +1,212 @@
-import { useState, useEffect } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useState } from "react"
+import { Link } from "react-router-dom"
 import { supabase } from "../lib/supabase"
 import useAuthStore from "../stores/authStore"
 
 export default function Login() {
-  const navigate = useNavigate()
-
-  const { setUser } = useAuthStore()
+  const setUser = useAuthStore((s) => s.setUser)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // ✅ SESSION SYNC AFTER GOOGLE LOGIN
-  useEffect(() => {
-    const syncSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (data.session?.user) {
-        const user = data.session.user
+  /**
+   * Fetch user tier / quota data from database
+   * ❗ 不做 redirect，只更新 store
+   */
+  const fetchUserData = async (userId: string, userEmail: string) => {
+    try {
+      const { data: dbUser, error: dbError } = await supabase
+        .from("users")
+        .select("plan, billing_cycle, scans_used_this_month, scans_limit")
+        .eq("id", userId)
+        .single()
 
+      const validTiers = ["free", "starter", "pro", "business"]
+
+      if (dbError || !dbUser) {
+        // fallback: free plan
         setUser({
-          id: user.id,
-          email: user.email || "",
-          plan: "free", // ✅ backend can overwrite later
-          credits: 10,
+          id: userId,
+          email: userEmail,
+          plan: "free",
+          billingCycle: null,
+          scansUsed: 0,
+          scansLimit: 10,
         })
-
-        navigate("/")
+        return
       }
-    }
-    syncSession()
-  }, [navigate, setUser])
 
-  // ✅ EMAIL LOGIN
+      setUser({
+        id: userId,
+        email: userEmail,
+        plan: validTiers.includes(dbUser.plan) ? dbUser.plan : "free",
+        billingCycle: dbUser.billing_cycle || null,
+        scansUsed: dbUser.scans_used_this_month ?? 0,
+        scansLimit: dbUser.scans_limit ?? 10,
+      })
+    } catch (err) {
+      // hard fallback
+      setUser({
+        id: userId,
+        email: userEmail,
+        plan: "free",
+        billingCycle: null,
+        scansUsed: 0,
+        scansLimit: 10,
+      })
+    }
+  }
+
+  /**
+   * EMAIL / PASSWORD LOGIN
+   */
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Please enter email and password")
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
-      if (error) throw error
+      if (signInError) throw signInError
+      if (!data.user) throw new Error("Login failed")
 
-      const user = data.user
+      await fetchUserData(data.user.id, data.user.email || "")
+      // ✅ 不 redirect
+      // AuthProvider / Route Guard 會自動處理
 
-      setUser({
-        id: user.id,
-        email: user.email || "",
-        plan: "free",
-        credits: 10,
-      })
-
-      navigate("/")
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || "Failed to sign in")
     } finally {
       setLoading(false)
     }
   }
 
-  // ✅ GOOGLE LOGIN
+  /**
+   * GOOGLE LOGIN
+   */
   const handleGoogleLogin = async () => {
+    setError(null)
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/login",
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
   }
 
-  // ✅ GITHUB LOGIN
+  /**
+   * GITHUB LOGIN
+   */
   const handleGithubLogin = async () => {
+    setError(null)
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: window.location.origin + "/login",
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
+  }
+
+  /**
+   * Enter key support
+   */
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !loading) {
+      handleLogin()
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-      <div className="bg-white dark:bg-slate-900/70 p-8 rounded-xl shadow-md border border-slate-200 dark:border-slate-800 backdrop-blur-lg w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome Back</h1>
+      <div className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-900/80 p-8 shadow-lg border border-slate-200 dark:border-slate-800">
 
-        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Welcome Back
+        </h1>
+
+        {error && (
+          <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+            {error}
+          </div>
+        )}
 
         <input
           type="email"
-          placeholder="Email"
-          className="border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2 w-full mb-3 rounded"
+          placeholder="you@example.com"
+          className="mb-3 w-full rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={loading}
         />
 
         <input
           type="password"
-          placeholder="Password"
-          className="border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2 w-full mb-4 rounded"
+          placeholder="••••••••"
+          className="mb-4 w-full rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={loading}
         />
 
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+          className="w-full rounded bg-indigo-600 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        <div className="my-4 text-center text-gray-400 dark:text-slate-400 text-sm">or continue with</div>
+        <div className="my-4 text-center text-sm text-gray-400">
+          or continue with
+        </div>
 
         <div className="flex gap-3">
           <button
             onClick={handleGoogleLogin}
-            className="flex-1 border border-gray-300 dark:border-slate-700 py-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800"
+            disabled={loading}
+            className="flex-1 rounded border border-gray-300 dark:border-slate-700 py-2 hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             Google
           </button>
 
           <button
             onClick={handleGithubLogin}
-            className="flex-1 border border-gray-300 dark:border-slate-700 py-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800"
+            disabled={loading}
+            className="flex-1 rounded border border-gray-300 dark:border-slate-700 py-2 hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             GitHub
           </button>
         </div>
 
-        <p className="text-center mt-4 text-sm text-slate-700 dark:text-slate-300">
+        <div className="mt-4 flex justify-between text-sm">
+          <Link
+            to="/forgot-password"
+            className="text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           Don’t have an account?{" "}
-          <Link to="/signup" className="text-indigo-600 dark:text-indigo-300 hover:underline">
-            Sign Up
+          <Link
+            to="/signup"
+            className="text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            Sign up
           </Link>
         </p>
       </div>

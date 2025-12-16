@@ -11,12 +11,10 @@ export default function AuthProvider({
   const setLoading = useAuthStore((s) => s.setLoading)
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(true)
+    let alive = true
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+    const applyUserFromSession = async (session: any) => {
+      if (!alive) return
 
       if (!session?.user) {
         setUser(null)
@@ -24,23 +22,62 @@ export default function AuthProvider({
         return
       }
 
-      const { data: dbUser } = await supabase
-        .from("users")
-        .select("plan, credits")
-        .eq("id", session.user.id)
-        .single()
+      const user = session.user
 
-      setUser({
-        id: session.user.id,
-        email: session.user.email || "",
-        plan: (dbUser?.plan as any) || "free",
-        credits: dbUser?.credits ?? 0,
-      })
+      try {
+        const { data: dbUser } = await supabase
+          .from("users")
+          .select("plan, billing_cycle, scans_used_this_month, scans_limit")
+          .eq("id", user.id)
+          .single()
 
-      setLoading(false)
+        const validTiers = ["free", "starter", "pro", "business"]
+
+        setUser({
+          id: user.id,
+          email: user.email || "",
+          plan: validTiers.includes(dbUser?.plan)
+            ? dbUser.plan
+            : "free",
+          billingCycle: dbUser?.billing_cycle || null,
+          scansUsed: dbUser?.scans_used_this_month ?? 0,
+          scansLimit: dbUser?.scans_limit ?? 10,
+        })
+      } catch {
+        setUser({
+          id: user.id,
+          email: user.email || "",
+          plan: "free",
+          billingCycle: null,
+          scansUsed: 0,
+          scansLimit: 10,
+        })
+      } finally {
+        // ⭐⭐⭐ 這一行是關鍵
+        setLoading(false)
+      }
     }
 
-    init()
+    // ===== 初始化（refresh / first load）=====
+    setLoading(true)
+    supabase.auth.getSession().then(({ data }) => {
+      applyUserFromSession(data.session)
+    })
+
+    // ===== 監聽登入 / 登出 =====
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event)
+
+      setLoading(true)
+      applyUserFromSession(session)
+    })
+
+    return () => {
+      alive = false
+      subscription.unsubscribe()
+    }
   }, [setUser, setLoading])
 
   return <>{children}</>

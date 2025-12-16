@@ -1,8 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AuthProvider from "./components/AuthProvider";
-import ProtectedRoute from "./components/ProtectedRoute";
 
-// Components
+import AuthProvider from "./components/AuthProvider";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import GuestOnly from "./routes/GuestOnly";
+
+// Layout
 import Layout from "./components/Layout";
 
 // Pages
@@ -26,84 +30,104 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen bg-white text-slate-900 dark:bg-gray-950 dark:text-slate-100 selection:bg-neonCyan selection:text-gray-900">
-          <Routes>
+        <SubscriptionProvider>
+          <div className="min-h-screen bg-white text-slate-900 dark:bg-gray-950 dark:text-slate-100 selection:bg-neonCyan selection:text-gray-900">
+            <Routes>
 
-          {/* ⭐ Layout must wrap routes INSIDE Route element */}
-          <Route element={<Layout />}>
+              {/* ===== Layout Wrapper ===== */}
+              <Route element={<Layout />}>
 
-            {/* Public Pages */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/logout" element={<Logout />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
+                {/* ===== Public Pages ===== */}
+                <Route path="/" element={<Home />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/logout" element={<Logout />} />
 
-            {/* Protected Pages */}
-            <Route
-              path="/analyze"
-              element={
-                <ProtectedRoute>
-                  <NewsAnalysis />
-                </ProtectedRoute>
-              }
-            />
+                {/* ===== Guest Only (已登入不可進) ===== */}
+                <Route
+                  path="/login"
+                  element={
+                    <GuestOnly>
+                      <Login />
+                    </GuestOnly>
+                  }
+                />
 
-            <Route
-              path="/news-analysis"
-              element={
-                <ProtectedRoute>
-                  <NewsAnalysis />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/signup"
+                  element={
+                    <GuestOnly>
+                      <Signup />
+                    </GuestOnly>
+                  }
+                />
 
-            <Route
-              path="/results"
-              element={
-                <ProtectedRoute>
-                  <AnalysisResultPage />
-                </ProtectedRoute>
-              }
-            />
+                {/* ===== Protected Pages (必須登入) ===== */}
+                <Route
+                  path="/analyze"
+                  element={
+                    <ProtectedRoute>
+                      <NewsAnalysis />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route
-              path="/account"
-              element={
-                <ProtectedRoute>
-                  <Account />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/news-analysis"
+                  element={
+                    <ProtectedRoute>
+                      <NewsAnalysis />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <History />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/results"
+                  element={
+                    <ProtectedRoute>
+                      <AnalysisResultPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route
-              path="/analysis/:id"
-              element={
-                <ProtectedRoute>
-                  <AnalysisDetail />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-        </div>
+                <Route
+                  path="/history"
+                  element={
+                    <ProtectedRoute>
+                      <History />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/analysis/:id"
+                  element={
+                    <ProtectedRoute>
+                      <AnalysisDetail />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* ===== Fallback ===== */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+
+              </Route>
+            </Routes>
+          </div>
+        </SubscriptionProvider>
       </AuthProvider>
     </BrowserRouter>
   );

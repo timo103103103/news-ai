@@ -360,19 +360,19 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
       const SentimentIcon = SENTIMENT_CONFIG[data.sentiment].icon;
       
       return (
-        <div className="bg-white border-2 border-gray-200 rounded-lg shadow-xl p-4">
-          <p className="font-bold text-gray-900 mb-3">{data.name}</p>
+        <div className="bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-lg shadow-xl p-4">
+          <p className="font-bold text-gray-900 dark:text-slate-200 mb-3">{data.name}</p>
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-semibold">Power Level:</span>
-              <span className="font-bold text-gray-900">{data.originalPower.toFixed(1)}</span>
+              <span className="text-gray-600 dark:text-slate-400 font-semibold">Power Level:</span>
+              <span className="font-bold text-gray-900 dark:text-slate-200">{data.originalPower.toFixed(1)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-semibold">Interest Intensity:</span>
-              <span className="font-bold text-gray-900">{data.originalInterest.toFixed(1)}</span>
+              <span className="text-gray-600 dark:text-slate-400 font-semibold">Interest Intensity:</span>
+              <span className="font-bold text-gray-900 dark:text-slate-200">{data.originalInterest.toFixed(1)}</span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
-              <span className="text-gray-600 font-semibold">Sentiment:</span>
+              <span className="text-gray-600 dark:text-slate-400 font-semibold">Sentiment:</span>
               <div className="flex items-center gap-1">
                 <SentimentIcon className="w-3 h-3" style={{ color: data.sentimentColor }} />
                 <span 
@@ -387,7 +387,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-semibold">Risk:</span>
+              <span className="text-gray-600 dark:text-slate-400 font-semibold">Risk:</span>
               <span 
                 className="font-bold px-2 py-0.5 rounded text-xs text-white"
                 style={{ backgroundColor: getRiskColor(data.risk) }}
@@ -396,8 +396,8 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
               </span>
             </div>
             <div className="pt-2 border-t">
-              <span className="text-gray-600 font-semibold">Strategy:</span>
-              <p className="text-gray-900 mt-1">{data.strategy.label}</p>
+              <span className="text-gray-600 dark:text-slate-400 font-semibold">Strategy:</span>
+              <p className="text-gray-900 dark:text-slate-200 mt-1">{data.strategy.label}</p>
             </div>
           </div>
         </div>
@@ -410,10 +410,10 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
   if (!partyImpactData || !partyImpactData.stakeholders || partyImpactData.stakeholders.length === 0) {
     return (
       <TierLock feature="party_barchart" className="min-h-[600px]">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center">
+        <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 p-12 text-center">
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No Stakeholder Data Available</h3>
-          <p className="text-gray-600">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-slate-200 mb-2">No Stakeholder Data Available</h3>
+          <p className="text-gray-600 dark:text-slate-400">
             The analysis didn't identify any stakeholders for this article.
           </p>
         </div>
@@ -423,19 +423,19 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
 
   return (
     <TierLock feature="party_barchart" className="min-h-[640px]">
-      <div className={`bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden ${className}`}>
+      <div className={`bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 overflow-hidden ${className}`}>
         
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 via-blue-50 to-emerald-50">
+        <div className="p-6 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900/60">
           <div className="flex justify-between items-start">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="p-1.5 bg-purple-100 text-purple-600 rounded-lg">
                   <Handshake className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Power–Interest Strategy Map</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-200">Power–Interest Strategy Map</h3>
               </div>
-              <p className="text-sm text-gray-600 mb-2">
+              <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">
                 3 measurable parameters: <strong>Power Level</strong> (ability to influence), 
                 <strong> Interest Intensity</strong> (how much they care), 
                 <strong> Sentiment</strong> (support vs opposition).
@@ -443,13 +443,13 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
               
               {/* Stats */}
               <div className="flex items-center gap-3 mt-3 flex-wrap">
-                <div className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                <div className="px-3 py-1.5 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded-full text-xs font-semibold">
                   {processedData.length} Stakeholders
                 </div>
-                <div className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                <div className="px-3 py-1.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-semibold">
                   Median Power: {medianPower.toFixed(1)}
                 </div>
-                <div className="px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">
+                <div className="px-3 py-1.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-full text-xs font-semibold">
                   Median Interest: {medianInterest.toFixed(1)}
                 </div>
               </div>
@@ -458,16 +458,16 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
         </div>
 
         {/* Sentiment Filter Bar */}
-        <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="p-4 bg-gray-50 dark:bg-slate-900/60 border-b border-gray-200 dark:border-slate-800">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-gray-500 uppercase">Filter by Sentiment:</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase">Filter by Sentiment:</span>
             
             <button
               onClick={() => setSentimentFilter('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                 sentimentFilter === 'all'
                   ? 'bg-gray-800 text-white shadow-md'
-                  : 'bg-white text-gray-600 border border-gray-300 hover:border-gray-400'
+                  : 'bg-white dark:bg-slate-900/60 text-gray-600 dark:text-slate-300 border border-gray-300 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600'
               }`}
               style={{
                 backgroundColor: sentimentFilter === 'all' ? ALL_FILTER_COLOR : undefined,
@@ -489,7 +489,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     sentimentFilter === sentiment
                       ? 'shadow-md text-white'
-                      : 'bg-white border border-gray-300 hover:border-gray-400'
+                      : 'bg-white dark:bg-slate-900/60 border border-gray-300 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-600'
                   }`}
                   style={{
                     backgroundColor: sentimentFilter === sentiment ? config.color : undefined,
@@ -505,8 +505,8 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
         </div>
 
         {/* Quadrant Summary Cards */}
-        <div className="p-6 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Strategic Quadrants (Median-Based)</h4>
+        <div className="p-6 bg-gray-50 dark:bg-slate-900/60 border-b border-gray-200 dark:border-slate-800">
+          <h4 className="text-xs font-semibold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-4">Strategic Quadrants (Median-Based)</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {(Object.keys(categorized) as Quadrant[]).map((quadrant) => {
               const config = QUADRANT_CONFIG[quadrant];
@@ -521,20 +521,20 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                   whileHover={{ scale: 1.02, y: -2 }}
                   onMouseEnter={() => setHoveredQuadrant(quadrant)}
                   onMouseLeave={() => setHoveredQuadrant(null)}
-                  className={`${config.bg} border-2 ${hoveredQuadrant === quadrant ? 'border-gray-400' : 'border-transparent'} p-4 rounded-lg transition-all cursor-pointer`}
+                  className={`${config.bg} dark:bg-slate-900/60 border-2 ${hoveredQuadrant === quadrant ? 'border-gray-400 dark:border-slate-600' : 'border-transparent'} p-4 rounded-lg transition-all cursor-pointer`}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
                       <Icon className="w-5 h-5" style={{ color: config.color }} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{config.label}</h3>
-                      <span className="text-xs text-gray-500 font-medium">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-200">{config.label}</h3>
+                      <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">
                         {count} stakeholder{count !== 1 ? 's' : ''}
                       </span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">{config.description}</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">{config.description}</p>
                 </motion.div>
               );
             })}
@@ -544,12 +544,12 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
         <div className="flex flex-col lg:flex-row max-w-full">
           
           {/* LEFT: Scatter Plot Matrix */}
-          <div className="lg:w-2/3 p-5 border-r border-gray-100">
+          <div className="lg:w-2/3 p-5 border-r border-gray-100 dark:border-slate-800">
             <div className="flex items-start">
               <div className="flex-1" style={{ height: '520px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} stroke="#334155" />
                 
                 {/* Reference lines at MEDIAN */}
                 <ReferenceLine 
@@ -636,7 +636,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
           </div>
 
           {/* RIGHT: Stakeholder List */}
-          <div className="lg:w-1/3 bg-gray-50/50 p-4 flex flex-col max-h-[560px] overflow-y-auto">
+          <div className="lg:w-1/3 bg-gray-50/50 dark:bg-slate-900/60 p-4 flex flex-col max-h-[560px] overflow-y-auto">
             <AnimatePresence mode="wait">
               {selectedStakeholder ? (
                 <motion.div
@@ -648,27 +648,27 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                 >
                   <button
                     onClick={() => setSelectedStakeholder(null)}
-                    className="text-sm text-blue-600 hover:text-blue-700 mb-4 flex items-center gap-1"
+                    className="text-sm text-blue-600 dark:text-cyan-300 hover:text-blue-700 mb-4 flex items-center gap-1"
                   >
                     ← Back to list
                   </button>
 
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-lg">
+                  <div className="bg-white dark:bg-slate-900/60 rounded-xl border-2 border-gray-200 dark:border-slate-800 p-6 shadow-lg">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-slate-200 mb-1">
                           {selectedStakeholder.name}
                         </h3>
-                        <p className="text-sm text-gray-500">{selectedStakeholder.role}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">{selectedStakeholder.role}</p>
                       </div>
                       <div className="flex flex-col gap-1 items-end">
                         {selectedStakeholder.isWinner && (
-                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+                          <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold rounded">
                             WINNER
                           </span>
                         )}
                         {selectedStakeholder.isLoser && (
-                          <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">
+                          <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold rounded">
                             LOSER
                           </span>
                         )}
@@ -679,35 +679,35 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                     <div className="space-y-3 mb-6">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Power Level</span>
-                          <span className="font-bold text-gray-900">{selectedStakeholder.originalPower.toFixed(1)}</span>
+                          <span className="text-gray-600 dark:text-slate-400">Power Level</span>
+                          <span className="font-bold text-gray-900 dark:text-slate-200">{selectedStakeholder.originalPower.toFixed(1)}</span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-700"
-                            style={{ width: `${selectedStakeholder.power}%` }}
+                            className="h-full transition-all duration-700"
+                            style={{ width: `${selectedStakeholder.power}%`, backgroundColor: '#3b82f6' }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Ability to influence the situation</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Ability to influence the situation</p>
                       </div>
 
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Interest Intensity</span>
-                          <span className="font-bold text-gray-900">{selectedStakeholder.originalInterest.toFixed(1)}</span>
+                          <span className="text-gray-600 dark:text-slate-400">Interest Intensity</span>
+                          <span className="font-bold text-gray-900 dark:text-slate-200">{selectedStakeholder.originalInterest.toFixed(1)}</span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-700"
-                            style={{ width: `${selectedStakeholder.interest}%` }}
+                            className="h-full transition-all duration-700"
+                            style={{ width: `${selectedStakeholder.interest}%`, backgroundColor: '#10b981' }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">How much they care / are affected</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">How much they care / are affected</p>
                       </div>
 
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Sentiment Position</span>
+                          <span className="text-gray-600 dark:text-slate-400">Sentiment Position</span>
                           <div className="flex items-center gap-1">
                             {(() => {
                               const Icon = SENTIMENT_CONFIG[selectedStakeholder.sentiment].icon;
@@ -724,7 +724,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                             </span>
                           </div>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div 
                             className="h-full transition-all duration-700"
                             style={{ 
@@ -733,14 +733,14 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                             }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                           {SENTIMENT_CONFIG[selectedStakeholder.sentiment].description}
                         </p>
                       </div>
 
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Risk Level</span>
+                          <span className="text-gray-600 dark:text-slate-400">Risk Level</span>
                           <span 
                             className="font-bold px-2 py-0.5 rounded text-xs text-white"
                             style={{ backgroundColor: getRiskColor(selectedStakeholder.risk) }}
@@ -748,7 +748,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                             {selectedStakeholder.risk.toFixed(0)}
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div 
                             className="h-full transition-all duration-700"
                             style={{ 
@@ -757,28 +757,28 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                             }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Combined risk based on power, interest & sentiment</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Combined risk based on power, interest & sentiment</p>
                       </div>
                     </div>
 
                     {/* Strategy Card */}
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
-                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900/60 rounded-lg p-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <h4 className="font-semibold text-gray-900 dark:text-slate-200 mb-3 flex items-center gap-2">
                         <Target className="w-4 h-4 text-blue-600" />
                         Strategic Recommendation
                       </h4>
                       <div className="space-y-2 text-sm">
                         <div>
-                          <span className="text-gray-600 font-medium">Quadrant:</span>
-                          <span className="ml-2 text-gray-900 font-bold">{selectedStakeholder.strategy.label}</span>
+                          <span className="text-gray-600 dark:text-slate-400 font-medium">Quadrant:</span>
+                          <span className="ml-2 text-gray-900 dark:text-slate-200 font-bold">{selectedStakeholder.strategy.label}</span>
                         </div>
                         <div>
-                          <span className="text-gray-600 font-medium">Action:</span>
-                          <span className="ml-2 text-gray-900">{selectedStakeholder.strategy.action}</span>
+                          <span className="text-gray-600 dark:text-slate-400 font-medium">Action:</span>
+                          <span className="ml-2 text-gray-900 dark:text-slate-200">{selectedStakeholder.strategy.action}</span>
                         </div>
                         <div>
-                          <span className="text-gray-600 font-medium">Communication:</span>
-                          <p className="mt-1 text-gray-700 leading-relaxed">{selectedStakeholder.strategy.communication}</p>
+                          <span className="text-gray-600 dark:text-slate-400 font-medium">Communication:</span>
+                          <p className="mt-1 text-gray-700 dark:text-slate-300 leading-relaxed">{selectedStakeholder.strategy.communication}</p>
                         </div>
                       </div>
                     </div>
@@ -792,7 +792,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                   exit={{ opacity: 0 }}
                   className="flex-1"
                 >
-                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                  <h4 className="text-xs font-semibold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-4">
                     {sentimentFilter === 'all' 
                       ? `All Stakeholders (${processedData.length})`
                       : `${SENTIMENT_CONFIG[sentimentFilter].label} Stakeholders (${filteredData.length})`
@@ -812,7 +812,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                         <div key={quadrant} className="mb-6">
                           <div className="flex items-center gap-2 mb-3">
                             <Icon className="w-4 h-4" style={{ color: config.color }} />
-                            <h5 className="font-semibold text-gray-900 text-sm">
+                            <h5 className="font-semibold text-gray-900 dark:text-slate-200 text-sm">
                               {config.label} ({stakeholders.length})
                             </h5>
                           </div>
@@ -844,7 +844,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                                       <div className="flex items-center gap-2">
                                         <span 
                                           className={`font-semibold text-sm transition-colors ${
-                                            isHovered ? 'text-gray-900' : 'text-gray-800'
+                                            isHovered ? 'text-gray-900 dark:text-white' : 'text-gray-800 dark:text-white'
                                           }`}
                                           style={{ 
                                             color: isHovered ? stakeholder.uniqueColor : undefined 
@@ -853,22 +853,20 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                                           {stakeholder.name}
                                         </span>
                                         {stakeholder.isWinner && (
-                                          <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded">
+                                          <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold rounded">
                                             WIN
                                           </span>
                                         )}
                                         {stakeholder.isLoser && (
-                                          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded">
-                                            LOSE
-                                          </span>
+                                          <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[10px] font-bold rounded">LOSE</span>
                                         )}
                                         <SentIcon 
                                           className="w-3 h-3" 
                                           style={{ color: stakeholder.sentimentColor }}
                                         />
                                       </div>
-                                      <p className="text-xs text-gray-600 mt-0.5">{stakeholder.role}</p>
-                                      <p className="text-[10px] text-gray-500 mt-1">
+                                      <p className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">{stakeholder.role}</p>
+                                      <p className="text-[10px] text-gray-500 dark:text-slate-400 mt-1">
                                         Dominance: {stakeholder.dominance.toFixed(0)}/100
                                       </p>
                                     </div>
@@ -878,7 +876,7 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
                                         className="w-2 h-2 rounded-full"
                                         style={{ backgroundColor: getRiskColor(stakeholder.risk) }}
                                       />
-                                      <span className="text-xs text-gray-400">→</span>
+                                      <span className="text-xs text-gray-400 dark:text-slate-500">→</span>
                                     </div>
                                   </div>
                                 </motion.button>
@@ -896,9 +894,9 @@ export default function PartyBarChart({ partyImpactData, className = '' }: Party
         </div>
 
         {/* Intelligence Recommendation Footer */}
-        <div className="p-6 bg-gradient-to-r from-purple-50 via-blue-50 to-emerald-50 border-t border-gray-200">
+        <div className="p-6 bg-white dark:bg-slate-900/60 border-t border-gray-200 dark:border-slate-800">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg text-white shadow-md flex-shrink-0">
+            <div className="p-2 bg-blue-600 rounded-lg text-white shadow-sm flex-shrink-0">
               <Lightbulb className="w-5 h-5" />
             </div>
             <div>

@@ -27,16 +27,16 @@ const CredibilityAssessment: React.FC<CredibilityAssessmentProps> = ({
   };
 
   const status = getCredibilityStatus(credibilityScore);
-  const barGradient = credibilityScore >= 85
-    ? "from-green-500 to-green-600"
+  const barColor = credibilityScore >= 85
+    ? "#16a34a"
     : credibilityScore >= 60
-    ? "from-yellow-500 to-yellow-600"
-    : "from-red-500 to-red-600";
+    ? "#eab308"
+    : "#dc2626";
   const badgeClasses = credibilityScore >= 85
-    ? "bg-green-900/40 text-green-300 ring-1 ring-green-700"
+    ? "bg-green-100 text-green-800 ring-1 ring-green-300 dark:bg-green-900/60 dark:text-green-200 dark:ring-green-700"
     : credibilityScore >= 60
-    ? "bg-yellow-900/40 text-yellow-300 ring-1 ring-yellow-700"
-    : "bg-red-900/40 text-red-300 ring-1 ring-red-700";
+    ? "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300 dark:bg-yellow-900/60 dark:text-yellow-200 dark:ring-yellow-700"
+    : "bg-red-100 text-red-800 ring-1 ring-red-300 dark:bg-red-900/60 dark:text-red-200 dark:ring-red-700";
 
   const reasons = [
     !sourceInfo?.hasAuthor && "Missing author / anonymous source",
@@ -61,28 +61,28 @@ const CredibilityAssessment: React.FC<CredibilityAssessmentProps> = ({
 
   return (
     <motion.div
-      className="p-4 rounded-2xl shadow-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 border border-slate-700 ring-1 ring-cyan-500/20 relative overflow-hidden"
+      className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{backgroundImage:'radial-gradient(circle at 20% 10%, #22d3ee 0%, transparent 20%), radial-gradient(circle at 80% 90%, #a78bfa 0%, transparent 22%)'}} />
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white flex gap-2 items-center">
-          <Shield className="text-cyan-400" /> Credibility Assessment
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex gap-2 items-center">
+          <Shield className="text-cyan-500" /> Credibility Assessment
         </h3>
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800/70 text-slate-200 border border-slate-600"><Globe className="w-3 h-3 text-cyan-300"/> News Signal Integrity</span>
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700"><Globe className="w-3 h-3 text-cyan-500"/> News Signal Integrity</span>
       </div>
 
       <div className="space-y-3">
         <div className="relative" role="progressbar" aria-valuenow={credibilityScore} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-6 bg-slate-900/70 rounded-xl overflow-hidden border border-slate-700 ring-1 ring-cyan-500/20">
+          <div className="h-6 bg-slate-100 dark:bg-slate-900/50 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
             <motion.div
-              className={`h-full bg-gradient-to-r ${barGradient} shadow-[inset_0_0_6px_rgba(0,0,0,0.3)]`}
+              className="h-full"
               initial={{ width: 0 }}
               animate={{ width: `${credibilityScore}%` }}
               transition={{ duration: 0.8 }}
+              style={{ backgroundColor: barColor }}
             />
-            <span className="absolute inset-0 flex items-center justify-center text-[12px] font-mono font-semibold text-slate-100">
+            <span className="absolute inset-0 flex items-center justify-center text-[12px] font-mono font-semibold text-slate-700 dark:text-slate-100">
               {displayPct}%
             </span>
           </div>
@@ -111,14 +111,14 @@ const CredibilityAssessment: React.FC<CredibilityAssessmentProps> = ({
       {/* Red Flag Keywords */}
       {redFlags.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs font-semibold text-red-300 mb-2">Flagged keywords</p>
-          <div className="rounded-xl bg-gradient-to-br from-slate-900/60 via-slate-800/60 to-slate-700/60 border border-slate-700 ring-1 ring-cyan-500/20 p-4 transition-all duration-200 hover:shadow-lg hover:ring-2 hover:ring-cyan-400/30">
+          <p className="text-xs font-semibold text-red-600 dark:text-red-300 mb-2">Flagged keywords</p>
+          <div className="rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 transition-all duration-200 hover:shadow-sm">
             
             <div className="flex flex-wrap gap-2.5">
               {redFlags.map((flag, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1.5 bg-red-900/70 text-red-100 rounded-full text-xs font-medium ring-1 ring-red-700/60 border border-red-700/50 shadow-sm transition-all duration-200 hover:bg-red-800/70 hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="px-2.5 py-1.5 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200 rounded-full text-xs font-medium ring-1 ring-red-200 dark:ring-red-800 border border-red-200 dark:border-red-800 shadow-sm transition-all duration-200 focus:outline-none"
                 >
                   {flag}
                 </span>

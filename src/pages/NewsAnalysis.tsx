@@ -350,24 +350,42 @@ sessionStorage.setItem(
         </button>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         
         {/* 🚀 Hero Section */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
-            Decode the Narrative. <br className="hidden md:block"/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-              Predict the Impact.
-            </span>
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
-            Upload any article, document, or URL. Our AI extracts hidden motives, 
-            market signals, and PESTLE risks in seconds.
-          </p>
+        <section className="relative bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden rounded-3xl mb-12">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(15,23,42,0.06),transparent_40%)]"
+          />
+          <div className="text-center max-w-3xl mx-auto relative z-10 py-10">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)] dark:text-white mb-6 leading-tight">
+              Decode the Narrative. <br className="hidden md:block"/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                Predict the Impact.
+              </span>
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+              Upload any article, document, or URL. Separate Signal From Noise in Seconds.
+            </p>
+          </div>
+        </section>
+
+        <div className="my-24 relative">
+          <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-300/40 to-transparent" />
+        </div>
+
+        {/* Feature Callout - Truth Card */}
+        <div className="mb-8">
+          <div className="bg-slate-900 text-slate-100 rounded-xl shadow-[0_20px_60px_-15px_rgba(15,23,42,0.8)] ring-1 ring-white/10 p-6">
+            <h3 className="text-lg font-bold tracking-tight">Truth Check: Bias & Manipulation</h3>
+            <p className="mt-2 text-slate-300">Emotional framing and selective omission distort judgment. Anchor decisions on measurable signal, not noise.</p>
+          </div>
         </div>
 
         {/* 🎛️ Command Center (Main Card) */}
-        <div className="bg-white dark:bg-slate-900/70 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 backdrop-blur-lg">
+        <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] border border-slate-200/70 dark:border-slate-800 overflow-hidden relative z-10 backdrop-blur-lg before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-indigo-500/5 before:via-transparent before:to-transparent before:pointer-events-none">
           
           {/* Tabs / Input Method Toggle */}
           <div className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 p-2">
@@ -552,7 +570,8 @@ sessionStorage.setItem(
 
         
 
-      </div>
+        </div>
+      </section>
     </div>
   );
 };

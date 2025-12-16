@@ -1,33 +1,33 @@
-import { create } from "zustand"
+import { create } from "zustand";
+import { Session } from "@supabase/supabase-js";
 
-export type AuthUser = {
-  id: string
-  email: string
-  plan: "free" | "pro" | "premium"
-  credits: number
+export type UserTier = 'free' | 'starter' | 'pro' | 'business';
+
+interface User {
+  id: string;
+  email: string;
+  plan: UserTier;
+  billingCycle?: 'monthly' | 'yearly' | null;
+  scansUsed?: number;
+  scansLimit?: number;
 }
 
-type AuthStore = {
-  user: AuthUser | null
-  loading: boolean
-
-  setUser: (user: AuthUser | null) => void
-  setLoading: (loading: boolean) => void
-  logout: () => void
+interface AuthState {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  setUser: (user: User | null) => void;
+  setSession: (session: Session | null) => void;
+  setLoading: (loading: boolean) => void;
 }
 
-const useAuthStore = create<AuthStore>((set) => ({
+const useAuthStore = create<AuthState>((set) => ({
   user: null,
+  session: null,
   loading: true,
-
   setUser: (user) => set({ user }),
+  setSession: (session) => set({ session }),
   setLoading: (loading) => set({ loading }),
+}));
 
-  logout: () =>
-    set({
-      user: null,
-      loading: false,
-    }),
-}))
-
-export default useAuthStore
+export default useAuthStore;
