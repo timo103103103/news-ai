@@ -17,6 +17,16 @@ import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
 import HeroStackPreview from "../components/HeroStackPreview";
 
+/**
+ * =========================================================
+ * HOME PAGE — SEO + DECISION INTELLIGENCE HUB
+ * =========================================================
+ * Goal:
+ * - Speak investor language
+ * - Make Google clearly understand what NexVeris is
+ * - Act as the topic authority root for all landing pages
+ */
+
 export default function Home() {
   const [urlInput, setUrlInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -82,17 +92,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
+      {/* ================= SEO HEAD ================= */}
       <Helmet>
-        <title>See the forces behind the news | NexVeris</title>
+        <title>AI News Analysis for Credibility & Market Impact | NexVeris</title>
         <meta
           name="description"
-          content="Decision intelligence for investors. Reveal bias, incentives, and power dynamics hidden inside news."
+          content="NexVeris is an AI-powered news analysis platform that reveals credibility, bias, hidden incentives, and market impact behind news events."
         />
       </Helmet>
 
       <main className="max-w-7xl mx-auto px-6 pt-24 pb-32">
 
-        {/* ================= HERO (INVESTOR LANGUAGE) ================= */}
+        {/* ================= HERO ================= */}
         <section className="grid lg:grid-cols-12 gap-16 items-center mb-32">
           <div className="lg:col-span-5 space-y-8">
             <h1 className="text-[46px] font-bold leading-tight">
@@ -100,19 +111,20 @@ export default function Home() {
             </h1>
 
             <p className="text-lg text-slate-600 max-w-md">
-              NexVeris is decision intelligence for investors — revealing
-              bias, incentives, and power dynamics <span className="font-medium">
-              before they move outcomes</span>.
+              NexVeris is AI-powered decision intelligence —
+              revealing credibility gaps, incentive structures,
+              and power dynamics <span className="font-medium">
+              before narratives move outcomes</span>.
             </p>
 
-            {/* mini flow */}
+            {/* Mini flow */}
             <div className="flex items-center gap-6 text-sm text-slate-700">
-              <MiniStep icon={<FileText />} title="Paste" desc="Any article" />
-              <MiniStep icon={<Brain />} title="Decode" desc="Narrative & incentives" />
-              <MiniStep icon={<Target />} title="Decide" desc="With context" />
+              <MiniStep icon={<FileText />} title="Paste" desc="Any public article" />
+              <MiniStep icon={<Brain />} title="Analyze" desc="Bias & incentives" />
+              <MiniStep icon={<Target />} title="Decide" desc="With structure" />
             </div>
 
-            {/* input */}
+            {/* Input */}
             <form onSubmit={handleAnalyzeNews} className="max-w-md">
               <div className="flex items-center bg-white rounded-full p-2 border shadow-sm">
                 <LinkIcon className="ml-4 text-slate-400" />
@@ -138,23 +150,22 @@ export default function Home() {
             </form>
           </div>
 
-          {/* ===== HeroStackPreview (冷靜、像情報終端) ===== */}
           <div className="lg:col-span-7 hidden lg:flex justify-center">
             <HeroStackPreview />
           </div>
         </section>
 
-        {/* ================= RISK AWARENESS ================= */}
+        {/* ================= PROBLEM CONTEXT ================= */}
         <section className="mb-32">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Why most market decisions start with incomplete information
+            Why most decisions start with incomplete information
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6">
             <PainCard
               icon={<Search />}
-              title="Missing context"
-              desc="Key constraints and incentives are often excluded from headlines."
+              title="Credibility gaps"
+              desc="Headlines omit uncertainty, assumptions, and missing counterparties."
             />
             <PainCard
               icon={<Scale />}
@@ -163,25 +174,25 @@ export default function Home() {
             />
             <PainCard
               icon={<LineChart />}
-              title="Timing disadvantage"
-              desc="By the time news trends, positioning has already shifted."
+              title="Late positioning"
+              desc="By the time news trends, incentives are already priced in."
             />
           </div>
         </section>
 
-        {/* ================= METHOD (STRUCTURE, NOT MAGIC) ================= */}
+        {/* ================= METHOD ================= */}
         <section className="bg-slate-50 py-24 rounded-3xl mb-32">
           <h2 className="text-3xl font-bold text-center mb-10">
-            A structured way to reduce decision risk
+            A structured approach to news analysis
           </h2>
           <p className="text-center text-slate-600 mb-16">
-            NexVeris does not predict outcomes — it clarifies structure.
+            NexVeris does not predict outcomes — it clarifies structure and risk.
           </p>
 
           <div className="grid md:grid-cols-3 gap-12 text-center">
-            <Step title="Input" desc="Any public news article" />
+            <Step title="Input" desc="Public news and disclosures" />
             <Step title="Decode" desc="Bias, incentives, stakeholder power" />
-            <Step title="Interpret" desc="Implications before acting" />
+            <Step title="Interpret" desc="Market and decision implications" />
           </div>
         </section>
 
@@ -189,51 +200,51 @@ export default function Home() {
         <section className="grid lg:grid-cols-2 gap-16 items-center mb-32">
           <div>
             <h2 className="text-3xl font-bold mb-6">
-              Who gains — who absorbs the risk
+              Who benefits — who absorbs the risk
             </h2>
             <p className="text-lg text-slate-600">
               Stakeholder dominance and incentive alignment extracted directly
-              from the article — not opinion.
+              from the article — not opinion or sentiment.
             </p>
             <p className="mt-4 font-medium">
-              This layer is rarely visible in traditional reporting.
+              This layer is typically invisible in traditional reporting.
             </p>
           </div>
 
           <img
             src="/images/result-1.png"
-            alt="Stakeholder incentive mapping"
+            alt="Stakeholder incentive and power mapping"
             className="rounded-2xl border shadow-xl"
           />
         </section>
 
-        {/* ================= PRICING PSYCHOLOGY ================= */}
+        {/* ================= VALUE ================= */}
         <section className="mb-32 max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-10">
-            What are you really paying for?
+            What NexVeris actually helps you avoid
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6">
             <ValueCard
-              title="Less narrative risk"
-              desc="Avoid acting on incomplete or strategically framed information."
+              title="Narrative-driven mistakes"
+              desc="Avoid acting on strategically framed or incomplete information."
             />
             <ValueCard
-              title="Earlier clarity"
-              desc="See incentive structures before consensus forms."
+              title="Delayed clarity"
+              desc="Understand incentive structures before consensus forms."
             />
             <ValueCard
-              title="Better judgment"
-              desc="Decisions informed by structure, not headlines."
+              title="Overconfidence"
+              desc="Replace intuition with structured context."
             />
           </div>
 
           <p className="text-center text-slate-500 mt-10">
-            NexVeris is not a news tool. It is a decision filter.
+            NexVeris is not a news platform. It is a decision filter.
           </p>
         </section>
 
-        {/* ================= TRUST / FAQ ================= */}
+        {/* ================= FAQ ================= */}
         <section className="max-w-4xl mx-auto mb-32">
           <h2 className="text-3xl font-bold text-center mb-10">
             Common questions
@@ -260,10 +271,10 @@ export default function Home() {
         {/* ================= FINAL CTA ================= */}
         <section className="text-center">
           <h2 className="text-3xl font-bold mb-4">
-            See what others miss.
+            Analyze one article. See the difference.
           </h2>
           <p className="text-slate-600 mb-8">
-            One article is enough to feel the difference.
+            Structure changes how information feels.
           </p>
           <button
             onClick={() => navigate("/analyze")}
@@ -272,6 +283,33 @@ export default function Home() {
             Analyze an article
           </button>
         </section>
+
+        {/* ================= SEO SUPPORT BLOCK =================
+            Purpose:
+            - Reinforce topical authority
+            - Connect homepage to all landing pages
+            - Visible to Google, hidden from users
+        ===================================================== */}
+        <section className="sr-only">
+          <h2>AI-powered News Analysis Platform</h2>
+          <p>
+            NexVeris is an AI-powered news analysis and decision intelligence
+            platform that evaluates news credibility, detects bias, analyzes
+            incentive structures, and assesses potential market impact.
+          </p>
+          <p>
+            The platform is designed for investors, analysts, researchers,
+            and decision-makers who need to understand not just what the news says,
+            but why it is being said and how it may influence markets or behavior.
+          </p>
+          <ul>
+            <li>AI News Analysis Tool</li>
+            <li>News Credibility & Bias Detection</li>
+            <li>Market Impact & Sentiment Analysis</li>
+            <li>PESTLE & Geopolitical Risk Analysis</li>
+          </ul>
+        </section>
+
       </main>
     </div>
   );
@@ -323,14 +361,14 @@ function ValueCard({ title, desc }: any) {
 const FAQS = [
   {
     q: "Is NexVeris opinionated?",
-    a: "No. NexVeris does not take positions — it exposes structure, incentives, and framing.",
+    a: "No. NexVeris does not take positions or generate opinions — it exposes structure, incentives, and narrative framing.",
   },
   {
     q: "Do you store or reuse my articles?",
-    a: "No. Analysis is on-demand and not reused for training or distribution.",
+    a: "No. Analysis is generated on demand and is not reused for training or redistribution.",
   },
   {
-    q: "Who is this built for?",
-    a: "Investors, researchers, and decision-makers who care about context before acting.",
+    q: "Who is NexVeris built for?",
+    a: "Investors, analysts, researchers, and decision-makers who value context before action.",
   },
 ];
