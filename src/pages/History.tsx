@@ -230,7 +230,17 @@ export default function History() {
                     <div
                       key={analysis.id}
                       onClick={() => handleAnalysisClick(analysis.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleAnalysisClick(analysis.id);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Open analysis: ${analysis.title}`}
                       className="p-6 hover:bg-gray-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors duration-200"
+                      title="View analysis report"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
@@ -252,6 +262,16 @@ export default function History() {
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                                     Confidence: {analysis.metrics.confidence}%
                                   </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAnalysisClick(analysis.id);
+                                    }}
+                                    aria-label="View report"
+                                    className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                  >
+                                    View Report
+                                  </button>
                                 </div>
                               )}
                             </div>

@@ -86,9 +86,11 @@ export default function AnalysisDetail() {
             <div className="w-8 h-8 bg-red-400 rounded-full" />
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Analysis Not Found</h2>
-          <p className="text-gray-600 mb-4">
-            {error || 'The analysis you\'re looking for could not be found.'}
-          </p>
+          <div className="text-red-600 dark:text-red-400 mb-4">
+            <strong>This article is protected or dynamically loaded.</strong>
+            <br />
+            For accuracy, please paste the article text directly below.
+          </div>
           <button
             onClick={() => navigate('/history')}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

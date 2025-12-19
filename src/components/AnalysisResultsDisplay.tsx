@@ -338,7 +338,7 @@ const AnalysisResultPage = () => {
 
             return (
               <>
-                <CredibilityAssessment credibilityScore={credibilityScore} redFlags={redFlags} sourceInfo={sourceInfo} />
+                <CredibilityAssessment credibilityScore={credibilityScore} redFlags={redFlags} sourceInfo={sourceInfo} analystNote={credibility.analystNote} />
               </>
             );
           })()}

@@ -158,6 +158,21 @@ export default function LandingTemplate({ page, allPages }: LandingTemplateProps
                   {page.cta.secondary}
                 </Link>
               </div>
+              <div className="mt-12 flex justify-center">
+                <div style={{ width: '100%', maxWidth: 1298, height: 950, position: 'relative', background: 'white', overflow: 'hidden', borderRadius: 16 }}>
+                  <div data-property-1="Frame 1" style={{ width: 1298, height: 950, left: 0, top: 0, position: 'absolute', overflow: 'hidden' }}>
+                    <div data-property-1="Analysis 2 Hid" style={{ width: 1125, height: 743, left: 198, top: 49, position: 'absolute', opacity: 0, background: 'white', overflow: 'hidden', borderRadius: 16 }}>
+                      <img style={{ width: 1125, height: 743, left: 0, top: 0, position: 'absolute' }} src="https://placehold.co/1125x743" alt="analysis-2" />
+                    </div>
+                    <div data-property-1="Analysis 1 Hid" style={{ width: 854, height: 743, left: 150, top: 49, position: 'absolute', opacity: 0, background: 'white', overflow: 'hidden', borderRadius: 16 }}>
+                      <img style={{ width: 854, height: 743, left: 0, top: 0, position: 'absolute' }} src="https://placehold.co/854x743" alt="analysis-1" />
+                    </div>
+                    <div style={{ width: 854, height: 743, left: 250, top: 49, position: 'absolute', background: 'white', overflow: 'hidden', borderRadius: 16 }}>
+                      <img style={{ width: 854, height: 743, left: 0, top: 0, position: 'absolute' }} src="https://placehold.co/854x743" alt="analysis" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

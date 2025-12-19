@@ -14,6 +14,11 @@ interface PowerActor {
   source?: 'Explicit' | 'Inferred'; // NEW: From analyze.js v2.1
   evidence?: string[]; // NEW: From analyze.js v2.1
   isInferred?: boolean; // NEW: From analyze.js v2.1
+  channels?: string[]; // NEW: Power channels tags (1-3)
+  influenceScope?: string; // NEW: Geographic/systemic scope
+  stance?: 'Supportive' | 'Confrontational' | 'Defensive' | 'Neutral'; // NEW: Narrative stance
+  actionVector?: string[]; // NEW: Action levers (1-3 bullets)
+  evidenceBasis?: 'Explicit' | 'Inferred' | string; // NEW: Per-card evidence basis
 }
 
 interface PowerAmplificationMapProps {
@@ -63,6 +68,45 @@ const getActorIcon = (name: string, category: string) => {
 const PowerAmplificationMap = ({ actors, className = '' }: PowerAmplificationMapProps) => {
   const [selectedActor, setSelectedActor] = useState<PowerActor | null>(null);
   const [hoveredActor, setHoveredActor] = useState<string | null>(null);
+
+  const getDefaultChannels = (category: PowerActor['category']) => {
+    switch (category) {
+      case 'State': return ['Executive Authority', 'Diplomatic Pressure', 'Legal Leverage'];
+      case 'Platform': return ['Platform Reach', 'Moderation Leverage', 'Algorithmic Prioritization'];
+      case 'Capital': return ['Capital Allocation', 'Investment Signalling', 'Credit Access'];
+      case 'Media': return ['Agenda Setting', 'Editorial Framing', 'Network Amplification'];
+      default: return [];
+    }
+  };
+
+  const getDefaultScope = (category: PowerActor['category']) => {
+    switch (category) {
+      case 'State': return 'Global (State-level)';
+      case 'Platform': return 'Global (Platform-level)';
+      case 'Capital': return 'Markets (Capital-level)';
+      case 'Media': return 'Media Ecosystem';
+      default: return 'General';
+    }
+  };
+
+  const getDefaultActions = (category: PowerActor['category']) => {
+    switch (category) {
+      case 'State': return ['Executive statements', 'Diplomatic escalation'];
+      case 'Platform': return ['Algorithmic boosts', 'Content moderation'];
+      case 'Capital': return ['Funding allocation', 'Policy lobbying'];
+      case 'Media': return ['Narrative promotion', 'Investigative framing'];
+      default: return [];
+    }
+  };
+
+  const stanceColor = (stance?: PowerActor['stance']) => {
+    switch (stance) {
+      case 'Supportive': return 'text-emerald-700 dark:text-emerald-300';
+      case 'Confrontational': return 'text-rose-700 dark:text-rose-300';
+      case 'Defensive': return 'text-amber-700 dark:text-amber-300';
+      default: return 'text-slate-700 dark:text-slate-300';
+    }
+  };
 
   if (!actors || actors.length === 0) {
     return (
@@ -162,11 +206,7 @@ const PowerAmplificationMap = ({ actors, className = '' }: PowerAmplificationMap
                       const x = 100 + Math.cos(angle) * 95;
                       const y = 100 + Math.sin(angle) * 95;
                       return (
-                        <g key={related.name}>
-                          <circle cx={x} cy={y} r="12" fill="rgba(148,163,184,0.3)" stroke={categoryConfig.color} strokeWidth="2" className="dark:fill-[rgba(30,41,59,0.9)]" />
-                          <text x={x} y={y + 1} fontSize="12" textAnchor="middle" dominantBaseline="middle">
-                            {getActorIcon(related.name, related.category)}
-                          </text>
+                        <g key={related.name}> 
                         </g>
                       );
                     })}
@@ -194,6 +234,33 @@ const PowerAmplificationMap = ({ actors, className = '' }: PowerAmplificationMap
                     )}
                   </div>
 
+                  {/* Influence Scope */}
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Primary Influence: {actor.influenceScope || getDefaultScope(actor.category)}
+                  </div>
+
+                  {/* Power Channel Tags */}
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(actor.channels && actor.channels.length > 0 ? actor.channels : getDefaultChannels(actor.category))
+                      .slice(0, 3)
+                      .map((ch, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+                        >
+                          {ch}
+                        </span>
+                      ))
+                    }
+                  </div>
+
+                  {/* Narrative Stance */}
+                  {actor.stance && (
+                    <div className={`text-[11px] mt-1 font-semibold ${stanceColor(actor.stance)}`}>
+                      Narrative Stance: {actor.stance}
+                    </div>
+                  )}
+
                   {/* Metrics */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-white border border-slate-200 rounded p-2 dark:bg-slate-800/50 dark:border-slate-700">
@@ -205,15 +272,27 @@ const PowerAmplificationMap = ({ actors, className = '' }: PowerAmplificationMap
                       <div className="font-semibold text-slate-900 dark:text-white">{actor.distributionPower}%</div>
                     </div>
                   </div>
+
+                  {/* Evidence Basis */}
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Evidence Basis: {actor.evidenceBasis || (actor.isInferred ? 'Inferred' : (actor.source || 'Explicit'))}
+                  </div>
+
+                  {/* Action Vector */}
+                  <div className="mt-1">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">Likely Actions:</div>
+                    <ul className="mt-0.5 space-y-0.5">
+                      {(actor.actionVector && actor.actionVector.length > 0 ? actor.actionVector : getDefaultActions(actor.category))
+                        .slice(0, 3)
+                        .map((av, i) => (
+                          <li key={i} className="text-[11px] text-slate-700 dark:text-slate-300">• {av}</li>
+                        ))
+                      }
+                    </ul>
+                  </div>
                 </div>
 
-                {/* Category Icon Badge */}
-                <div
-                  className="absolute -top-3 -right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-900"
-                  style={{ backgroundColor: categoryConfig.color }}
-                >
-                  {React.createElement(categoryConfig.icon, { className: 'w-5 h-5 text-white' })}
-                </div>
+                {/* Category Icon Badge removed to avoid duplication */}
               </motion.div>
             </motion.div>
           );
