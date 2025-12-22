@@ -19,6 +19,11 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+// ===================================
+// 🔧 BACKEND URL CONFIGURATION
+// ===================================
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081';
+
 // --- Types & Data ---
 type BillingCycle = 'monthly' | 'yearly';
 type PlanId = 'starter' | 'pro' | 'business';
@@ -103,16 +108,17 @@ const plans: Plan[] = [
 ];
 
 interface Pack {
-  id: 'pack50' | 'pack200';
+  id: 'extra_7' | 'extra_200';
   label: string;
   price: string;
   perScan: string;
 }
 
 const payAsYouGoPacks: Pack[] = [
-  { id: 'pack50', label: '50 Analyses', price: '$15', perScan: '$0.30/scan' },
-  { id: 'pack200', label: '200 Analyses', price: '$50', perScan: '$0.25/scan' },
+  { id: 'extra_7', label: '50 Analyses', price: '$7', perScan: '$0.14/scan' },
+  { id: 'extra_200', label: '200 Analyses', price: '$20', perScan: '$0.10/scan' },
 ];
+
 
 // --- Component Sections ---
 
@@ -225,89 +231,91 @@ function FeatureComparisonTable() {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-8 mt-6 text-sm text-gray-600 dark:text-gray-400">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span>Included in FREE tier</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-          <span>Premium models (Pro+)</span>
-        </div>
+      {/* Additional Info */}
+      <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>🔥 Pro and Business plans automatically upgrade to premium models for high-risk content</p>
       </div>
     </div>
   );
 }
 
-// Plans Cards
-function PricingPlans({ cycle, onSelectPlan }: { cycle: BillingCycle, onSelectPlan: (id: PlanId) => void }) {
+// Pricing Cards
+function PricingPlans({ 
+  cycle, 
+  onSelectPlan 
+}: { 
+  cycle: BillingCycle; 
+  onSelectPlan: (id: PlanId) => void;
+}) {
   return (
-    <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+    <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20 px-4">
       {plans.map((plan) => {
         const isPopular = plan.popular;
-        const pricing = cycle === 'monthly' ? plan.monthly : plan.yearly;
+        const price = cycle === 'monthly' ? plan.monthly.price : plan.yearly.price;
+        const savings = cycle === 'yearly' ? plan.yearly.save : null;
 
         return (
           <div
             key={plan.id}
-            className={`relative rounded-2xl border-2 p-8 bg-white dark:bg-slate-900 transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+            className={`relative rounded-2xl p-8 transition-all duration-300 ${
               isPopular
-                ? 'border-purple-500 shadow-xl shadow-purple-500/20 dark:shadow-purple-500/10'
-                : 'border-gray-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700'
+                ? 'bg-white dark:bg-slate-900 border-3 border-purple-500 shadow-2xl shadow-purple-200/50 dark:shadow-purple-900/30'
+                : 'bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl'
             }`}
           >
             {isPopular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
-                  <Crown className="w-4 h-4" />
-                  MOST POPULAR
-                </div>
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                <Crown className="w-4 h-4" />
+                MOST POPULAR
               </div>
             )}
 
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                 {plan.name}
               </h3>
-              <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-4">
+              <p className="text-sm mb-4 text-purple-600 dark:text-purple-400">
                 {plan.tagline}
               </p>
-              <div className="flex items-baseline justify-center gap-2 mb-2">
+              
+              <div className="mb-2">
                 <span className="text-5xl font-bold text-gray-900 dark:text-white">
-                  {pricing.price}
+                  {price}
                 </span>
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-lg ml-2 text-gray-600 dark:text-gray-400">
                   /{cycle === 'monthly' ? 'mo' : 'yr'}
                 </span>
               </div>
-              {cycle === 'yearly' && plan.yearly.save && (
-                <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-                  {plan.yearly.save} ✨
+
+              {savings && (
+                <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                  {savings}
                 </div>
               )}
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+
+              <p className="text-sm mt-4 text-gray-600 dark:text-gray-400">
                 {plan.scansPerMonth} analyses/month
-              </div>
+              </p>
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center min-h-[3rem]">
+            <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">
               {plan.description}
             </p>
 
             <ul className="space-y-3 mb-8">
               {plan.features.map((feature, idx) => {
                 const isLocked = feature.startsWith('🔒');
-                const isIncluded = feature.startsWith('✅') || feature.startsWith('🔥');
-                
+                const isHighlighted = feature.startsWith('🔥');
                 return (
                   <li key={idx} className="flex items-start gap-3">
-                    {isIncluded ? (
-                      <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                    ) : isLocked ? (
-                      <Lock className="w-5 h-5 text-gray-400 dark:text-gray-600 flex-shrink-0 mt-0.5" />
+                    {!isLocked ? (
+                      isHighlighted ? (
+                        <Sparkles className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
+                      ) : (
+                        <Check className="w-5 h-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                      )
                     ) : (
-                      <div className="w-5 h-5 flex-shrink-0"></div>
+                      <Lock className="w-5 h-5 flex-shrink-0 text-gray-300 dark:text-gray-600" />
                     )}
                     <span className={`text-sm ${isLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
                       {feature.replace('✅ ', '').replace('🔒 ', '').replace('🔥 ', '')}
@@ -321,7 +329,7 @@ function PricingPlans({ cycle, onSelectPlan }: { cycle: BillingCycle, onSelectPl
               onClick={() => onSelectPlan(plan.id)}
               className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 ${
                 isPopular
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105'
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl hover:scale-105'
                   : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 shadow-md hover:shadow-lg hover:scale-105'
               }`}
             >
@@ -385,41 +393,103 @@ export default function Pricing() {
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(false);
 
-  const handleSelectPlan = async (planId: PlanId) => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = '/login?redirect=/pricing';
-        return;
-      }
+ const handleSelectPlan = async (planId: PlanId) => {
+  setLoading(true);
 
-      // Create checkout session
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          email: user.email,
-          tier: planId,
-          billingCycle: cycle,
-        }),
-      });
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-      const { sessionId } = await response.json();
-      // Redirect to Stripe checkout
-      window.location.href = `https://checkout.stripe.com/pay/${sessionId}`;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Failed to start checkout. Please try again.');
-    } finally {
-      setLoading(false);
+    if (error || !user) {
+      window.location.href = '/login?redirect=/pricing';
+      return;
     }
-  };
 
-  const handleSelectPack = async (packId: string) => {
-    alert(`Purchase pack: ${packId} - Stripe integration coming soon!`);
-  };
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      tier: planId,
+      billingCycle: cycle,
+    };
+
+    console.log('[Stripe] Creating checkout session:', payload);
+    console.log('[Stripe] Backend URL:', BACKEND_URL);
+
+    // ✅ FIX: Use full backend URL instead of relative path
+    const response = await fetch(`${BACKEND_URL}/api/stripe/create-checkout-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('[Stripe] Backend error:', response.status, text);
+      throw new Error('Backend failed to create checkout session');
+    }
+
+    const data = await response.json();
+    console.log('[Stripe] Checkout response:', data);
+
+    if (!data?.url) {
+      console.error('[Stripe] Missing checkout URL', data);
+      throw new Error('Checkout session created but no URL returned');
+    }
+
+    // ✅ the ONLY redirect you should do
+    window.location.href = data.url;
+
+  } catch (err) {
+    console.error('Checkout error:', err);
+    alert('Checkout is not configured. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+ const handleSelectPack = async (packId: 'extra_7' | 'extra_200') => {
+  setLoading(true);
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = '/login?redirect=/pricing';
+      return;
+    }
+
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      pack: packId,
+    };
+
+    console.log('[Stripe] Extra scans request:', payload);
+    console.log('[Stripe] Backend URL:', BACKEND_URL);
+
+    // ✅ FIX: Use full backend URL instead of relative path
+    const response = await fetch(`${BACKEND_URL}/api/stripe/buy-extra-scans`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!data?.url) {
+      throw new Error('No checkout URL');
+    }
+
+    window.location.href = data.url;
+
+  } catch (err) {
+    console.error(err);
+    alert('Checkout is not configured. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-slate-900 py-20 px-4">

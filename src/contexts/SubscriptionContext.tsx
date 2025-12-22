@@ -133,10 +133,19 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         .from('users')
         .select('plan, billing_cycle, analyses_used, analyses_limit')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('❌ SubscriptionContext: Error fetching subscription:', error);
+        setTierState('free');
+        setBillingCycle(null);
+        setScansUsed(0);
+        setScansLimit(SCAN_LIMITS.free);
+        setLoading(false);
+        return;
+      }
+      if (!dbUser) {
+        console.warn('⚠️ SubscriptionContext: No subscription row, defaulting to free');
         setTierState('free');
         setBillingCycle(null);
         setScansUsed(0);
