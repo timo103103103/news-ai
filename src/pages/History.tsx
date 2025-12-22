@@ -5,6 +5,7 @@ import {
   TrendingUp, Building, Globe, Shield, Target, BarChart
 } from 'lucide-react';
 import { historyAPI, AnalysisHistory } from '@/services/historyAPI';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 export type { AnalysisHistory, HistoryResponse } from '@/services/historyAPI';
 
@@ -19,6 +20,7 @@ export default function History() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const { canAccess } = useSubscription();
 
   const itemsPerPage = 10;
 
@@ -64,6 +66,32 @@ export default function History() {
     } finally {
       setLoading(false);
     }
+  };
+  const exportListCSV = () => {
+    const headers = ['id','title','date','type','summary','score','confidence'];
+    const lines = [headers.join(',')];
+    analyses.forEach(a => {
+      const row = [
+        a.id,
+        a.title,
+        a.date,
+        a.type,
+        a.summary || '',
+        String(a.metrics?.score ?? ''),
+        String(a.metrics?.confidence ?? ''),
+      ].map(v => String(v).replace(/"/g,'""'));
+      lines.push(row.map(v => `"${v}"`).join(','));
+    });
+    const csv = lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis-history.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleAnalysisClick = (id: string) => {
@@ -136,6 +164,15 @@ export default function History() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
+              {canAccess('csv_export') && (
+                <button
+                  onClick={exportListCSV}
+                  className="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/40 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export CSV
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -8,7 +8,8 @@ export default function AuthProvider({
   children: React.ReactNode
 }) {
   const setUser = useAuthStore((s) => s.setUser)
-  const setLoading = useAuthStore((s) => s.setLoading)
+  const setSession = useAuthStore((s) => s.setSession)
+  const clearError = useAuthStore((s) => s.clearError)
 
   useEffect(() => {
     let alive = true
@@ -17,15 +18,19 @@ export default function AuthProvider({
       if (!alive) return
 
       if (!session?.user) {
+        console.log("🚪 No session user")
+        setSession(null)
         setUser(null)
-        setLoading(false)
         return
       }
 
       const user = session.user
+      console.log("✅ Session user detected:", user.email)
+
+      setSession(session)
 
       try {
-        const { data: dbUser } = await supabase
+        const { data: dbUser, error } = await supabase
           .from("users")
           .select("plan, billing_cycle, scans_used_this_month, scans_limit")
           .eq("id", user.id)
@@ -43,7 +48,9 @@ export default function AuthProvider({
           scansUsed: dbUser?.scans_used_this_month ?? 0,
           scansLimit: dbUser?.scans_limit ?? 10,
         })
-      } catch {
+      } catch (err) {
+        console.warn("⚠️ Failed to fetch user profile, fallback to free")
+
         setUser({
           id: user.id,
           email: user.email || "",
@@ -52,25 +59,23 @@ export default function AuthProvider({
           scansUsed: 0,
           scansLimit: 10,
         })
-      } finally {
-        // ⭐⭐⭐ 這一行是關鍵
-        setLoading(false)
       }
     }
 
-    // ===== 初始化（refresh / first load）=====
-    setLoading(true)
+    // ===== Initial load (refresh / first mount) =====
+    console.log("🔐 AuthProvider mounted")
+    clearError()
+
     supabase.auth.getSession().then(({ data }) => {
       applyUserFromSession(data.session)
     })
 
-    // ===== 監聽登入 / 登出 =====
+    // ===== Listen to auth changes =====
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event)
-
-      setLoading(true)
+      console.log("🔄 Auth event:", event)
+      clearError()
       applyUserFromSession(session)
     })
 
@@ -78,7 +83,7 @@ export default function AuthProvider({
       alive = false
       subscription.unsubscribe()
     }
-  }, [setUser, setLoading])
+  }, [setUser, setSession, clearError])
 
   return <>{children}</>
 }

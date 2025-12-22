@@ -19,7 +19,7 @@ interface SubscriptionContextType {
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
-// Feature access mapping based on your pricing tiers
+// ✅ FIXED: Complete Feature Access Mapping
 const FEATURE_ACCESS: Record<string, SubscriptionTier[]> = {
   // Free tier features (everyone has access)
   'executive_summary': ['free', 'starter', 'pro', 'business'],
@@ -37,9 +37,13 @@ const FEATURE_ACCESS: Record<string, SubscriptionTier[]> = {
   'motive_heatmap': ['pro', 'business'],
   'manipulation_score': ['pro', 'business'],
   'manipulation_gauge': ['pro', 'business'],
+  
+  // ✅ FIXED: Added party_impact for PartyBarChart
+  'party_impact': ['pro', 'business'],
   'party_barchart': ['pro', 'business'],
   'stakeholder_mapping': ['pro', 'business'],
   'stakeholder_impact': ['pro', 'business'],
+  
   'full_pestle': ['pro', 'business'],
   'pestle_detailed': ['pro', 'business'],
   'chronos': ['pro', 'business'],
@@ -47,6 +51,8 @@ const FEATURE_ACCESS: Record<string, SubscriptionTier[]> = {
   'entropy': ['pro', 'business'],
   'thermodynamic_entropy': ['pro', 'business'],
   'winner_loser_network': ['pro', 'business'],
+  'ouroboros': ['pro', 'business'],
+  'predictive_modeling': ['pro', 'business'],
   
   // Business tier features ($79/month, $790/year - 800 scans)
   'api_access': ['business'],
@@ -73,6 +79,7 @@ const UPGRADE_MESSAGES: Record<string, string> = {
   'motive_heatmap': 'Visualize manipulation techniques and motives. Upgrade to Pro.',
   'manipulation_score': 'Detect emotional manipulation and propaganda tactics. Upgrade to Pro.',
   'manipulation_gauge': 'Measure media manipulation levels. Upgrade to Pro.',
+  'party_impact': 'Understand stakeholder power dynamics and political impacts. Upgrade to Pro.',
   'party_barchart': 'Understand political stakeholder impacts. Upgrade to Pro.',
   'stakeholder_mapping': 'Identify winners and losers from policy changes. Upgrade to Pro.',
   'stakeholder_impact': 'Map the power-interest dynamics. Upgrade to Pro.',
@@ -83,6 +90,8 @@ const UPGRADE_MESSAGES: Record<string, string> = {
   'entropy': 'Analyze signal-to-noise ratios. Upgrade to Pro.',
   'thermodynamic_entropy': 'Measure narrative predictability. Upgrade to Pro.',
   'winner_loser_network': 'See the complete winner/loser network. Upgrade to Pro.',
+  'ouroboros': 'Access outcome propagation and causal chain analysis. Upgrade to Pro.',
+  'predictive_modeling': 'Access advanced predictive modeling features. Upgrade to Pro.',
   
   'api_access': 'Integrate our intelligence into your systems. Upgrade to Business.',
   'data_export': 'Export analysis data to CSV/PDF. Upgrade to Business.',
@@ -99,7 +108,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [scansLimit, setScansLimit] = useState(SCAN_LIMITS.free);
   const [loading, setLoading] = useState(true);
 
-  // Fetch subscription from database (SERVER-SIDE VALIDATION)
+  // ✅ FIXED: Fetch subscription from database matching server.js schema
   const refreshSubscription = async () => {
     try {
       setLoading(true);
@@ -107,7 +116,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('🔐 SubscriptionContext: No authenticated user, setting to free tier');
+        console.log('📍 SubscriptionContext: No authenticated user, setting to free tier');
         setTierState('free');
         setBillingCycle(null);
         setScansUsed(0);
@@ -116,12 +125,13 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      console.log('🔐 SubscriptionContext: Fetching subscription for user:', user.id);
+      console.log('📍 SubscriptionContext: Fetching subscription for user:', user.id);
 
-      // Fetch from database (source of truth)
+      // ✅ FIXED: Match server.js column names exactly
+      // Server uses: plan, analyses_used, analyses_limit, billing_cycle
       const { data: dbUser, error } = await supabase
         .from('users')
-        .select('plan, billing_cycle, scans_used_this_month')
+        .select('plan, billing_cycle, analyses_used, analyses_limit')
         .eq('id', user.id)
         .single();
 
@@ -144,11 +154,12 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       const validatedBillingCycle = dbUser?.billing_cycle as BillingCycle | null;
 
       console.log('✅ SubscriptionContext: Loaded tier:', validatedTier, 'billing:', validatedBillingCycle);
+      console.log('✅ SubscriptionContext: Usage:', dbUser?.analyses_used, '/', dbUser?.analyses_limit);
 
       setTierState(validatedTier);
       setBillingCycle(validatedBillingCycle);
-      setScansUsed(dbUser?.scans_used_this_month || 0);
-      setScansLimit(SCAN_LIMITS[validatedTier]);
+      setScansUsed(dbUser?.analyses_used || 0);
+      setScansLimit(dbUser?.analyses_limit || SCAN_LIMITS[validatedTier]);
       setLoading(false);
 
     } catch (err) {
@@ -199,12 +210,17 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Check if user can access a feature
+  // ✅ FIXED: Enhanced logging for debugging
   const canAccess = (feature: string): boolean => {
     const requiredTiers = FEATURE_ACCESS[feature] || [];
     const hasAccess = requiredTiers.includes(tier);
     
     console.log(`🔍 SubscriptionContext: canAccess('${feature}') = ${hasAccess} (tier: ${tier})`);
+    
+    if (!hasAccess) {
+      console.log(`   ❌ Required tiers: [${requiredTiers.join(', ')}]`);
+      console.log(`   ❌ Current tier: ${tier}`);
+    }
     
     return hasAccess;
   };

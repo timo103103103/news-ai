@@ -23,14 +23,22 @@ export interface OuroborosProps {
 export default function OuroborosResonance({ data, className = '' }: OuroborosProps) {
   if (!data) return null;
 
-  const getImpactColor = (impact: string) => {
-    switch (impact.toLowerCase()) {
-      case 'extreme': return 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300';
-      case 'critical': return 'text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300';
-      case 'high': return 'text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300';
-      default: return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300';
-    }
-  };
+const getImpactColor = (impact?: string) => {
+  if (!impact || typeof impact !== 'string') {
+    return 'text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
+  }
+
+  switch (impact.toLowerCase()) {
+    case 'extreme':
+      return 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300';
+    case 'critical':
+      return 'text-rose-600 bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300';
+    case 'high':
+      return 'text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300';
+    default:
+      return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300';
+  }
+};
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
@@ -56,7 +64,7 @@ export default function OuroborosResonance({ data, className = '' }: OuroborosPr
       <div className="mb-6 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-3">
         <GitMerge className="w-5 h-5 text-slate-400" />
         <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Identified Feedback Loop</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400">How Public Reaction Feeds Back</div>
             <div className="font-bold text-slate-700 dark:text-slate-200 leading-tight">{data.loopDetected}</div>
         </div>
       </div>

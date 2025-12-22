@@ -7,9 +7,15 @@ import {
   TrendingUp, 
   Users, 
   Target, 
-  BrainCircuit, 
-  History, 
-  Activity 
+  Globe,
+  Microscope,
+  GitBranch,
+  Activity,
+  Clock,
+  ShieldAlert,
+  Lock,
+  Crown,
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -38,13 +44,17 @@ const plans: Plan[] = [
     yearly: { price: '$90', save: 'Save $18' },
     scansPerMonth: 40,
     tagline: 'For Casual Readers',
-    description: 'Essential news summaries and basic credibility checks.',
+    description: 'Essential news intelligence with basic analysis. Perfect for staying informed.',
     buttonText: 'Start Basic Access',
     features: [
-      '40 Scans / Month',
-      'Executive Summaries',
-      'Basic Credibility Score',
-      'Simple PESTLE Overview',
+      '40 Analyses / Month',
+      '✅ Situation Brief (Summary)',
+      '✅ Source & Bias Check (Credibility)',
+      '✅ Big Picture Forces (PESTLE)',
+      '🔒 Hidden Motives (Premium)',
+      '🔒 Power Dynamics (Premium)',
+      '🔒 Market Impact (Premium)',
+      '🔒 What Happens Next (Premium)',
       'Standard Support',
     ],
   },
@@ -54,16 +64,20 @@ const plans: Plan[] = [
     monthly: { price: '$29' },
     yearly: { price: '$290', save: 'Save $58' },
     scansPerMonth: 200,
-    tagline: 'For Serious Traders',
-    description: 'Full AI suite: Stock impact, hidden motives, and historical patterns.',
-    buttonText: 'Unlock Pro Intelligence',
+    tagline: 'For Serious Traders & Analysts',
+    description: 'Complete AI intelligence suite with all premium models. Auto-upgraded analysis for high-risk content.',
+    buttonText: 'Unlock Full Intelligence',
     popular: true,
     features: [
-      '200 Scans / Month',
-      'Market Impact (Bull/Bear Signals)',
-      'Motive & Manipulation Detector',
-      'Chronos Pattern Matching',
-      'Full Strategic PESTLE Analysis',
+      '200 Analyses / Month',
+      '✅ All FREE Features',
+      '✅ Hidden Motives Detection',
+      '✅ Power Dynamics Mapping',
+      '✅ Market Impact Analysis (Tickers)',
+      '✅ Future Scenarios',
+      '✅ Signal Quality Score',
+      '✅ Chain Reaction Analysis',
+      'Priority Support',
     ],
   },
   {
@@ -73,14 +87,17 @@ const plans: Plan[] = [
     yearly: { price: '$790', save: 'Save $158' },
     scansPerMonth: 800,
     tagline: 'For Research Teams',
-    description: 'High-volume processing, API access, and team collaboration.',
+    description: 'High-volume processing with team collaboration, API access, and dedicated support.',
     buttonText: 'Scale Your Operation',
     features: [
-      '800 Scans / Month',
-      'Multi-Seat License',
-      'API Access',
-      'CSV / PDF Data Export',
-      'Dedicated Account Manager',
+      '800 Analyses / Month',
+      '✅ Everything in Pro',
+      '✅ Multi-Seat License (Up to 5 users)',
+      '✅ API Access',
+      '✅ CSV / PDF Data Export',
+      '✅ Custom Integrations',
+      '✅ Dedicated Account Manager',
+      '✅ SLA & Advanced Support',
     ],
   },
 ];
@@ -92,371 +109,371 @@ interface Pack {
   perScan: string;
 }
 
-const packs: Pack[] = [
-  { id: 'pack50', label: '50 Scans', price: '$7', perScan: '$0.14/scan' },
-  { id: 'pack200', label: '200 Scans', price: '$20', perScan: '$0.10/scan' },
+const payAsYouGoPacks: Pack[] = [
+  { id: 'pack50', label: '50 Analyses', price: '$15', perScan: '$0.30/scan' },
+  { id: 'pack200', label: '200 Analyses', price: '$50', perScan: '$0.25/scan' },
 ];
 
-const faqs = [
-  { q: 'What happens if I hit my scan limit?', a: 'Analysis stops until the next month, or you can instantly buy a "Scan Pack" top-up that never expires.' },
-  { q: 'Can I cancel my subscription?', a: 'Yes, cancel anytime from your dashboard. You keep access until the end of your billing period.' },
-  { q: 'What is "Chronos Isomorphism"?', a: 'Our AI compares current news to historical events to predict likely outcomes based on past patterns.' },
-  { q: 'Do you offer an API?', a: 'Yes, API access is available exclusively on the Business plan for integrating our data into your own trading bots.' },
-];
+// --- Component Sections ---
 
-// --- Component ---
-
-export default function Pricing() {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('yearly');
-  const [loading, setLoading] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') setMessage('✅ Payment successful! Your account has been upgraded.');
-    if (urlParams.get('canceled') === 'true') setMessage('⚠️ Payment canceled. No charges were made.');
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }, []);
-
-  // Get Stripe price IDs from environment variables
-  const envPrice = (plan: PlanId, cycle: BillingCycle) =>
-    (import.meta.env as any)[`VITE_STRIPE_PRICE_${plan.toUpperCase()}_${cycle.toUpperCase()}`];
-
-  const envPack = (pack: Pack['id']) =>
-    (import.meta.env as any)[pack === 'pack50' ? 'VITE_STRIPE_PRICE_PACK_50' : 'VITE_STRIPE_PRICE_PACK_200'];
-
-  const handleCheckout = async (priceId: string, tier: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return setMessage('⚠️ Please log in or sign up to upgrade.');
-
-    setLoading(tier);
-    try {
-      const res = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, tier, userId: user.id }),
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (e) {
-      setMessage('❌ Connection error. Please try again.');
+// Feature Comparison Table
+function FeatureComparisonTable() {
+  const features = [
+    {
+      category: 'Core Analysis',
+      items: [
+        { name: '1. Situation Brief', free: true, icon: Zap, desc: 'Executive summary with key points' },
+        { name: '2. Source & Bias Check', free: true, icon: Shield, desc: 'Credibility and manipulation scores' },
+        { name: '3. Big Picture Forces', free: true, icon: Globe, desc: 'PESTLE analysis (Political, Economic, Social, Tech, Legal, Environmental)' },
+      ]
+    },
+    {
+      category: 'Premium Intelligence',
+      items: [
+        { name: '4. Hidden Motives', free: false, icon: Microscope, desc: 'Detect narrative drivers and hidden agendas' },
+        { name: '5. Power Dynamics', free: false, icon: Target, desc: 'Who has influence and who matters' },
+        { name: '6. Market Impact', free: false, icon: TrendingUp, desc: 'Stock tickers with evidence-based analysis' },
+      ]
+    },
+    {
+      category: 'Advanced Models',
+      items: [
+        { name: '7a. Future Scenarios', free: false, icon: Clock, desc: 'Historical parallels and scenario modeling' },
+        { name: '7b. Signal Quality Score', free: false, icon: Activity, desc: 'Chaos and stability metrics' },
+        { name: '7c. Chain Reaction Analysis', free: false, icon: GitBranch, desc: 'Feedback loops and causal chains' },
+      ]
     }
-    setLoading('');
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-neonCyan">
-      
-      {/* 🔔 Notification Toast */}
-      {message && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl animate-fade-in-down flex items-center gap-2">
-          <span>{message}</span>
-          <button onClick={() => setMessage('')} className="ml-2 hover:text-slate-300"><X size={16}/></button>
-        </div>
-      )}
+    <div className="max-w-5xl mx-auto mb-20">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          What's Included in Each Plan?
+        </h2>
+        <p className="text-lg text-gray-600 dark:text-gray-400">
+          Starter gets the essentials. Pro unlocks the full AI intelligence suite.
+        </p>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        
-        {/* 🚀 Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-indigo-600 dark:text-indigo-300 font-semibold tracking-wide uppercase text-sm mb-3">
-            Pricing Plans
-          </h2>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
-            Unlock Institutional-Grade Intelligence
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
-            Stop trading on noise. Get the <span className="font-semibold text-slate-900 dark:text-slate-100">Market Impact</span>, <span className="font-semibold text-slate-900 dark:text-slate-100">Hidden Motives</span>, and <span className="font-semibold text-slate-900 dark:text-slate-100">Predictive Patterns</span> you need to win.
-          </p>
-        </div>
-
-        {/* 🎚️ Billing Toggle */}
-        <div className="flex justify-center mb-16">
-          <div className="relative bg-white dark:bg-slate-900 p-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm inline-flex">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                billingCycle === 'monthly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingCycle('yearly')}
-              className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
-                billingCycle === 'yearly' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Yearly
-              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                billingCycle === 'yearly' ? 'bg-white/20 text-white' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-              }`}>
-                Save up to 20%
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* 💳 Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative rounded-3xl p-8 border-2 transition-all duration-300 backdrop-blur-lg ${
-                plan.popular
-                  ? 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border-indigo-300 dark:border-indigo-600 shadow-2xl scale-105'
-                  : 'bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-2xl hover:scale-105'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold uppercase rounded-full shadow-lg">
-                  Most Popular
-                </div>
-              )}
-
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{plan.tagline}</p>
-              </div>
-
-              <div className="text-center mb-6">
-                <div className="text-5xl font-extrabold text-slate-900 dark:text-white mb-2">
-                  {billingCycle === 'monthly' ? plan.monthly.price : plan.yearly.price.split('/')[0]}
-                </div>
-                <div className="text-slate-600 dark:text-slate-400">
-                  {billingCycle === 'yearly' ? (
-                    <div>
-                      <span className="text-sm">per year</span>
-                      <div className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">{plan.yearly.save}</div>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+        {features.map((section, idx) => (
+          <div key={idx} className={idx > 0 ? 'border-t border-gray-200 dark:border-slate-800' : ''}>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-850 px-6 py-4">
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                {section.category}
+              </h3>
+            </div>
+            <div className="divide-y divide-gray-200 dark:divide-slate-800">
+              {section.items.map((feature, featureIdx) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={featureIdx} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className={`p-2 rounded-lg ${feature.free ? 'bg-green-100 dark:bg-green-900/30' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
+                        <Icon className={`w-5 h-5 ${feature.free ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'}`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 dark:text-white mb-1">
+                          {feature.name}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {feature.desc}
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <span className="text-sm">per month</span>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-center text-slate-600 dark:text-slate-300 mb-6 min-h-[60px]">{plan.description}</p>
-
-              <button
-                onClick={() => handleCheckout(envPrice(plan.id, billingCycle), plan.id)}
-                disabled={loading === plan.id}
-                className={`w-full py-3 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-xl mb-6 ${
-                  plan.popular
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
-                    : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
-                }`}
-              >
-                {loading === plan.id ? 'Processing...' : plan.buttonText}
-              </button>
-
-              <ul className="space-y-3">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`} strokeWidth={3} />
-                    <span className="text-slate-700 dark:text-slate-300 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* 📊 Feature Comparison Table */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white text-center mb-10">Compare All Features</h2>
-          <div className="bg-white dark:bg-slate-900/70 rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 backdrop-blur-lg">
-            <div className="grid md:grid-cols-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80">
-              <div className="p-6 font-bold text-slate-900 dark:text-white">Features</div>
-              <div className="p-6 text-center font-bold text-slate-900 dark:text-white">Starter</div>
-              <div className="p-6 text-center font-bold bg-indigo-50/50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100">Pro Analyst</div>
-              <div className="p-6 text-center font-bold text-slate-900 dark:text-white">Business</div>
-            </div>
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              <FeatureRow 
-                icon={<Zap className="text-amber-500" />}
-                title="Monthly Scan Volume"
-                starter="40"
-                pro="200"
-                business="800"
-                description="Number of news articles you can analyze per month."
-              />
-              <FeatureRow 
-                icon={<Activity className="text-slate-500 dark:text-slate-400" />}
-                title="Executive Summaries"
-                starter={true}
-                pro={true}
-                business={true}
-                description="AI-generated summaries of complex articles."
-              />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Strategic Intelligence</div>
-              <FeatureRow 
-                icon={<TrendingUp className="text-indigo-600 dark:text-indigo-400" />}
-                title="Market Impact (Stocks)"
-                starter={false}
-                pro={true}
-                business={true}
-                description="Bull/Bear signals for specific tickers."
-              />
-              <FeatureRow 
-                icon={<Shield className="text-red-500 dark:text-red-400" />}
-                title="Motive & Bias Detector"
-                starter={false}
-                pro={true}
-                business={true}
-                description="Uncover hidden agendas and manipulation techniques."
-              />
-              <FeatureRow 
-                icon={<Users className="text-blue-500 dark:text-blue-400" />}
-                title="Stakeholder Mapping"
-                starter={false}
-                pro={true}
-                business={true}
-                description="Identify winners, losers, and power dynamics."
-              />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Advanced Analytics</div>
-              <FeatureRow 
-                icon={<BrainCircuit className="text-purple-600 dark:text-purple-400" />}
-                title="PESTLE Strategy Scan"
-                starter="Basic"
-                pro="Full Strategic"
-                business="Full Strategic"
-                description="Deep dive into Political, Economic, and Social factors."
-              />
-              <FeatureRow 
-                icon={<History className="text-emerald-600 dark:text-emerald-400" />}
-                title="Chronos Isomorphism"
-                starter={false}
-                pro={true}
-                business={true}
-                description="Match current events to historical patterns."
-              />
-              <FeatureRow 
-                icon={<Target className="text-pink-600 dark:text-pink-400" />}
-                title="Thermodynamic Entropy"
-                starter={false}
-                pro={true}
-                business={true}
-                description="Signal-to-noise ratio analysis."
-              />
-              <div className="px-6 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-900/40">Enterprise Features</div>
-              <FeatureRow 
-                title="API Access"
-                starter={false}
-                pro={false}
-                business={true}
-              />
-              <FeatureRow 
-                title="Data Export (PDF/CSV)"
-                starter={false}
-                pro={false}
-                business={true}
-              />
-              <FeatureRow 
-                title="Support Level"
-                starter="Standard"
-                pro="Priority"
-                business="Dedicated Manager"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 📦 Add-ons */}
-        <div className="max-w-4xl mx-auto mb-20">
-           <div className="bg-white dark:bg-slate-900/70 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-lg">
-             <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-               <div>
-                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Need More Capacity?</h3>
-                 <p className="text-slate-600 dark:text-slate-300 mt-1">Top up your account instantly. Scan packs <span className="font-bold text-indigo-600 dark:text-indigo-300">never expire</span>.</p>
-               </div>
-             </div>
-             <div className="grid md:grid-cols-2 gap-6">
-                {packs.map((pack) => (
-                  <div key={pack.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:border-indigo-200 dark:hover:border-indigo-500 transition-colors">
-                    <div>
-                      <div className="font-bold text-lg text-slate-900 dark:text-white">{pack.label}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{pack.perScan}</div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-xl font-bold text-slate-900 dark:text-white">{pack.price}</div>
-                      <button 
-                        onClick={() => handleCheckout(envPack(pack.id), pack.id)}
-                        className="px-4 py-2 bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-semibold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
-                      >
-                        Add
-                      </button>
+                    <div className="flex items-center gap-6 ml-8">
+                      {/* Starter Column */}
+                      <div className="w-24 text-center">
+                        {feature.free ? (
+                          <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
+                        ) : (
+                          <Lock className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
+                        )}
+                      </div>
+                      {/* Pro Column */}
+                      <div className="w-24 text-center">
+                        <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
+                      </div>
+                      {/* Business Column */}
+                      <div className="w-24 text-center">
+                        <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
+                      </div>
                     </div>
                   </div>
-                ))}
-             </div>
-           </div>
-        </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
-        {/* ❓ FAQ */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            {faqs.map((f, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900/70 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow backdrop-blur-lg">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{f.q}</h3>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
+        {/* Table Header */}
+        <div className="sticky top-0 bg-gray-50 dark:bg-slate-850 border-t border-b border-gray-200 dark:border-slate-800 px-6 py-4">
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-6">
+              <div className="w-24 text-center font-bold text-gray-700 dark:text-gray-300 text-sm">
+                STARTER
               </div>
-            ))}
+              <div className="w-24 text-center font-bold text-purple-600 dark:text-purple-400 text-sm">
+                PRO ⭐
+              </div>
+              <div className="w-24 text-center font-bold text-gray-700 dark:text-gray-300 text-sm">
+                BUSINESS
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-8 mt-6 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          <span>Included in FREE tier</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+          <span>Premium models (Pro+)</span>
+        </div>
       </div>
     </div>
   );
 }
 
-// Helper component for the table rows
-function FeatureRow({ 
-  icon, 
-  title, 
-  starter, 
-  pro, 
-  business, 
-  description 
-}: { 
-  icon?: React.ReactNode, 
-  title: string, 
-  starter: boolean | string, 
-  pro: boolean | string, 
-  business: boolean | string,
-  description?: string 
-}) {
-  const renderCell = (value: boolean | string, isPro: boolean = false) => {
-    if (typeof value === 'boolean') {
-      return value ? (
-        <div className="flex justify-center">
-          <div className={`p-1 rounded-full ${isPro ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300'}`}>
-            <Check size={18} strokeWidth={3} />
+// Plans Cards
+function PricingPlans({ cycle, onSelectPlan }: { cycle: BillingCycle, onSelectPlan: (id: PlanId) => void }) {
+  return (
+    <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+      {plans.map((plan) => {
+        const isPopular = plan.popular;
+        const pricing = cycle === 'monthly' ? plan.monthly : plan.yearly;
+
+        return (
+          <div
+            key={plan.id}
+            className={`relative rounded-2xl border-2 p-8 bg-white dark:bg-slate-900 transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+              isPopular
+                ? 'border-purple-500 shadow-xl shadow-purple-500/20 dark:shadow-purple-500/10'
+                : 'border-gray-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700'
+            }`}
+          >
+            {isPopular && (
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+                  <Crown className="w-4 h-4" />
+                  MOST POPULAR
+                </div>
+              </div>
+            )}
+
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {plan.name}
+              </h3>
+              <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-4">
+                {plan.tagline}
+              </p>
+              <div className="flex items-baseline justify-center gap-2 mb-2">
+                <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                  {pricing.price}
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  /{cycle === 'monthly' ? 'mo' : 'yr'}
+                </span>
+              </div>
+              {cycle === 'yearly' && plan.yearly.save && (
+                <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                  {plan.yearly.save} ✨
+                </div>
+              )}
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {plan.scansPerMonth} analyses/month
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center min-h-[3rem]">
+              {plan.description}
+            </p>
+
+            <ul className="space-y-3 mb-8">
+              {plan.features.map((feature, idx) => {
+                const isLocked = feature.startsWith('🔒');
+                const isIncluded = feature.startsWith('✅') || feature.startsWith('🔥');
+                
+                return (
+                  <li key={idx} className="flex items-start gap-3">
+                    {isIncluded ? (
+                      <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    ) : isLocked ? (
+                      <Lock className="w-5 h-5 text-gray-400 dark:text-gray-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <div className="w-5 h-5 flex-shrink-0"></div>
+                    )}
+                    <span className={`text-sm ${isLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {feature.replace('✅ ', '').replace('🔒 ', '').replace('🔥 ', '')}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <button
+              onClick={() => onSelectPlan(plan.id)}
+              className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 ${
+                isPopular
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:scale-105'
+                  : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 shadow-md hover:shadow-lg hover:scale-105'
+              }`}
+            >
+              {plan.buttonText}
+            </button>
           </div>
-        </div>
-      ) : (
-        <div className="flex justify-center">
-           <X size={18} className="text-slate-300 dark:text-slate-700" />
-        </div>
-      );
+        );
+      })}
+    </div>
+  );
+}
+
+// Pay-As-You-Go Packs
+function PayAsYouGoPacks({ onSelectPack }: { onSelectPack: (id: string) => void }) {
+  return (
+    <div className="max-w-4xl mx-auto mb-20">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          Pay-As-You-Go Packs
+        </h2>
+        <p className="text-lg text-gray-600 dark:text-gray-400">
+          No commitment. Purchase only when you need extra analyses.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {payAsYouGoPacks.map((pack) => (
+          <div
+            key={pack.id}
+            className="bg-white dark:bg-slate-900 rounded-xl border-2 border-gray-200 dark:border-slate-800 p-6 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {pack.label}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {pack.perScan}
+                </p>
+              </div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {pack.price}
+              </div>
+            </div>
+
+            <button
+              onClick={() => onSelectPack(pack.id)}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            >
+              Purchase Pack
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Main Pricing Component
+export default function Pricing() {
+  const [cycle, setCycle] = useState<BillingCycle>('monthly');
+  const [loading, setLoading] = useState(false);
+
+  const handleSelectPlan = async (planId: PlanId) => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/login?redirect=/pricing';
+        return;
+      }
+
+      // Create checkout session
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          email: user.email,
+          tier: planId,
+          billingCycle: cycle,
+        }),
+      });
+
+      const { sessionId } = await response.json();
+      // Redirect to Stripe checkout
+      window.location.href = `https://checkout.stripe.com/pay/${sessionId}`;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Failed to start checkout. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    return <span className={`font-medium ${isPro ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'}`}>{value}</span>;
+  };
+
+  const handleSelectPack = async (packId: string) => {
+    alert(`Purchase pack: ${packId} - Stripe integration coming soon!`);
   };
 
   return (
-    <div className="grid md:grid-cols-4 items-center group">
-      <div className="p-6">
-        <div className="flex items-center gap-3">
-          {icon && <span className="opacity-80 group-hover:opacity-100 transition-opacity">{icon}</span>}
-          <div>
-            <div className="font-semibold text-slate-900 dark:text-white">{title}</div>
-            {description && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">{description}</div>}
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-slate-900 py-20 px-4">
+      {/* Header */}
+      <div className="text-center mb-16">
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          Choose Your Intelligence Level
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          From basic summaries to full AI-powered intelligence. Unlock the complete picture.
+        </p>
+
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <button
+            onClick={() => setCycle('monthly')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+              cycle === 'monthly'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setCycle('yearly')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all relative ${
+              cycle === 'yearly'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            Yearly
+            <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+              Save 20%
+            </span>
+          </button>
         </div>
       </div>
-      <div className="p-6 text-center">{renderCell(starter)}</div>
-      <div className="p-6 text-center bg-indigo-50/30 dark:bg-indigo-900/20">{renderCell(pro, true)}</div>
-      <div className="p-6 text-center">{renderCell(business)}</div>
+
+      {/* Pricing Cards */}
+      <PricingPlans cycle={cycle} onSelectPlan={handleSelectPlan} />
+
+      {/* Feature Comparison Table */}
+      <FeatureComparisonTable />
+
+      {/* Pay-As-You-Go */}
+      <PayAsYouGoPacks onSelectPack={handleSelectPack} />
+
+      {/* FAQ or Footer */}
+      <div className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+        <p className="mb-2">Need help choosing? Contact us at support@nexverisai.com</p>
+        <p className="text-sm">All plans include our core AI models. Premium plans unlock advanced intelligence.</p>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { User, CreditCard } from 'lucide-react';
+import { User, CreditCard, Users, KeyRound, Plus, Trash2 } from 'lucide-react';
 import useAuthStore from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
 import LogoUploader from '@/components/LogoUploader';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface UserProfile {
   id: string;
@@ -13,11 +14,24 @@ interface UserProfile {
 }
 
 const Account = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'billing' | 'team' | 'api'>('overview');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const authUser = useAuthStore((s) => s.user);
+  const { tier, scansUsed, scansLimit, canAccess } = useSubscription();
+  const [teamEmails, setTeamEmails] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('teamMembers');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [inviteEmail, setInviteEmail] = useState('');
+  const maxSeats = 5;
+  const saveTeam = (next: string[]) => {
+    setTeamEmails(next);
+    localStorage.setItem('teamMembers', JSON.stringify(next));
+  };
 
   useEffect(() => {
     fetchUserData();
@@ -55,6 +69,8 @@ const Account = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'billing', label: 'Billing', icon: CreditCard },
+    { id: 'team', label: 'Team', icon: Users },
+    { id: 'api', label: 'API', icon: KeyRound },
   ];
 
   if (loading) {
@@ -147,7 +163,7 @@ const Account = () => {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Current Plan</span>
                       <span className="text-lg font-bold text-gray-900 dark:text-white capitalize">
-                        {authUser?.plan || 'free'}
+                        {authUser?.plan || tier}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-2">
@@ -159,9 +175,9 @@ const Account = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Credits</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Monthly Usage</span>
                       <span className="text-sm text-gray-900 dark:text-white">
-                        {authUser?.credits ?? 0}
+                        {scansUsed} / {scansLimit}
                       </span>
                     </div>
                   </div>
@@ -197,6 +213,88 @@ const Account = () => {
                 >
                   View Pricing
                 </a>
+              </div>
+            )}
+            {activeTab === 'team' && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Management</h3>
+                {canAccess('multi_seat') ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder="Invite teammate email"
+                        className="flex-1 px-3 py-2 border rounded-md bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                      />
+                      <button
+                        onClick={() => {
+                          const email = inviteEmail.trim();
+                          if (!email) return;
+                          if (teamEmails.length >= maxSeats) return;
+                          if (teamEmails.includes(email)) return;
+                          saveTeam([...teamEmails, email]);
+                          setInviteEmail('');
+                        }}
+                        className="inline-flex items-center px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Invite
+                      </button>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Seats used: {teamEmails.length} / {maxSeats}</p>
+                    <ul className="divide-y divide-slate-200 dark:divide-slate-700">
+                      {teamEmails.map((email) => (
+                        <li key={email} className="flex items-center justify-between py-2">
+                          <span className="text-sm">{email}</span>
+                          <button
+                            onClick={() => saveTeam(teamEmails.filter((e) => e !== email))}
+                            className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" /> Remove
+                          </button>
+                        </li>
+                      ))}
+                      {teamEmails.length === 0 && (
+                        <li className="py-4 text-sm text-slate-500 dark:text-slate-400">No teammates yet.</li>
+                      )}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <Users className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    <p className="text-sm">Multi-seat is available on Business plan.</p>
+                    <a href="/pricing" className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white rounded-md">Upgrade</a>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'api' && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">API Access</h3>
+                {canAccess('api_access') ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Use your session token to authenticate requests. Example:
+                    </p>
+                    <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded-md text-xs overflow-auto">
+{`POST ${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005'}/api/analyze/summary
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer <YOUR_SUPABASE_ACCESS_TOKEN>
+Body:
+  { "url": "https://example.com/article", "userId": "<YOUR_USER_ID>" }`}
+                    </pre>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      You can copy your current access token from the browser console: <code>useAuthStore.getState().session?.access_token</code>.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <KeyRound className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    <p className="text-sm">API access is available on Business plan.</p>
+                    <a href="/pricing" className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white rounded-md">Upgrade</a>
+                  </div>
+                )}
               </div>
             )}
           </div>

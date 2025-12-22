@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, RefreshCw, Download } from 'lucide-react';
 import { historyAPI, AnalysisDetail as AnalysisDetailType } from '@/services/historyAPI';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 // Re-export the interface from API service
 export type { AnalysisDetail } from '@/services/historyAPI';
@@ -12,6 +13,7 @@ export default function AnalysisDetail() {
   const [analysis, setAnalysis] = useState<AnalysisDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { tier, canAccess } = useSubscription();
 
   // Mock data - replace with actual API call
 
@@ -65,6 +67,36 @@ export default function AnalysisDetail() {
       default:
         return '📊';
     }
+  };
+
+  const exportCSV = () => {
+    if (!analysis) return;
+    const rows = [
+      ['id', analysis.id],
+      ['title', analysis.title],
+      ['date', analysis.date],
+      ['type', analysis.type],
+      ['summary', analysis.summary || ''],
+      ['content', analysis.content || ''],
+      ['metrics.score', String(analysis.metrics?.score ?? '')],
+      ['metrics.confidence', String(analysis.metrics?.confidence ?? '')],
+      ['metrics.factors', (analysis.metrics?.factors ?? []).join('|')],
+      ['rawData', analysis.rawData ? JSON.stringify(analysis.rawData) : ''],
+    ];
+    const csv = rows.map(([k, v]) => `"${k.replace(/"/g, '""')}","${String(v).replace(/"/g, '""')}"`).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analysis-${analysis.id}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPDF = () => {
+    window.print();
   };
 
   if (loading) {
@@ -219,14 +251,30 @@ export default function AnalysisDetail() {
               </div>
             )}
 
-            {/* Actions */}
-            <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Actions</h3>
-              <div className="space-y-3">
-                <button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export Report
-                </button>
+          {/* Actions */}
+          <div className="bg-white dark:bg-slate-900/60 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-lg">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Actions</h3>
+            <div className="space-y-3">
+                {canAccess('csv_export') ? (
+                  <button onClick={exportCSV} className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200 dark:hover:bg-blue-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </button>
+                ) : (
+                  <div className="w-full text-center text-sm text-slate-500 dark:text-slate-400">
+                    CSV export is a Business feature
+                  </div>
+                )}
+                {canAccess('pdf_export') ? (
+                  <button onClick={downloadPDF} className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/20 hover:bg-purple-200 dark:hover:bg-purple-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </button>
+                ) : (
+                  <div className="w-full text-center text-sm text-slate-500 dark:text-slate-400">
+                    PDF export is a Business feature
+                  </div>
+                )}
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);

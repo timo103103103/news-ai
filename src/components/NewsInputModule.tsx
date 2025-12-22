@@ -4,10 +4,6 @@ import { supabase } from '../lib/supabase'
 import ErrorDisplay from './ErrorDisplay';
 
 // ✅ Supabase Client Setup
-const supabase = import { supabase } from '@/lib/supabase'
-  import.meta.env.VITE_SUPABASE_URL || '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-);
 
 // ✅ API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://news-backend-production-ba81.up.railway.app';
@@ -102,11 +98,13 @@ const NewsInputModule: React.FC<NewsInputModuleProps> = ({ onTextProcessed }) =>
     console.log('📝 Content length:', articleText.length);
 
     // ✅ CRITICAL: Include x-user-id header
+    const { data: { session } } = await supabase.auth.getSession();
     const response = await fetch(`${API_BASE_URL}/api/analyze/summary`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+        'x-user-id': userId
       },
       body: JSON.stringify({ text: articleText }),
     });

@@ -5,10 +5,6 @@ import { toast } from 'sonner';
 import { supabase } from '../lib/supabase'
 
 // ✅ Supabase Client Setup
-const supabase = import { supabase } from '@/lib/supabase'
-  import.meta.env.VITE_SUPABASE_URL || '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-);
 
 // ✅ API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -146,11 +142,14 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       console.log('📝 Request payload:', { url: urlInput });
 
       // ✅ CRITICAL: Include x-user-id header
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+          'x-user-id': userId as string
+        },
         body: JSON.stringify({
           url: urlInput,
         }),
@@ -240,10 +239,12 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       const endpoint = `${API_BASE_URL}/api/analyze/file`;
       
       // ✅ CRITICAL: Include x-user-id header
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+          'x-user-id': userId as string
         },
         body: formData,
       });
@@ -321,11 +322,13 @@ export default function UnifiedAnalysisInput({ onAnalysisComplete }: AnalysisInp
       const endpoint = `${API_BASE_URL}/api/analyze/summary`;
 
       // ✅ CRITICAL: Include x-user-id header
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+          'x-user-id': userId as string
         },
         body: JSON.stringify({
           text: textInput,

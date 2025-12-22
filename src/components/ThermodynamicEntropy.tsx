@@ -26,9 +26,9 @@ export default function ThermodynamicEntropy({ data, className = '' }: EntropyPr
   const total = data.factCount + data.speculationCount;
   const factPct = total > 0 ? Math.round((data.factCount / total) * 100) : 0;
   
-  // Filter segments
-  const facts = data.segments.filter(s => s.type === 'fact');
-  const specs = data.segments.filter(s => s.type === 'speculation');
+  // Filter segments with defensive check
+  const facts = (data.segments || []).filter(s => s.type === 'fact');
+  const specs = (data.segments || []).filter(s => s.type === 'speculation');
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
@@ -43,7 +43,7 @@ export default function ThermodynamicEntropy({ data, className = '' }: EntropyPr
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Evidence Confidence</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Signal-to-Noise Ratio</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Fact vs Speculation Ratio</p>
         </div>
       </div>
 

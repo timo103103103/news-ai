@@ -33,7 +33,7 @@ export default function Header() {
     try {
       await supabase.auth.signOut();
     } catch {}
-    await useAuthStore.getState().logout();
+    await useAuthStore.getState().signOut();
     navigate("/login");
   };
 
