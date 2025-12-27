@@ -168,7 +168,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       setTierState(validatedTier);
       setBillingCycle(validatedBillingCycle);
       setScansUsed(dbUser?.analyses_used || 0);
-      setScansLimit(dbUser?.analyses_limit || SCAN_LIMITS[validatedTier]);
+      setScansLimit(SCAN_LIMITS[validatedTier]);
       setLoading(false);
 
     } catch (err) {

@@ -15,6 +15,14 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
+/* Accessibility section spacing */
+.a11y-section {
+  padding: 2rem;
+}
+.a11y-section * {
+  line-height: 1.5;
+}
+
 .summary-header {
   display: flex;
   justify-content: space-between;

@@ -36,54 +36,66 @@ interface Plan {
   scansPerMonth: number;
   tagline: string;
   description: string;
+  intensity: 1 | 2 | 3 | 4 | 5; // visualize usage frequency
+  topValueBullets: string[];    // only 3 bullets shown
   features: string[];
   popular?: boolean;
   buttonText: string;
 }
 
 const plans: Plan[] = [
+    
   {
+	
     id: 'starter',
     name: 'Starter',
     monthly: { price: '$9' },
     yearly: { price: '$90', save: 'Save $18' },
     scansPerMonth: 40,
     tagline: 'For Casual Readers',
-    description: 'Essential news intelligence with basic analysis. Perfect for staying informed.',
-    buttonText: 'Start Basic Access',
-    features: [
-      '40 Analyses / Month',
-      '✅ Situation Brief (Summary)',
-      '✅ Source & Bias Check (Credibility)',
-      '✅ Big Picture Forces (PESTLE)',
-      '🔒 Hidden Motives (Premium)',
-      '🔒 Power Dynamics (Premium)',
-      '🔒 Market Impact (Premium)',
-      '🔒 What Happens Next (Premium)',
-      'Standard Support',
+    description: 'A lightweight way to understand what a news story is really about. Designed for occasional reading — not daily decision-making.',
+    intensity: 2,
+    topValueBullets: [
+      'Basic intelligence overview',
+      'Understand credibility, framing, and context',
+      '40 analyses/month — occasional use'
     ],
+	buttonText: 'Start Basic Access',
+    features: [
+  '40 Analyses / Month',
+  '✅ Article summary & credibility indicators',
+  '✅ Bias and framing highlights',
+  '✅ Contextual background signals', 
+  '✅ Read-only analysis (no decision focus)',
+  'Standard Support',
+],
+
   },
-  {
+  { 
     id: 'pro',
     name: 'Pro Analyst',
     monthly: { price: '$29' },
     yearly: { price: '$290', save: 'Save $58' },
     scansPerMonth: 200,
-    tagline: 'For Serious Traders & Analysts',
-    description: 'Complete AI intelligence suite with all premium models. Auto-upgraded analysis for high-risk content.',
-    buttonText: 'Unlock Full Intelligence',
+    tagline: 'For Active Decision-Makers',
+    description: 'Built for people who rely on intelligence to make timely decisions. Designed for frequent analysis, risk assessment, and forward-looking judgment.',
+    intensity: 3,
+    topValueBullets: [
+      'Decision-focused intelligence (not just summaries)',
+      'Market impact & future scenarios emphasized',
+      '200 analyses/month — daily active use'
+    ],
+	buttonText: 'Unlock Full Intelligence',
     popular: true,
     features: [
-      '200 Analyses / Month',
-      '✅ All FREE Features',
-      '✅ Hidden Motives Detection',
-      '✅ Power Dynamics Mapping',
-      '✅ Market Impact Analysis (Tickers)',
-      '✅ Future Scenarios',
-      '✅ Signal Quality Score',
-      '✅ Chain Reaction Analysis',
-      'Priority Support',
-    ],
+  '200 Analyses / Month',
+  '✅ Full intelligence across all analytical layers',
+  '✅ Credibility, incentives, and power dynamics analysis',
+  '✅ Market impact and scenario propagation',
+  '✅ Chain reaction & second-order effects',
+  '✅ Priority support',
+],
+
   },
   {
     id: 'business',
@@ -91,18 +103,25 @@ const plans: Plan[] = [
     monthly: { price: '$79' },
     yearly: { price: '$790', save: 'Save $158' },
     scansPerMonth: 800,
-    tagline: 'For Research Teams',
-    description: 'High-volume processing with team collaboration, API access, and dedicated support.',
+    tagline: 'For High-Volume Independent Analysts',
+    description: 'Built for professionals who rely on deep intelligence every day. Designed for sustained, high-volume analysis — without distractions.',
+	intensity: 5,
+    topValueBullets: [
+      'Scale analysis capacity without interruptions',
+      'Designed for sustained, high-volume individual use',
+      '800 analyses/month — high volume'
+    ],
+
     buttonText: 'Scale Your Operation',
     features: [
       '800 Analyses / Month',
-      '✅ Everything in Pro',
-      '✅ Multi-Seat License (Up to 5 users)',
-      '✅ API Access',
+      '✅ Full Intelligence (all sections)',
+      '✅ Priority processing',
+      '✅ Very high monthly capacity for continuous use',
       '✅ CSV / PDF Data Export',
-      '✅ Custom Integrations',
-      '✅ Dedicated Account Manager',
-      '✅ SLA & Advanced Support',
+      '✅ Priority processing during peak hours',
+      '✅ Extended analysis history retention',
+	  '✅ Early access to new analysis models',
     ],
   },
 ];
@@ -124,6 +143,17 @@ const payAsYouGoPacks: Pack[] = [
 
 // Feature Comparison Table
 function FeatureComparisonTable() {
+	const isAdvancedModel = (name: string) => name.startsWith('7a.') || name.startsWith('7b.') || name.startsWith('7c.');
+
+    const renderCell = (plan: 'starter' | 'pro' | 'business', featureName: string) => {
+     const lockedForStarter = plan === 'starter' && isAdvancedModel(featureName);
+
+    if (lockedForStarter) {
+      return <Lock className="w-6 h-6 text-gray-300 dark:text-gray-600 mx-auto" />;
+    }
+    return <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />;
+  };
+
   const features = [
     {
       category: 'Core Analysis',
@@ -158,7 +188,7 @@ function FeatureComparisonTable() {
           What's Included in Each Plan?
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400">
-          Starter gets the essentials. Pro unlocks the full AI intelligence suite.
+          All plans include full intelligence. Higher tiers increase frequency, priority, and scale features.
         </p>
       </div>
 
@@ -189,22 +219,19 @@ function FeatureComparisonTable() {
                       </div>
                     </div>
                     <div className="flex items-center gap-6 ml-8">
-                      {/* Starter Column */}
-                      <div className="w-24 text-center">
-                        {feature.free ? (
-                          <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
-                        ) : (
-                          <Lock className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
-                        )}
-                      </div>
-                      {/* Pro Column */}
-                      <div className="w-24 text-center">
-                        <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
-                      </div>
-                      {/* Business Column */}
-                      <div className="w-24 text-center">
-                        <Check className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto" />
-                      </div>
+                     {/* Starter Column */}
+<div className="w-24 text-center">
+  {renderCell('starter', feature.name)}
+</div>
+{/* Pro Column */}
+<div className="w-24 text-center">
+  {renderCell('pro', feature.name)}
+</div>
+{/* Business Column */}
+<div className="w-24 text-center">
+  {renderCell('business', feature.name)}
+</div>
+
                     </div>
                   </div>
                 );
@@ -234,6 +261,28 @@ function FeatureComparisonTable() {
       {/* Additional Info */}
       <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
         <p>🔥 Pro and Business plans automatically upgrade to premium models for high-risk content</p>
+      </div>
+    </div>
+  );
+}
+
+function IntensityBar({ level }: { level: 1 | 2 | 3 | 4 | 5 }) {
+  return (
+    <div className="mt-3">
+      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+        Usage intensity
+      </div>
+      <div className="flex gap-1 justify-center">
+        {[1,2,3,4,5].map((i) => (
+          <div
+            key={i}
+            className={`h-2 w-7 rounded-full ${
+              i <= level
+                ? 'bg-gray-900 dark:bg-white'
+                : 'bg-gray-200 dark:bg-slate-700'
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
@@ -277,53 +326,76 @@ function PricingPlans({
               <p className="text-sm mb-4 text-purple-600 dark:text-purple-400">
                 {plan.tagline}
               </p>
-              
+              <IntensityBar level={plan.intensity} />
+
               <div className="mb-2">
-                <span className="text-5xl font-bold text-gray-900 dark:text-white">
-                  {price}
-                </span>
-                <span className="text-lg ml-2 text-gray-600 dark:text-gray-400">
-                  /{cycle === 'monthly' ? 'mo' : 'yr'}
-                </span>
-              </div>
+  <div className="text-6xl font-extrabold text-gray-900 dark:text-white leading-none">
+    {plan.scansPerMonth}
+  </div>
+  <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">
+    analyses / month
+  </div>
 
-              {savings && (
-                <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  {savings}
-                </div>
-              )}
+  <div className="mt-3">
+    <span className="text-3xl font-bold text-gray-900 dark:text-white">
+      {price}
+    </span>
+    <span className="text-base ml-2 text-gray-600 dark:text-gray-400">
+      /{cycle === 'monthly' ? 'mo' : 'yr'}
+    </span>
+  </div>
 
-              <p className="text-sm mt-4 text-gray-600 dark:text-gray-400">
-                {plan.scansPerMonth} analyses/month
-              </p>
-            </div>
+  {savings && (
+    <div className="mt-3 text-sm font-semibold text-green-600 dark:text-green-400">
+      {savings}
+    </div>
+  )}
+</div>
+</div>
+
+
 
             <p className="text-sm mb-6 text-gray-600 dark:text-gray-400">
               {plan.description}
             </p>
 
-            <ul className="space-y-3 mb-8">
-              {plan.features.map((feature, idx) => {
-                const isLocked = feature.startsWith('🔒');
-                const isHighlighted = feature.startsWith('🔥');
-                return (
-                  <li key={idx} className="flex items-start gap-3">
-                    {!isLocked ? (
-                      isHighlighted ? (
-                        <Sparkles className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
-                      ) : (
-                        <Check className="w-5 h-5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                      )
-                    ) : (
-                      <Lock className="w-5 h-5 flex-shrink-0 text-gray-300 dark:text-gray-600" />
-                    )}
-                    <span className={`text-sm ${isLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {feature.replace('✅ ', '').replace('🔒 ', '').replace('🔥 ', '')}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+            <ul className="space-y-3 mb-6">
+  {plan.topValueBullets.map((line, idx) => (
+    <li key={idx} className="flex items-start gap-3">
+      <Check className="w-5 h-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+      <span className="text-sm text-gray-700 dark:text-gray-300">{line}</span>
+    </li>
+  ))}
+</ul>
+
+<details className="mb-8">
+  <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-300 hover:opacity-80">
+    See all features
+  </summary>
+  <ul className="space-y-2 mt-4">
+    {plan.features.map((feature, idx) => {
+      const isLocked = feature.startsWith('🔒');
+      const isHighlighted = feature.startsWith('🔥');
+      return (
+        <li key={idx} className="flex items-start gap-3">
+          {!isLocked ? (
+            isHighlighted ? (
+              <Sparkles className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
+            ) : (
+              <Check className="w-5 h-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+            )
+          ) : (
+            <Lock className="w-5 h-5 flex-shrink-0 text-gray-300 dark:text-gray-600" />
+          )}
+          <span className={`text-sm ${isLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+            {feature.replace('✅ ', '').replace('🔒 ', '').replace('🔥 ', '')}
+          </span>
+        </li>
+      );
+    })}
+  </ul>
+</details>
+
 
             <button
               onClick={() => onSelectPlan(plan.id)}
@@ -499,7 +571,7 @@ export default function Pricing() {
           Choose Your Intelligence Level
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          From basic summaries to full AI-powered intelligence. Unlock the complete picture.
+          All plans include full intelligence. Higher tiers increase frequency, priority, and scale features.
         </p>
 
         {/* Billing Toggle */}
@@ -542,7 +614,7 @@ export default function Pricing() {
       {/* FAQ or Footer */}
       <div className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
         <p className="mb-2">Need help choosing? Contact us at support@nexverisai.com</p>
-        <p className="text-sm">All plans include our core AI models. Premium plans unlock advanced intelligence.</p>
+        <p className="text-sm">All plans include full intelligence. Higher tiers add priority, export/API, team features, and SLA support.</p>
       </div>
     </div>
   );

@@ -163,7 +163,7 @@ const Account = () => {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Current Plan</span>
                       <span className="text-lg font-bold text-gray-900 dark:text-white capitalize">
-                        {authUser?.plan || tier}
+                        {tier}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-2">
@@ -174,12 +174,15 @@ const Account = () => {
                         {authUser ? 'Active' : 'Guest'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Monthly Usage</span>
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {scansUsed} / {scansLimit}
-                      </span>
-                    </div>
+                   <div className="flex justify-between items-center">
+  <span className="text-sm text-gray-600 dark:text-gray-400">
+    {tier === "free" ? "Lifetime full analyses" : "Monthly usage"}
+  </span>
+  <span className="text-sm text-gray-900 dark:text-white">
+    {tier === "free" ? `${scansUsed} / 2` : `${scansUsed} / ${scansLimit}`}
+  </span>
+</div>
+
                   </div>
 
                   <div className="pt-4">
@@ -187,7 +190,7 @@ const Account = () => {
                       href="/pricing"
                       className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      {authUser?.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}
+                      {tier === 'free' ? 'Upgrade Plan' : 'Change Plan'}
                     </a>
                   </div>
                   <div className="pt-6">

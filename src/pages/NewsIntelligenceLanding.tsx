@@ -65,11 +65,11 @@ const NewsIntelligenceLanding = () => {
   ];
 
   return (
-    <div className="news-landing-page font-sans text-slate-900 bg-white">
+    <div className="news-landing-page font-sans text-slate-900 bg-white dark:bg-slate-900 dark:text-slate-100">
       {/* --- Navigation --- */}
       <header 
         className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'
+          scrolled ? 'bg-white/90 dark:bg-slate-900/80 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'
         }`}
       >
         <div className="container mx-auto px-6 flex justify-between items-center">
@@ -78,16 +78,16 @@ const NewsIntelligenceLanding = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Features</a>
-            <a href="#impact" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Impact Analysis</a>
-            <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Pricing</a>
+            <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Features</a>
+            <a href="#impact" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Impact Analysis</a>
+            <a href="#pricing" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pricing</a>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <a href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900">Log in</a>
+            <a href="/login" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Log in</a>
             <button 
               onClick={() => handleAnalyzeNews()} 
-              className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl"
+              className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl dark:bg-blue-600 dark:hover:bg-blue-500"
             >
               Start Analyzing
             </button>
@@ -103,14 +103,14 @@ const NewsIntelligenceLanding = () => {
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         {/* Background Blobs */}
         <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4">
-           <div className="w-[800px] h-[800px] bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+          <div className="w-[800px] h-[800px] bg-blue-100 dark:bg-blue-900 rounded-full blur-3xl opacity-50"></div>
         </div>
         <div className="absolute bottom-0 left-0 -z-10 -translate-x-1/3 translate-y-1/4">
-           <div className="w-[600px] h-[600px] bg-indigo-100 rounded-full blur-3xl opacity-50"></div>
+           <div className="w-[600px] h-[600px] bg-indigo-100 dark:bg-indigo-900 rounded-full blur-3xl opacity-50"></div>
         </div>
 
         <div className="container mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-semibold mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 text-sm font-semibold mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -118,14 +118,14 @@ const NewsIntelligenceLanding = () => {
             Updated: New "Evidence-Based" Reasoning Engine
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight mb-6 leading-[1.1]">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white tracking-tight mb-6 leading-[1.1]">
             Turn News Noise into <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
               Binary Decisions
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
             Don't just read. Know if it's <span className="text-green-600 font-bold">Good</span> or <span className="text-red-600 font-bold">Bad</span> for your portfolio. 
             Get instant impact verdicts and the exact reasoning behind them.
           </p>
@@ -325,7 +325,7 @@ const NewsIntelligenceLanding = () => {
       </section>
 
       {/* --- Final CTA --- */}
-      <section className="py-20 bg-blue-600 text-white">
+      <section className="py-20 bg-blue-600 text-white dark:bg-blue-700">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to see clearly?</h2>
           <p className="text-blue-100 text-lg max-w-2xl mx-auto mb-10">
@@ -347,16 +347,16 @@ const NewsIntelligenceLanding = () => {
       </section>
 
       {/* --- Footer --- */}
-      <footer className="bg-white py-12 border-t border-slate-200">
+      <footer className="bg-white dark:bg-slate-900 py-12 border-t border-slate-200 dark:border-slate-800">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-           <div className="text-slate-400 text-sm">
+           <div className="text-slate-400 dark:text-slate-500 text-sm">
             &copy; 2025 NexVeris AI. All rights reserved.
            </div>
            <div className="flex gap-6">
-             <a href="#" className="text-slate-500 hover:text-blue-600 transition-colors">Privacy</a>
-             <a href="#" className="text-slate-500 hover:text-blue-600 transition-colors">Terms</a>
-             <a href="#" className="text-slate-500 hover:text-blue-600 transition-colors">Twitter</a>
-             <a href="#" className="text-slate-500 hover:text-blue-600 transition-colors">LinkedIn</a>
+             <a href="#" className="text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Privacy</a>
+             <a href="#" className="text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Terms</a>
+             <a href="#" className="text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Twitter</a>
+             <a href="#" className="text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">LinkedIn</a>
            </div>
         </div>
       </footer>

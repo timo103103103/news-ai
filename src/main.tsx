@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client"
 import { HelmetProvider } from "react-helmet-async"
 import App from "./App"
 import "./index.css"
+import { initHotjar } from "./lib/analytics"
 
 // 🔐 DEV-ONLY helpers (for F12 console debugging)
 import { supabase } from "./lib/supabase"
@@ -22,7 +23,7 @@ if (import.meta.env.DEV) {
   ;(window as any).authStore = useAuthStore
 
   // optional sugar helpers
-  ;(window as any).setTier = (plan: string) =>
+  ;(window as any).setTier = (plan: 'free' | 'starter' | 'pro' | 'business') =>
     useAuthStore.setState((s) => ({
       user: s.user
         ? {
@@ -45,3 +46,5 @@ createRoot(rootElement).render(
     </HelmetProvider>
   </StrictMode>
 )
+
+initHotjar()

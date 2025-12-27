@@ -15,6 +15,22 @@ app.get('/api/health', (_req, res) => {
   res.status(200).json({ success: true, message: 'ok' })
 })
 
+// Metrics ingestion (A/B, engagement, filters)
+app.post('/api/metrics', (req, res) => {
+  try {
+    const { event, payload, ts, path } = req.body || {}
+    if (!event) {
+      return res.status(400).json({ success: false, message: 'event required' })
+    }
+    console.log('📊 Metrics:', { event, path, ts, payload })
+    // In production, persist to a datastore (e.g., Postgres, BigQuery, or log pipeline)
+    res.status(204).end()
+  } catch (err) {
+    console.error('❌ Metrics error:', err)
+    res.status(500).json({ success: false })
+  }
+})
+
 app.post('/api/stripe/create-checkout-session', (_req, res) => {
   res.status(200).json({ url: null })
 })

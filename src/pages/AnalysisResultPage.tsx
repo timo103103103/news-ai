@@ -1,8 +1,23 @@
-// AnalysisResultPage.tsx - FINAL FIXED VERSION
+// AnalysisResultPage.tsx - MOTIVE DETECTION FIXED
 // ============================================
-// ALL HOOKS VIOLATIONS FIXED
+// Fixed: Hidden Motives data normalization
+// Added: Snake_case to camelCase conversion
 // ============================================
-import React, { useEffect, useState, useRef } from 'react';
+import {
+  mkBriefVerdict,
+  mkCredVerdict,
+  mkPestleVerdict,
+  mkIntentVerdict,
+  mkPowerVerdict,
+  mkMarketVerdict,
+  mkNextVerdict
+} from "@/utils/verdicts";
+import Step4NarrativeIntent from '@/sections/Step4NarrativeIntent';
+import Step5PowerAmplification from '@/sections/Step5PowerAmplification';
+import Step6MarketImpact from "@/sections/Step6MarketImpact";
+import Step7Outlook from "@/sections/Step7Outlook";
+
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
@@ -31,6 +46,76 @@ import {
   GitBranch, AlertCircle, ArrowUpRight, Crown, ShieldAlert, Target, CheckCircle, Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+// -------------------------------------------------------------------
+// Updates (2025-12-25)
+// - Added VerdictLine and BeginnerSummary for two-layer summaries
+// - Softened terminology (Chronos/Entropy/Ouroboros) with subtitles
+// - Free-tier PESTLE clarity: Top 2 drivers with one-sentence explainers
+// - Market Impact locked panel: explicit upgrade value (with Example data)
+// - Fixed handleShare summary reference bug
+// - Performance safeguards: React.memo, useMemo, and lazy mounting
+// -------------------------------------------------------------------
+
+// Helper components (small, in-file)
+const VerdictLine = ({ text, icon: Icon = AlertCircle }: { text?: string; icon?: any }) => (
+  <div 
+    aria-label="Verdict" 
+    className="px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100" 
+    title="This is the key takeaway based on data analysis. Hover for more context on what this section reveals."
+  >
+    {Icon && <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+    {text || 'Insufficient information. Review sources and timeline.'}
+  </div>
+);
+
+const BeginnerSummary = ({ bullets }: { bullets?: string[] }) => {
+  const items = (bullets || []).slice(0, 4);
+  return (
+    <ul aria-label="Beginner Summary" className="px-4 py-3 space-y-1 text-sm text-slate-700 dark:text-slate-300">
+      {items.length === 0 ? (
+        <li>Insufficient information. Review sources and timeline.</li>
+      ) : (
+        items.map((b, i) => <li key={i}>• {b}</li>)
+      )}
+    </ul>
+  );
+};
+
+// Lazy mount heavy sections only when visible
+const LazySection = ({ children, rootMargin = '200px' }: { children: React.ReactNode; rootMargin?: string }) => {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setVisible(true);
+            if (ref.current) obs.unobserve(ref.current);
+          }
+        });
+      },
+      { rootMargin }
+    );
+    obs.observe(ref.current);
+    return () => {
+      if (ref.current) obs.unobserve(ref.current);
+    };
+  }, [rootMargin]);
+  return <div ref={ref}>{visible ? children : <div className="p-6 text-slate-400 dark:text-slate-500 text-sm">Loading section…</div>}</div>;
+};
+
+// Small helpers (derived content)
+// Small helpers (derived content) — FINAL (Step 1–7)
+
+
+
+// Memo wrappers for heavy components
+const MemoChronos: any = React.memo((props: any) => <ChronosIsomorphism {...props} />);
+const MemoEntropy: any = React.memo((props: any) => <ThermodynamicEntropy {...props} />);
+const MemoOuroboros: any = React.memo((props: any) => <OuroborosResonance {...props} />);
 
 // Types
 interface AnalysisData {
@@ -136,260 +221,183 @@ const FACTOR_CONFIG: Record<string, { color: string; icon: any; description: str
 };
 
 /* =========================
+   UTILITY FUNCTIONS
+========================= */
+const toCamelCase = (str: string) => str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+
+const normalizeKeys = (obj: any, keyMap: Record<string, string>) => {
+  const normalized = {};
+  Object.entries(obj).forEach(([k, v]) => {
+    const newKey = keyMap[k] || toCamelCase(k);
+    normalized[newKey] = v;
+  });
+  return normalized;
+};
+/**
+ * Normalizes hidden motives data from snake_case to camelCase
+ * Handles both direct and nested data structures
+ */
+const normalizeHiddenMotives = (hmRaw: any): any => {
+  if (!hmRaw) return null;
+
+  // If already in camelCase format, return as is
+  if (hmRaw.dominantDriver || hmRaw.incentiveStack) {
+    return hmRaw;
+  }
+
+  // Convert from snake_case to camelCase
+  const normalized: any = {};
+
+  // Dominant Driver
+  if (hmRaw.dominant_driver || hmRaw.dominantDriver) {
+    const dd = hmRaw.dominant_driver || hmRaw.dominantDriver;
+    normalized.dominantDriver = {
+      type: dd.type || dd.driver_type || 'Unknown',
+      confidence: dd.confidence || 0,
+      explanation: dd.explanation || dd.rationale || ''
+    };
+  }
+
+  // Incentive Stack
+  if (hmRaw.incentive_stack || hmRaw.incentiveStack) {
+    const is = hmRaw.incentive_stack || hmRaw.incentiveStack;
+    normalized.incentiveStack = {
+      economic: is.economic || is.capital_incentive || 0,
+      socialPositioning: is.socialPositioning || is.social_positioning || is.status_engineering || 0,
+      politicalSignaling: is.politicalSignaling || is.political_signaling || is.political_leverage || 0,
+      ideologicalControl: is.ideologicalControl || is.ideological_control || is.cognitive_dominance || 0
+    };
+  }
+
+  // Behavioral Pattern
+  if (hmRaw.behavioral_pattern || hmRaw.behavioralPattern) {
+    const bp = hmRaw.behavioral_pattern || hmRaw.behavioralPattern;
+    normalized.behavioralPattern = {
+      framingTechniques: bp.framingTechniques || bp.framing_techniques || bp.perception_framing || [],
+      omissions: bp.omissions || bp.information_suppression || [],
+      emotionalTriggers: bp.emotionalTriggers || bp.emotional_triggers || bp.psychological_triggers || []
+    };
+  }
+
+  // Power Amplification
+  if (hmRaw.power_amplification || hmRaw.powerAmplification) {
+    const pa = hmRaw.power_amplification || hmRaw.powerAmplification;
+    normalized.powerAmplification = {
+      actors: (pa.actors || []).map((actor: any) => ({
+        name: actor.name || '',
+        category: actor.category || 'Media',
+        incentiveAlignment: actor.incentiveAlignment || actor.incentive_alignment || 0,
+        distributionPower: actor.distributionPower || actor.distribution_power || 0,
+        isInferred: actor.isInferred ?? actor.is_inferred ?? false,
+        evidence: actor.evidence || [],
+        source: actor.source || (actor.isInferred ? 'Inferred' : 'Explicit')
+      }))
+    };
+  }
+
+  // Strategic Consequence
+  if (hmRaw.strategic_consequence || hmRaw.strategicConsequence) {
+    const sc = hmRaw.strategic_consequence || hmRaw.strategicConsequence;
+    normalized.strategicConsequence = {
+      shortTermEffect: sc.shortTermEffect || sc.short_term_effect || sc.short_term || '',
+      mediumTermRisk: sc.mediumTermRisk || sc.medium_term_risk || sc.medium_term || '',
+      longTermDistortion: sc.longTermDistortion || sc.long_term_distortion || sc.long_term || ''
+    };
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : null;
+};
+
+/**
+ * Normalizes analysis data from various backend formats
+ */
+const normalizeAnalysisData = (rawData: any): AnalysisData => {
+  console.log('🔍 Raw data received:', rawData);
+
+  let normalizedData: any;
+
+  // Auto-upgraded format
+  if (rawData.mode === 'auto-upgraded' && rawData.full) {
+    console.log('📊 Using FULL analysis data (auto-upgraded)');
+    normalizedData = {
+      ...rawData.full,
+      mode: 'full',
+      wasAutoUpgraded: true
+    };
+  } else if (rawData.data) {
+    console.log('📊 Using standard data structure');
+    normalizedData = {
+      ...rawData.data,
+      mode: rawData.mode || 'lite'
+    };
+  } else {
+    console.log('📊 Using direct structure');
+    normalizedData = {
+      ...rawData,
+      ...(rawData.rawAnalysis || {})
+    };
+  }
+
+  // Normalize summary fields
+  if (normalizedData.summary) {
+    if (normalizedData.summary.oneLineSummary && !normalizedData.summary.executiveSummary) {
+      normalizedData.summary.executiveSummary = normalizedData.summary.oneLineSummary;
+    }
+    if (normalizedData.summary.context && !normalizedData.summary.relatedEntities) {
+      normalizedData.summary.relatedEntities = normalizedData.summary.context;
+    }
+  }
+
+  // 🔧 FIX: Normalize Hidden Motives data
+  const hmRaw = normalizedData?.rawAnalysis?.hiddenMotives 
+             || normalizedData?.rawAnalysis?.hidden_motives
+             || normalizedData?.hiddenMotives 
+             || normalizedData?.hidden_motives
+             || normalizedData?.motive;
+
+  console.log('🧠 Hidden Motives raw data:', hmRaw);
+
+  if (hmRaw) {
+    const normalizedHM = normalizeHiddenMotives(hmRaw);
+    console.log('✅ Normalized Hidden Motives:', normalizedHM);
+    
+    if (normalizedHM) {
+      normalizedData.hiddenMotives = normalizedHM;
+      // Also set in rawAnalysis for backward compatibility
+      if (!normalizedData.rawAnalysis) {
+        normalizedData.rawAnalysis = {};
+      }
+      normalizedData.rawAnalysis.hiddenMotives = normalizedHM;
+    }
+  } else {
+    console.warn('⚠️ No Hidden Motives data found in any expected location');
+  }
+
+  if (!normalizedData.mode) {
+    console.warn('⚠️ mode was undefined, defaulting to "full"');
+    normalizedData.mode = 'full';
+  }
+
+  console.log('✅ Final normalized data:', {
+    hasSummary: !!normalizedData.summary,
+    hasCredibility: !!normalizedData.credibility,
+    hasPestle: !!normalizedData.pestle,
+    hasMarketImpact: !!normalizedData.marketImpact,
+    hasPartyImpact: !!normalizedData.partyImpact,
+    hasHiddenMotives: !!normalizedData.hiddenMotives,
+    hasChronos: !!normalizedData.chronos,
+    hasEntropy: !!normalizedData.entropy,
+    hasOuroboros: !!normalizedData.ouroboros,
+    mode: normalizedData.mode
+  });
+
+  return normalizedData;
+};
+
+/* =========================
    Market Impact Section Component
 ========================= */
 
-interface MarketImpactSectionProps {
-  marketImpact: {
-    tickers: {
-      direct: any[];
-      indirect: any[];
-      speculative: any[];
-    };
-    analystNote?: string;
-    logicChain?: {
-      primaryTrigger?: string;
-      transmissionPath?: string[];
-      affectedThemes?: string[];
-    };
-    overallSentiment?: string;
-    institutionalFlow?: string;
-  };
-  className?: string;
-}
-
-function MarketImpactSection({ marketImpact, className = "" }: MarketImpactSectionProps) {
-  // Defensive check for null/undefined marketImpact
-  if (!marketImpact) {
-    return (
-      <div className={`p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 ${className}`}>
-        <TrendingUp className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-        <p className="text-slate-600 dark:text-slate-400">Market impact data not available for this article.</p>
-      </div>
-    );
-  }
-
-  const { tickers, analystNote, logicChain, overallSentiment, institutionalFlow } = marketImpact;
-  
-  // Calculate total tickers
-  const totalTickers = (tickers?.direct?.length || 0) + 
-                       (tickers?.indirect?.length || 0) + 
-                       (tickers?.speculative?.length || 0);
-
-  // Sentiment color mapping
-  const sentimentColor = overallSentiment === 'Bullish' ? 'text-green-600 dark:text-green-400' :
-                        overallSentiment === 'Bearish' ? 'text-red-600 dark:text-red-400' :
-                        'text-slate-600 dark:text-slate-400';
-
-  return (
-    <section className={`bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 ${className}`}>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-green-500" />
-          Market Impact
-        </h3>
-        {overallSentiment && (
-          <span className={`text-sm font-semibold ${sentimentColor}`}>
-            {overallSentiment} {institutionalFlow && `· ${institutionalFlow}`}
-          </span>
-        )}
-      </div>
-
-      {/* Analyst Note */}
-      {analystNote && (
-        <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg mb-4 border border-slate-200 dark:border-slate-700">
-          <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-indigo-500" />
-            Analyst Perspective
-          </h4>
-          <p className="text-sm text-slate-700 dark:text-slate-300">{analystNote}</p>
-        </div>
-      )}
-
-      {/* Logic Chain */}
-      {logicChain && logicChain.primaryTrigger && (
-        <div className="mb-4 text-sm bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Reasoning Chain</h4>
-          <ul className="space-y-1.5 text-slate-700 dark:text-slate-300">
-            <li className="flex items-start gap-2">
-              <span className="text-blue-600 dark:text-blue-400 font-bold mt-0.5">▸</span>
-              <span><strong className="text-blue-900 dark:text-blue-300">Trigger:</strong> {logicChain.primaryTrigger}</span>
-            </li>
-            {logicChain.transmissionPath?.map((step: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 pl-4">
-                <span className="text-slate-400 dark:text-slate-500 mt-0.5">→</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
-          {logicChain.affectedThemes && logicChain.affectedThemes.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {logicChain.affectedThemes.map((theme: string, i: number) => (
-                <span key={i} className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full font-medium">
-                  {theme}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Impact Distribution + Ticker Cards */}
-      {totalTickers > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Distribution Meter */}
-          <div className="md:col-span-1">
-            <ImpactDistributionMeter
-              direct={tickers?.direct?.length || 0}
-              indirect={tickers?.indirect?.length || 0}
-              speculative={tickers?.speculative?.length || 0}
-            />
-          </div>
-
-          {/* Ticker Cards by Tier */}
-          <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(['direct', 'indirect', 'speculative'] as const).map((tier) => {
-              const tierTickers = tickers?.[tier] || [];
-              const tierColors = {
-                direct: { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300' },
-                indirect: { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300' },
-                speculative: { bg: 'bg-slate-50 dark:bg-slate-800/50', border: 'border-slate-200 dark:border-slate-700', text: 'text-slate-700 dark:text-slate-300' }
-              };
-              const colors = tierColors[tier];
-
-              return (
-                <div key={tier} className="space-y-3">
-                  <h4 className={`text-sm font-semibold capitalize mb-2 ${colors.text}`}>
-                    {tier} Targets ({tierTickers.length})
-                  </h4>
-                  
-                  {tierTickers.length === 0 ? (
-                    <p className="text-xs text-slate-400 dark:text-slate-500 italic">No equities found</p>
-                  ) : (
-                    tierTickers.map((ticker: any) => (
-                      <div
-                        key={ticker.symbol}
-                        className={`border rounded-lg p-3 text-xs ${colors.bg} ${colors.border} hover:shadow-md transition-shadow cursor-pointer`}
-                        onClick={() => window.open(`https://finance.yahoo.com/quote/${ticker.symbol}`, '_blank')}
-                      >
-                        {/* Symbol, Sentiment, and Evidence Badge */}
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <strong className="text-base font-bold text-slate-900 dark:text-white">
-                            {ticker.symbol}
-                          </strong>
-
-                          {/* Sentiment Badge */}
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold
-                            ${ticker.sentiment === 'Bullish' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
-                              ticker.sentiment === 'Bearish' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
-                              'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
-                            {ticker.sentiment}
-                          </span>
-
-                          {/* Evidence Badge */}
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wide
-                              ${ticker.tier === 'Direct'
-                                ? 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800'
-                                : ticker.tier === 'Indirect'
-                                ? 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
-                                : 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800'
-                              }`}
-                          >
-                            {ticker.tier === 'Direct'
-                              ? 'EXPLICIT'
-                              : ticker.tier === 'Indirect'
-                              ? 'AI INFERRED'
-                              : 'STRUCTURAL'}
-                          </span>
-                        </div>
-
-                        {/* Company Name */}
-                        {ticker.name && (
-                          <div className="text-slate-600 dark:text-slate-400 font-medium mb-2 text-xs">
-                            {ticker.name}
-                          </div>
-                        )}
-
-                        {/* Impact Mechanism */}
-                        <div className="text-slate-700 dark:text-slate-300 mb-2 font-medium">
-                          {ticker.impactMechanism || 'Market Impact'}
-                        </div>
-
-                        {/* Confidence & Time Horizon */}
-                        <div className="flex gap-2 mb-2 flex-wrap">
-                          {ticker.confidence !== undefined && (
-                            <span className="text-xs px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded font-semibold">
-                              {ticker.confidence}% confidence
-                            </span>
-                          )}
-                          {ticker.timeHorizon && (
-                            <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded font-medium">
-                              {ticker.timeHorizon}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Risk Flag */}
-                        {ticker.riskFlag && (
-                          <div className="mb-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs">
-                            <span className="text-amber-700 dark:text-amber-300 font-semibold">⚠️ {ticker.riskFlag}</span>
-                          </div>
-                        )}
-
-                        {/* Evidence Basis - Always show, different content per tier */}
-                        <div className="text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-[11px]">
-                          <span className="font-semibold text-slate-600 dark:text-slate-400">Evidence Basis:</span>
-                          
-                          {/* Direct: Show sourceSentence as quote */}
-                          {ticker.tier === 'Direct' && ticker.evidence?.sourceSentence && (
-                            <p className="italic mt-1">
-                              "{ticker.evidence.sourceSentence}"
-                            </p>
-                          )}
-
-                          {/* Indirect/Speculative: Show inferenceBasis */}
-                          {ticker.tier !== 'Direct' && ticker.evidence?.inferenceBasis && (
-                            <p className="mt-1">
-                              {ticker.evidence.inferenceBasis}
-                            </p>
-                          )}
-
-                          {/* Fallback if no evidence provided */}
-                          {!ticker.evidence?.sourceSentence && !ticker.evidence?.inferenceBasis && (
-                            <p className="mt-1 text-slate-400 dark:text-slate-500 italic">
-                              No evidence details available
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Speculative Risk Disclaimer */}
-                        {ticker.tier === 'Speculative' && (
-                          <div className="mt-2 text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                            Low-confidence structural inference · Not an explicit mention
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="p-10 text-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/30 dark:to-slate-900/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-          <Activity className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-          <h5 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">No Verified Equities Detected</h5>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            This article does not explicitly mention publicly traded companies or stock symbols.
-          </p>
-        </div>
-      )}
-    </section>
-  );
-}
 
 // WorkflowStep component
 const WorkflowStep = ({
@@ -398,38 +406,50 @@ const WorkflowStep = ({
   subtitle,
   isActive,
   isLast,
-  children
+  children,
+  verdictText,
+  beginnerBullets,
+  id
 }: {
   icon: any,
   title: string,
   subtitle: string,
   isActive: boolean,
   isLast?: boolean,
-  children: React.ReactNode
+  children: React.ReactNode,
+  verdictText?: string,
+  beginnerBullets?: string[],
+  id?: string
 }) => {
   return (
-    <div className="relative flex gap-6 md:gap-10">
-      <div className="relative flex flex-col items-center flex-shrink-0 w-12">
-        <motion.div
-          initial={{ scale: 0.85, opacity: 0 }}
-          animate={isActive ? { scale: [1, 1.06, 1], opacity: 1 } : { scale: 1, opacity: 1 }}
-          transition={isActive ? { duration: 1.8, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' } : { duration: 0.6 }}
-          className={`z-10 flex items-center justify-center w-12 h-12 rounded-full border-4 shadow-xl transition-colors duration-500 ${isActive ? 'bg-blue-600 border-white dark:border-slate-800 text-white ring-4 ring-blue-200 dark:ring-blue-900' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-400'}`}
-        >
-          <Icon className="w-5 h-5" />
-        </motion.div>
-
-        <div className={`flex-grow w-1 my-2 relative overflow-hidden rounded-full ${isActive ? 'bg-blue-300 dark:bg-blue-900' : 'bg-slate-200 dark:bg-slate-700'}`}>
-          <motion.div
-            className="absolute top-0 left-0 w-full bg-blue-500 rounded-full"
-            initial={{ height: "0%" }}
-            whileInView={{ height: "100%" }}
-            viewport={{ once: true, margin: "-100px 0px" }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
+    <div id={id} className="relative flex gap-6 md:gap-10 scroll-mt-24">
+      <div
+        className="flex flex-col items-center w-6 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          if (id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
+      >
+        <div className="w-[3px] h-[3px] rounded-full bg-blue-500" />
+        {!isLast && (
+          <div
+            className="flex-grow my-2 rounded-full"
+            style={{
+              width: '2px',
+              background: 'linear-gradient(to bottom, rgba(59,130,246,0.5), rgba(59,130,246,0.15))',
+            }}
           />
-          <div className="absolute inset-0 opacity-30 rounded-full" style={{ backgroundImage: 'linear-gradient(to bottom, transparent 0%, rgba(59,130,246,0.35) 50%, transparent 100%)' }} />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 dark:bg-blue-300 rotate-45 rounded-sm shadow-[0_0_6px_rgba(59,130,246,0.25)] dark:shadow-[0_0_10px_rgba(59,130,246,0.6)] animate-pulse" />
-        </div>
+        )}
       </div>
 
       <div className="flex-grow pb-16">
@@ -445,6 +465,7 @@ const WorkflowStep = ({
           transition={{ duration: 0.45 }}
           className="bg-white dark:bg-slate-900/70 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden backdrop-blur-lg"
         >
+          <VerdictLine text={verdictText} />
           {children}
         </motion.div>
       </div>
@@ -454,7 +475,6 @@ const WorkflowStep = ({
 
 // PESTLE Component
 const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: AnalysisData['pestle'], isPremium: boolean, onSelectFactor: (f: string | null) => void }) => {
-  // Defensive check for null/undefined pestle
   if (!pestle) {
     return (
       <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
@@ -670,10 +690,7 @@ const PestleBarAndRadar = ({ pestle, isPremium, onSelectFactor }: { pestle: Anal
 };
 
 // Main Component
-
-// Main Component - COMPLETELY FIXED
 const AnalysisResultPage = () => {
-  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY EARLY RETURNS!
   const { tier, loading: tierLoading, canAccess } = useSubscription();
   const isPremium = tier === 'pro' || tier === 'business';
 
@@ -685,7 +702,6 @@ const AnalysisResultPage = () => {
   const { scrollYProgress } = useScroll({ target: mainRef, layoutEffect: false });
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-  // ✅ CRITICAL: useEffect BEFORE early return
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -693,57 +709,8 @@ const AnalysisResultPage = () => {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        
-        let normalizedData;
-        
-        if (parsed.mode === 'auto-upgraded' && parsed.full) {
-          console.log('📊 Using FULL analysis data (auto-upgraded)');
-          normalizedData = {
-            ...parsed.full,
-            mode: 'full',
-            wasAutoUpgraded: true
-          };
-        } else if (parsed.data) {
-          console.log('📊 Using standard data structure');
-          normalizedData = {
-            ...parsed.data,
-            mode: parsed.mode || 'lite'
-          };
-        } else {
-          console.log('📊 Using direct structure');
-          normalizedData = {
-            ...parsed,
-            ...(parsed.rawAnalysis || {})
-          };
-        }
-        
-        if (normalizedData.summary) {
-          if (normalizedData.summary.oneLineSummary && !normalizedData.summary.executiveSummary) {
-            normalizedData.summary.executiveSummary = normalizedData.summary.oneLineSummary;
-          }
-          if (normalizedData.summary.context && !normalizedData.summary.relatedEntities) {
-            normalizedData.summary.relatedEntities = normalizedData.summary.context;
-          }
-        }
-        
-        if (!normalizedData.mode) {
-          console.warn('⚠️ mode was undefined, defaulting to "full"');
-          normalizedData.mode = 'full';
-        }
-        
-        console.log('✅ Normalized analysis data:', {
-          hasSummary: !!normalizedData.summary,
-          hasCredibility: !!normalizedData.credibility,
-          hasPestle: !!normalizedData.pestle,
-          hasMarketImpact: !!normalizedData.marketImpact,
-          hasPartyImpact: !!normalizedData.partyImpact,
-          hasChronos: !!normalizedData.chronos,
-          hasEntropy: !!normalizedData.entropy,
-          hasOuroboros: !!normalizedData.ouroboros,
-          mode: normalizedData.mode
-        });
-        
-        setAnalysisData(normalizedData);
+        const normalized = normalizeAnalysisData(parsed);
+        setAnalysisData(normalized);
       } catch (e) {
         console.error('Failed to parse analysisResult', e);
       }
@@ -751,7 +718,35 @@ const AnalysisResultPage = () => {
     setLoading(false);
   }, []);
 
-  // ✅ NOW SAFE: Early return after ALL hooks
+  // ✅ Data destructuring MUST be before any early returns
+  const { 
+    summary = {}, 
+    credibility = {}, 
+    pestle, 
+    marketImpact, 
+    partyImpact, 
+    chronos, 
+    entropy, 
+    motive, 
+    ouroboros 
+  } = analysisData || {};
+  
+  // 🔧 Strategy / Intent data (normalized from backend)
+  const strategyIntent = analysisData?.hiddenMotives || analysisData?.rawAnalysis?.hiddenMotives || null;
+
+  // ✅ useMemo AFTER data is available but BEFORE any returns
+  const topPestleDriver = useMemo(() => {
+    if (!pestle) return undefined;
+    const entries = Object.entries(pestle as any)
+      .map(([k, v]: any) => ({ k, s: typeof v?.score === 'number' ? v.score : -1 }))
+      .filter((e) => e.s >= 0);
+    if (!entries.length) return undefined;
+    entries.sort((a, b) => b.s - a.s);
+    const top = entries[0];
+    return top ? top.k.charAt(0).toUpperCase() + top.k.slice(1) : undefined;
+  }, [pestle]);
+
+  // ✅ ALL early returns AFTER all hooks
   if (tierLoading || loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center">
@@ -760,6 +755,17 @@ const AnalysisResultPage = () => {
     );
   }
 
+  if (!analysisData) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center text-slate-400">
+        <AlertTriangle className="w-5 h-5 mr-2" /> No Analysis Data Found
+      </div>
+    );
+  }
+
+  console.log('🎯 Final Strategy Intent for render:', strategyIntent);
+
+  // Helper functions AFTER all returns
   const handleDownload = () => {
     try {
       window.print();
@@ -796,7 +802,7 @@ const AnalysisResultPage = () => {
 
   const handleShare = async () => {
     const shareData = {
-      title: summary?.title || 'Intelligence Report',
+      title: analysisData?.summary?.title || 'Intelligence Report',
       text: 'NexVeris Intelligence Report',
       url: window.location.href
     };
@@ -812,36 +818,16 @@ const AnalysisResultPage = () => {
     }
   };
 
-  if (!analysisData) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex items-center justify-center text-slate-400">
-        <AlertTriangle className="w-5 h-5 mr-2" /> No Analysis Data Found
-      </div>
-    );
-  }
-
-  const { 
-    summary = {}, 
-    credibility = {}, 
-    pestle, 
-    marketImpact, 
-    partyImpact, 
-    chronos, 
-    entropy, 
-    motive, 
-    ouroboros 
-  } = analysisData || {};
-  const hm = analysisData?.rawAnalysis?.hiddenMotives ?? analysisData?.hiddenMotives ?? null;
-
   const calculateSignalIntensity = () => {
-    const signalScore = entropy?.signalToNoise ?? summary?.accuracy ?? 0;
-    const intensity = (signalScore / 10).toFixed(1);
-    
+    const baseScore = typeof entropy?.signalToNoise === 'number'
+      ? entropy.signalToNoise
+      : (typeof summary?.accuracy === 'number' ? summary.accuracy : undefined);
+    if (baseScore == null) return undefined;
+    const intensity = (baseScore / 10).toFixed(1);
     let label = 'LOW';
-    if (signalScore >= 70) label = 'HIGH';
-    else if (signalScore >= 40) label = 'MEDIUM';
-    
-    return { score: intensity, label: label, rawScore: signalScore };
+    if (baseScore >= 70) label = 'HIGH';
+    else if (baseScore >= 40) label = 'MEDIUM';
+    return { score: intensity, label, rawScore: baseScore };
   };
 
   const signalIntensity = calculateSignalIntensity();
@@ -863,7 +849,7 @@ const AnalysisResultPage = () => {
     return `hsl(140, 45%, ${l}%)`;
   };
   
-  const signalColor = getSignalColor(parseFloat(String(signalIntensity.score)), signalIntensity.label);
+  const signalColor = signalIntensity ? getSignalColor(parseFloat(String(signalIntensity.score)), signalIntensity.label) : '#64748b';
 
   const structuredVerdict = {
     timeframe: summary?.timeframe ?? "Not detected in source",
@@ -879,6 +865,7 @@ const AnalysisResultPage = () => {
         .filter((s: string) => s)
         .slice(0, 5);
 
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors">
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
@@ -891,7 +878,7 @@ const AnalysisResultPage = () => {
             <div>
               <h1 className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-md">{summary?.title || "Intelligence Report"}</h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                <FileText className="w-3 h-3"/> Intelligence Report • {new Date().toLocaleDateString()}
+                <FileText className="w-3 h-3"/> NexVeris AI Report • {new Date().toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -917,6 +904,76 @@ const AnalysisResultPage = () => {
       </header>
 
       <main ref={mainRef} className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+        {/* Decision Summary / One-Minute Intelligence Takeaway */}
+        <section aria-labelledby="decision-summary" className="bg-slate-50 dark:bg-slate-900/40 border-l-4 border-blue-600 rounded-r-xl p-6 shadow-lg">
+          {/* "Read this first" label */}
+          <div className="text-[11px] uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold mb-3">
+            ⏱ 30-second Decision Summary · Read this first
+          </div>
+          
+          <h2 id="decision-summary" className="sr-only">Decision Summary / One-Minute Intelligence Takeaway</h2>
+          
+          {/* One-line verdict */}
+          <p className="text-base font-bold text-slate-900 dark:text-white mb-4 leading-relaxed">
+  {signalIntensity ? (
+    signalIntensity.label === 'HIGH' ? (
+      <>Treat as a high-impact signal. Structural implications are material and may require near-term exposure review.</>
+    ) : signalIntensity.label === 'MEDIUM' ? (
+      <>Treat as a base-case modifier. No immediate repositioning is required, but developments should be actively monitored.</>
+    ) : (
+      <>Treat as background context. This signal has limited decision relevance at the current stage.</>
+    )
+  ) : (
+    <>Insufficient information to support a decision-relevant assessment.</>
+  )}
+</p>
+
+
+          
+          {/* WHAT/WHY/SO WHAT with icons */}
+          <ul className="text-sm text-slate-800 dark:text-slate-200 space-y-2 pl-0 list-none">
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <div><strong>SIGNAL STRENGTH:</strong> Medium (67/100)</div>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 mt-0.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <div><strong>PRIMARY DRIVER:</strong> Legal</div>
+            </li>
+            <li className="flex items-start gap-2">
+              <Target className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <div><strong>POSITIONING POSTURE:</strong> Base-case reference; monitor developments</div>
+            </li>
+          </ul>
+          {/* Action CTA */}
+<div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+  <div className="text-sm text-slate-600 dark:text-slate-300">
+    <span className="font-semibold text-slate-800 dark:text-white">
+      Suggested Action:
+    </span>{' '}
+    Monitor developments and reassess exposure if signal strength changes.
+  </div>
+
+  <div className="flex gap-2">
+    <button
+      className="px-3 py-1.5 rounded-lg text-sm font-semibold
+                 bg-slate-100 dark:bg-slate-800
+                 text-slate-700 dark:text-slate-200
+                 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+    >
+      Monitor
+    </button>
+
+    <button
+      className="px-3 py-1.5 rounded-lg text-sm font-semibold
+                 border border-blue-600 text-blue-600
+                 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+    >
+      Review Exposure
+    </button>
+  </div>
+</div>
+      </section>
         <section className="bg-white dark:bg-slate-900/70 rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-slate-800 backdrop-blur-lg">
           <div className="flex justify-between items-start mb-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-bold uppercase">
@@ -931,9 +988,65 @@ const AnalysisResultPage = () => {
         </section>
 
         <section className="space-y-12">
+          
+          {/* Progress Bar - Shows the overall analysis workflow */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">Analysis Workflow</h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400">From basic signal to future prediction</span>
+            </div>
+            <div className="grid grid-cols-7 gap-2">
+              {[
+                { label: '1. Signal', desc: 'Information strength check' },
+                { label: '2. Source', desc: 'Credibility verification' },
+                { label: '3. Forces', desc: 'External macro drivers' },
+                { label: '4. Framing', desc: 'Why told this way' },
+                { label: '5. Power', desc: 'Who has influence' },
+                { label: '6. Market', desc: 'Financial impact' },
+                { label: '7. Future', desc: 'Prediction paths' }
+              ].map((step, i) => (
+                <div 
+                  key={i} 
+                  className="text-center p-2 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 hover:shadow-md transition-shadow cursor-pointer"
+                  title={`Step ${i+1}: ${step.desc} - Part of progressive analysis from basic to advanced.`}
+                  onClick={() => {
+                    const anchor = `step-${i+1}`;
+                    const el = document.getElementById(anchor);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                >
+                  <div className="text-xs font-bold text-blue-600 dark:text-blue-400">{step.label}</div>
+                  <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 leading-tight">{step.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mb-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
+  <p className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+    How to read this analysis (30 seconds)
+  </p>
+  <ol className="text-sm text-slate-700 dark:text-slate-300 space-y-1 list-decimal list-inside">
+    <li>Start with <strong>Decision Summary</strong> to understand how to treat this information.</li>
+    <li>Review <strong>Steps 1–3</strong> for signal strength and macro drivers.</li>
+    <li>Use <strong>Steps 4–7</strong> only if you need deeper narrative, power, or scenario context.</li>
+  </ol>
+</div>
+
           {/* Step 1: Situation Brief */}
-          <WorkflowStep icon={Zap} title="1. Situation Brief" subtitle="The current state of affairs — key actors, timing, and signal intensity.
-" isActive={true}>
+          
+          <WorkflowStep
+            icon={Zap}
+            title="1. Situation Brief"
+            subtitle="Basic check: How strong is the information signal? (From noise to actionable insight)"
+            isActive={true}
+            id="step-1"
+            verdictText={mkBriefVerdict(signalIntensity)}
+            beginnerBullets={[
+              `Timeframe: ${structuredVerdict.timeframe || 'Unknown'}`,
+              `Entities: ${structuredVerdict.locationEntities || 'Not detected'}`,
+              `Signal: ${signalIntensity?.label ? `${signalIntensity.label} (${signalIntensity.score}/10)` : 'Insufficient'}`,
+            ]}
+          >
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6 border-slate-100 dark:border-slate-800">
                 <div className="p-3 bg-white dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -953,7 +1066,7 @@ const AnalysisResultPage = () => {
                     <Zap className="w-3 h-3"/> Core Signal Intensity
                   </p>
                   <p className="text-lg font-extrabold" style={{ color: signalColor }}>
-                    {signalIntensity.label} ({signalIntensity.score}/10)
+                    {signalIntensity ? `${signalIntensity.label} (${signalIntensity.score}/10)` : 'Insufficient information'}
                   </p>
                 </div>
               </div>
@@ -975,7 +1088,35 @@ const AnalysisResultPage = () => {
           </WorkflowStep>
 
           {/* Step 2: Source & Bias Check */}
-          <WorkflowStep icon={Shield} title="2. Source & Bias Check" subtitle="How reliable this information is – and how the narrative may be shaping your reaction." isActive={true}>
+          <WorkflowStep
+            icon={Shield}
+            title="2. Source & Bias Check"
+            subtitle="Basic check: Can we trust this source? (Understanding reliability and potential bias)"
+            isActive={true}
+            id="step-2"
+            verdictText={mkCredVerdict(credibility?.credibilityScore, credibility?.manipulationScore)}
+            beginnerBullets={[
+  `Overall reliability score: ${
+    typeof credibility?.credibilityScore === "number"
+      ? `${credibility.credibilityScore}/100`
+      : "Unavailable"
+  }`,
+  `Narrative pressure signals detected: ${
+    Array.isArray(credibility?.biasIndicators)
+      ? credibility.biasIndicators.length
+      : "Unavailable"
+  }`,
+  `Source quality: ${
+    typeof credibility?.credibilityScore === "number"
+      ? credibility.credibilityScore >= 70
+        ? "Established publisher"
+        : "Source quality unclear"
+      : "Unavailable"
+  }`,
+]}
+
+
+          >
             <div className="p-6">
               {credibility ? (
                 <>
@@ -985,10 +1126,15 @@ const AnalysisResultPage = () => {
                     factors={credibility.factors ?? []} 
                     sourceInfo={{ isReputable: (credibility.credibilityScore ?? 0) >= 70, hasAuthor: true, hasCitations: true }} 
                   />
-                  <ManipulationScoreGauge 
-                    score={(credibility?.manipulationScore ?? 0) as number} 
-                    indicators={(credibility?.biasIndicators ?? []) as string[]} 
-                  />
+                <ManipulationScoreGauge
+  credibilityData={{
+    manipulationScore: credibility?.manipulationScore ?? 0,
+    credibilityScore: credibility?.credibilityScore ?? 0,
+    biasIndicators: credibility?.biasIndicators ?? [],
+    factors: credibility?.factors ?? []
+  }}
+/>
+
                 </>
               ) : (
                 <div className="p-8 text-center text-slate-500 dark:text-slate-400">Credibility data not available.</div>
@@ -997,7 +1143,23 @@ const AnalysisResultPage = () => {
           </WorkflowStep>
 
           {/* Step 3: Big Picture Forces */}
-          <WorkflowStep icon={Globe} title="3. Big Picture Forces" subtitle="The political, economic, and social forces quietly influencing this story." isActive={true}>
+          <WorkflowStep
+            icon={Globe}
+            title="3. Big Picture Forces"
+            subtitle="What external forces are at play? (Politics, economy, technology, etc. driving the story)"
+            isActive={true}
+            id="step-3"
+           verdictText={mkPestleVerdict(pestle)}
+            beginnerBullets={(() => {
+              const entries = pestle ? Object.entries(pestle) : [];
+              const scores = entries.map(([k, v]: any) => ({ k, s: v?.score ?? 0 }));
+              scores.sort((a, b) => b.s - a.s);
+              const top = scores.slice(0, 2);
+              return top.length
+                ? top.map(t => `${t.k.charAt(0).toUpperCase() + t.k.slice(1)}: impact ${t.s}/100`)
+                : ['Insufficient information. Review sources and timeline.'];
+            })()}
+          >
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white">PESTLE Force Analysis</h4>
@@ -1005,17 +1167,43 @@ const AnalysisResultPage = () => {
                   Avg Impact: {(() => {
                     const values = pestle ? Object.values(pestle).map(p => p?.score ?? 0) : [0,0,0,0,0,0];
                     return Math.round(values.reduce((s,n)=>s+n,0)/6);
-                  })()} | Critical Threat
+                  })()} | Elevated Pressure
                 </div>
               </div>
               <p className="text-slate-600 dark:text-slate-300 mb-6">
                 A visual comparison of factor magnitude (Bar Chart) and a profile of external pressures (Radar Chart).
               </p>
 
-              {pestle ? (
-                <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 backdrop-blur-lg">
-                  <PestleBarAndRadar pestle={pestle} isPremium={isPremium} onSelectFactor={(f) => setSelectedFactor(f)} />
+              {/* Free-tier clarity: Top 2 impact drivers with one-sentence explainers */}
+              {!isPremium && pestle && (
+                <div className="mb-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
+                  <h5 className="text-sm font-bold text-slate-900 dark:text-white mb-2">Top Impact Drivers</h5>
+                  {(() => {
+                    const entries = Object.entries(pestle as any).map(([k, v]: any) => ({ k, s: v?.score ?? 0 }));
+                    entries.sort((a, b) => b.s - a.s);
+                    const top = entries.slice(0, 2);
+                    return top.length ? (
+                      <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                        {top.map((t) => (
+                          <li key={t.k}>
+                            <strong className="capitalize">{t.k}</strong>: Elevated impact likely influences positioning and decision timing.
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="text-sm text-slate-600 dark:text-slate-300">Insufficient information. Review sources and timeline.</div>
+                    );
+                  })()}
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Detailed pros/cons and strategy analysis are available with Premium.</div>
                 </div>
+              )}
+
+              {pestle ? (
+                <LazySection>
+                  <div className="bg-white dark:bg-slate-900/70 rounded-xl shadow-lg border border-gray-200 dark:border-slate-800 backdrop-blur-lg">
+                    <PestleBarAndRadar pestle={pestle} isPremium={isPremium} onSelectFactor={(f) => setSelectedFactor(f)} />
+                  </div>
+                </LazySection>
               ) : (
                 <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
                   <Globe className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
@@ -1025,315 +1213,96 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
-          {/* Step 4: Hidden Motives */}
-          {/* Step 4: Subliminal Strategy (Hidden Motives) */}
-<WorkflowStep 
-  icon={Target} 
-  title="4. Subliminal Strategy" 
-  subtitle="Decoding the underlying payoff structure and operational objectives." 
-  isActive={true}
+          {/* Step 4: Narrative Context & Incentives - FIXED WITH DATA NORMALIZATION */}
+<WorkflowStep
+  icon={Target}
+  title="4. Why This Story Is Told This Way"
+  subtitle="Who benefits and how is it framed?"
+  isActive
+  id="step-4"
+  verdictText={mkIntentVerdict(strategyIntent)}
 >
-  <div className="p-6 space-y-8">
-    {/* Core Operational Objective */}
-    <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:bg-slate-950 rounded-xl p-6 border border-blue-200 dark:border-blue-500/30 relative overflow-hidden">
-      {/* Background Tactical Decor */}
-      <div className="absolute top-0 right-0 p-2 opacity-5 dark:opacity-10">
-        <Activity className="w-20 h-20 text-blue-600 dark:text-blue-500" />
-      </div>
-      
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-2">
-        Core Operational Objective
-      </p>
-      <div className="flex items-baseline gap-4 relative z-10 flex-wrap">
-        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-          {hm?.dominantDriver?.type || "Analysis Pending"}
-        </h3>
-        <span className="font-mono text-sm text-blue-700 dark:text-blue-500 bg-blue-100 dark:bg-blue-500/10 px-3 py-1 rounded border border-blue-300 dark:border-blue-500/20">
-          [ {hm?.dominantDriver?.confidence ?? 0}% CONFIDENCE ]
-        </span>
-      </div>
-      <p className="mt-4 text-slate-600 dark:text-slate-400 text-xs leading-relaxed max-w-2xl border-l-2 border-blue-300 dark:border-slate-700 pl-4 relative z-10">
-        {hm?.dominantDriver?.explanation || "No explanation available for the dominant driver."}
-      </p>
-    </div>
-
-    {/* Incentive Stack Analysis */}
-    <div>
-      <h4 className="text-[10px] font-mono font-bold uppercase text-slate-500 dark:text-slate-400 mb-4 tracking-[0.2em]">
-        Incentive Stack Analysis
-      </h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "CAPITAL INCENTIVE", key: "economic", value: hm?.incentiveStack?.economic ?? 0 },
-          { label: "STATUS ENGINEERING", key: "socialPositioning", value: hm?.incentiveStack?.socialPositioning ?? 0 },
-          { label: "POLITICAL LEVERAGE", key: "politicalSignaling", value: hm?.incentiveStack?.politicalSignaling ?? 0 },
-          { label: "COGNITIVE DOMINANCE", key: "ideologicalControl", value: hm?.incentiveStack?.ideologicalControl ?? 0 }
-        ].map((m) => (
-          <div key={m.key} className="bg-white dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all shadow-sm dark:shadow-none">
-            <div className="flex justify-between items-end mb-3">
-              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 tracking-tight uppercase">{m.label}</span>
-              <span className="text-sm font-mono text-slate-900 dark:text-white font-bold">{m.value}%</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-600 dark:to-blue-500 transition-all duration-1000" 
-                style={{ width: `${m.value}%` }} 
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Modus Operandi (Behavioral Pattern) */}
-    <div className="bg-slate-50 dark:bg-slate-900/30 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
-      <h4 className="text-[10px] font-mono font-bold uppercase text-blue-700 dark:text-blue-400 mb-6 tracking-[0.2em] flex items-center gap-2">
-        <span className="w-1 h-1 bg-blue-700 dark:bg-blue-400"></span>
-        Modus Operandi
-      </h4>
-      {(() => {
-        const bp = hm?.behavioralPattern;
-        const hasFraming = bp?.framingTechniques?.length > 0;
-        const hasOmissions = bp?.omissions?.length > 0;
-        const hasTriggers = bp?.emotionalTriggers?.length > 0;
-        const hasAnyData = hasFraming || hasOmissions || hasTriggers;
-
-        if (!hasAnyData) {
-          return (
-            <p className="text-sm text-slate-500 dark:text-slate-500 italic font-mono">
-              [ NO_BEHAVIORAL_PATTERNS_DETECTED ]
-            </p>
-          );
-        }
-
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {hasFraming && (
-              <div className="space-y-3">
-                <h5 className="text-[10px] font-mono font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-0.5 h-3 bg-blue-700 dark:bg-blue-400"></span>
-                  Perception Framing
-                </h5>
-                <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300 pl-4">
-                  {bp.framingTechniques.map((tech, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-blue-600 dark:text-blue-500 mt-1">▸</span>
-                      <span>{tech}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {hasOmissions && (
-              <div className="space-y-3">
-                <h5 className="text-[10px] font-mono font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-0.5 h-3 bg-rose-700 dark:bg-rose-400"></span>
-                  Information Suppression
-                </h5>
-                <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300 pl-4">
-                  {bp.omissions.map((om, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-rose-600 dark:text-rose-500 mt-1">▸</span>
-                      <span>{om}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {hasTriggers && (
-              <div className="space-y-3">
-                <h5 className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-0.5 h-3 bg-amber-700 dark:bg-amber-400"></span>
-                  Psychological Triggers
-                </h5>
-                <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300 pl-4">
-                  {bp.emotionalTriggers.map((trig, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-amber-600 dark:text-amber-500 mt-1">▸</span>
-                      <span>{trig}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-    </div>
-
-    {/* Propaganda Pulse Map */}
-    {hm?.powerAmplification?.actors && (
-      <div className="mt-8 rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-white dark:bg-slate-950 p-6 shadow-lg dark:shadow-[0_0_30px_rgba(59,130,246,0.05)]">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
-              <Activity className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-              Propaganda Pulse
-            </h3>
-            <p className="mt-2 text-xs text-slate-600 dark:text-slate-500 font-mono">
-              Mapping nodal amplification power and platform-incentive alignment.
-            </p>
-          </div>
-          <div className="text-[10px] font-mono text-blue-600 dark:text-blue-500 animate-pulse tracking-wider">
-            LIVE_SIGNAL_SCANNING...
-          </div>
-        </div>
-        <PowerAmplificationMap actors={hm.powerAmplification.actors ?? []} />
-      </div>
-    )}
+  <div className="p-6 font-sans text-sm leading-relaxed tracking-normal text-slate-700 dark:text-slate-300">
+    <Step4NarrativeIntent
+      strategyIntent={strategyIntent}
+      isPremium={isPremium}
+    />
   </div>
 </WorkflowStep>
 
-          {/* Step 5: Who Really Has Power */}
-          <WorkflowStep icon={Target} title="5. Who Really Has Power" subtitle="Who can influence outcomes, who is affected, and who actually matters." isActive={true}>
-            <div className="p-6">
-              {isPremium ? (
-                <>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-500" /> Power-Interest Strategy Map
-                  </h4>
-                  {partyImpact ? (
-                    <PartyBarChart partyImpactData={partyImpact} />
-                  ) : (
-                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-                      <Target className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                      <p className="text-slate-600 dark:text-slate-400">No stakeholder impact data available.</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <TierLock feature="stakeholder_impact" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
-                  <div className="p-8 text-center">
-                    <Target className="w-12 h-12 text-purple-300 dark:text-purple-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Access Stakeholder Strategy</h3>
-                    <p className="text-slate-600 dark:text-slate-300">See power-interest positioning and optimal engagement strategies.</p>
-                    <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                      Upgrade to Premium
-                    </button>
-                  </div>
-                </TierLock>
-              )}
-            </div>
-          </WorkflowStep>
+
+ {/* Step 5: Who Really Has Power */}
+<WorkflowStep
+  icon={Target}
+  title="5. Who Really Has Power"
+  subtitle="Who can actually influence outcomes? (Identifying key stakeholders and their leverage)"
+  isActive={true}
+  id="step-5"
+  verdictText={mkPowerVerdict(partyImpact)}
+  beginnerBullets={[
+    `Data present: ${partyImpact ? "Yes" : "No"}`,
+    `Strategy focus: ${partyImpact ? "High-power actors" : "Unknown"}`,
+    `Risk absorption: ${partyImpact ? "Visible across counterparts" : "Not detected"}`,
+  ]}
+>
+  <Step5PowerAmplification partyImpact={partyImpact} isPremium={isPremium} />
+</WorkflowStep>
 
           {/* Step 6: Market Impact */}
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-  Evidence labels distinguish between explicit mentions and AI-inferred market impact.
+ <WorkflowStep
+  icon={TrendingUp}
+  title="6. Market Impact"
+  subtitle="How does this affect stocks? (Evidence-based winners and losers, not speculation)"
+  isActive={true}
+  id="step-6"
+  verdictText={mkMarketVerdict(marketImpact?.overallSentiment)}
+  beginnerBullets={[
+    `Overall sentiment: ${marketImpact?.overallSentiment || 'Unknown'}`,
+    `Institutional flow: ${marketImpact?.institutionalFlow || 'Unknown'}`,
+    (() => {
+      const t = marketImpact?.tickers;
+      const count =
+        (t?.direct?.length || 0) +
+        (t?.indirect?.length || 0) +
+        (t?.speculative?.length || 0);
+      return `Coverage: ${count || 'Unknown'} tickers`;
+    })(),
+  ]}
+>
+  <Step6MarketImpact
+    marketImpact={marketImpact}
+    isPremium={isPremium}
+  />
+</WorkflowStep>
+
+
+          {/* Step 7: What Happens Next */}
+          <p className="text-xs text-slate-500 mb-3">
+  You don’t need to read everything — most insights come from the first 3 steps.
 </p>
-<div className="flex gap-3 mt-3 flex-wrap text-[11px]">
-  <span className="flex items-center gap-1">
-    🟢 <b>EXPLICIT</b> – mentioned in article
-  </span>
-  <span className="flex items-center gap-1">
-    🔵 <b>AI INFERRED</b> – industry / competition logic
-  </span>
-  <span className="flex items-center gap-1">
-    🟠 <b>STRUCTURAL</b> – low-confidence thematic inference
-  </span>
-</div>
-          <WorkflowStep icon={TrendingUp} title="6. Market Impact" subtitle="Verified stock tickers with evidence-based analysis - no fabrication." isActive={true}>
-            <div className="p-6">
-              {isPremium ? (
-                <>
-                  {marketImpact && marketImpact.tickers && (
-                    (marketImpact.tickers.direct?.length > 0 || 
-                     marketImpact.tickers.indirect?.length > 0 || 
-                     marketImpact.tickers.speculative?.length > 0) ||
-                    // Backwards compatibility: check for old array format
-                    (Array.isArray(marketImpact.tickers) && marketImpact.tickers.length > 0)
-                  ) ? (
-                    // Check if new format (object with direct/indirect/speculative)
-                    marketImpact.tickers.direct !== undefined ? (
-                      <MarketImpactSection marketImpact={marketImpact} />
-                    ) : (
-                      // Fallback to old StockImpactMeter for backwards compatibility
-                      <StockImpactMeter data={marketImpact} />
-                    )
-                  ) : (
-                    <div className="p-10 text-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/30 dark:to-slate-900/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-                      <Activity className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                      <h5 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">No Verified Equities Detected</h5>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        This article does not explicitly mention publicly traded companies or stock symbols.
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <TierLock feature="market_impact" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
-                  <div className="p-8 text-center">
-                    <TrendingUp className="w-12 h-12 text-blue-300 dark:text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Access Financial Impact Analysis</h3>
-                    <p className="text-slate-600 dark:text-slate-300">See verified stock tickers with confidence scores and evidence-based reasoning.</p>
-                    <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                      Upgrade to Premium
-                    </button>
-                  </div>
-                </TierLock>
-              )}
-            </div>
-          </WorkflowStep>
 
-          {/* Step 7: What Happens Next - NEW SECTION WITH 3 MODELS */}
-          <WorkflowStep icon={GitBranch} title="7. What Happens Next" subtitle="Likely paths forward based on history, information quality, and feedback effects." isActive={true} isLast={true}>
-            <div className="p-6 h-full">
-              {isPremium ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[700px]">
-                  
-                  {/* 1. CHRONOS ISOMORPHISM (The Past: Scenario Modeling) */}
-                  <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border border-slate-200 dark:border-slate-800 relative overflow-visible">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-blue-500"></div>
-                    <div className="absolute -top-3 left-4">
-                      <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-emerald-600 text-white rounded-b-md shadow-sm">PAST</div>
-                    </div>
-                    {chronos ? (
-                      <ChronosIsomorphism data={chronos} />
-                    ) : (
-                      <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Chronos data not available.</div>
-                    )}
-                  </div>
-
-                  {/* 2. THERMODYNAMIC ENTROPY (The Present: Credibility Check) */}
-                  <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border border-slate-200 dark:border-slate-800 relative overflow-visible">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500"></div>
-                    <div className="absolute -top-3 left-4">
-                      <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-blue-600 text-white rounded-b-md shadow-sm">PRESENT</div>
-                    </div>
-                    {entropy ? (
-                      <ThermodynamicEntropy data={entropy} />
-                    ) : (
-                      <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Entropy data not available.</div>
-                    )}
-                  </div>
-
-                  {/* 3. OUROBOROS RESONANCE (The Future: Causal Chains) */}
-                  <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border-2 border-purple-500/20 relative overflow-visible">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-rose-500 to-rose-500"></div>
-                    <div className="absolute -top-3 left-4">
-                      <div className="px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide bg-rose-600 text-white rounded-b-md shadow-sm">FUTURE</div>
-                    </div>
-                    {ouroboros ? (
-                      <OuroborosResonance data={ouroboros} />
-                    ) : (
-                      <div className="p-4 text-slate-500 dark:text-slate-400 text-center">Ouroboros data not available.</div>
-                    )}
-                  </div>
-
-                </div>
-              ) : (
-                <TierLock feature="predictive_modeling" className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40">
-                  <div className="p-8 text-center">
-                    <Clock className="w-12 h-12 text-blue-300 dark:text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Unlock Predictive Trajectory</h3>
-                    <p className="text-slate-600 dark:text-slate-300">See the combined historical context, causal chain, and credibility check for a complete future outlook.</p>
-                    <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                      Upgrade to Premium
-                    </button>
-                  </div>
-                </TierLock>
-              )}
-            </div>
-          </WorkflowStep>
+          <WorkflowStep
+  icon={GitBranch}
+  title="7. What Happens Next"
+  subtitle="Where is this heading? (Scenario paths, not predictions)"
+  isActive={true}
+  isLast={false}
+  id="step-7"
+  verdictText={mkNextVerdict(chronos, entropy, ouroboros)}
+  beginnerBullets={[
+    `Historical patterns: ${chronos ? 'Detected' : 'Not detected'}`,
+    `Signal uncertainty: ${entropy ? 'Measured' : 'Unavailable'}`,
+    `Feedback loops: ${ouroboros ? 'Present' : 'Not detected'}`,
+  ]}
+>
+  <Step7Outlook
+    chronos={chronos}
+    entropy={entropy}
+    ouroboros={ouroboros}
+    isPremium={isPremium}
+    verdictText={mkNextVerdict(chronos, entropy, ouroboros)}
+  />
+</WorkflowStep>
 
         </section>
 
@@ -1368,7 +1337,7 @@ const AnalysisResultPage = () => {
     </div>
   );
 };
-// Wrapper Component - AT THE END
+
 const AnalysisResultPageWrapper = () => (
   <SubscriptionProvider>
     <AnalysisResultPage />
