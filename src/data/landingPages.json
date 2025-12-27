@@ -1,47 +1,32 @@
 [
   {
     "slug": "ai-news-analysis-tool",
-    "title": "AI News Analysis Tool – NexVeris",
-    "metaDescription": "Analyze news credibility, bias, incentives, and market impact using AI-driven decision intelligence.",
-    "h1": "AI News Analysis Tool",
-    "subtitle": "Turn news into decision intelligence",
-    "intro": "Analyze any news article beyond headlines. NexVeris reveals credibility gaps, narrative bias, incentive structures, and market impact.",
-    "seoContent": "<h2>What an AI news analysis tool should do</h2><p>The AI News Analysis Tool by NexVeris helps users understand what news truly means beyond surface-level reporting. In fast-moving information environments, narratives often move faster than verified facts, creating decision risk.</p><p>NexVeris analyzes public news articles to evaluate credibility, narrative framing, incentive structures, and potential market impact. Instead of summarizing content, the platform focuses on why information is presented, who benefits, and how narratives influence markets.</p><h2>Why traditional news reading creates blind spots</h2><p>Headlines prioritize attention over accuracy. Important assumptions, missing stakeholders, and incentive conflicts are often excluded, leading to incomplete understanding.</p><h2>How NexVeris analyzes news</h2><p>The system detects emotional framing, selective statistics, credibility risks, and incentive misalignment. NexVeris does not generate opinions or predictions—it exposes structure.</p><h2>Who this tool is for</h2><p>This tool is designed for investors, analysts, researchers, journalists, and decision-makers who require contextual clarity.</p><h2>Responsible use</h2><p>NexVeris provides analytical context, not investment advice. Always combine results with independent research.</p>"
+    "metaTitle": "AI News Analysis Tool for Credibility & Market Impact | NexVeris",
+    "metaDescription": "Analyze news credibility, narrative bias, incentive structures, and potential market impact using AI-driven decision intelligence.",
+    "seoContent": "<h1>AI News Analysis Tool</h1><p>The AI News Analysis Tool by NexVeris helps users analyze news credibility, narrative bias, incentive structures, and potential market impact beyond headlines.</p><h2>What an AI news analysis tool should do</h2><p>An effective AI news analysis tool goes beyond summarization. It helps readers understand how information is framed, what is omitted, and how narratives influence decisions and markets.</p><h2>How NexVeris is different</h2><p>Unlike traditional AI news summarizers, NexVeris focuses on why a story is told in a certain way, who benefits, and what risks may be hidden.</p><h2>Who this tool is for</h2><p>This tool is designed for investors, analysts, researchers, journalists, and decision-makers who require structured context rather than raw information.</p>"
   },
   {
     "slug": "bias-credibility-checker",
-    "title": "Bias & Credibility Checker – NexVeris",
-    "metaDescription": "Evaluate news credibility and detect narrative bias using AI.",
-    "h1": "Bias & Credibility Checker",
-    "subtitle": "Understand whether a story is trustworthy",
-    "intro": "Detect credibility risks, narrative bias, and manipulation signals in news articles.",
-    "seoContent": "<h2>Why credibility matters</h2><p>The Bias & Credibility Checker by NexVeris helps users assess whether news is trustworthy and balanced. Bias often appears through framing and omission rather than falsehood.</p><h2>How narrative bias shapes perception</h2><p>Emotionally loaded language, selective sourcing, and missing counterviews can subtly guide interpretation.</p><h2>How NexVeris evaluates credibility</h2><p>The system analyzes transparency, balance, emotional loading, and internal consistency to identify credibility risks.</p><h2>Who should use this tool</h2><p>Investors, researchers, journalists, and readers who want to reduce the risk of acting on incomplete information.</p>"
+    "metaTitle": "News Bias & Credibility Checker | NexVeris",
+    "metaDescription": "Evaluate news credibility and detect narrative bias using AI-driven structural analysis.",
+    "seoContent": "<h1>Bias & Credibility Checker</h1><p>The Bias & Credibility Checker helps readers assess whether news coverage is balanced, transparent, and reliable.</p><h2>Why credibility matters</h2><p>Credibility issues often arise through selective framing, omission of counterviews, and emotionally loaded language rather than outright falsehood.</p><h2>How narrative bias shapes perception</h2><p>Structural bias influences how readers interpret facts, especially in political, economic, and geopolitical reporting.</p><h2>How this differs from fact-checkers</h2><p>Unlike fact-checking tools that verify claims, NexVeris evaluates narrative structure and credibility risks.</p>"
   },
   {
     "slug": "market-impact-stock-sentiment-ai",
-    "title": "Market Impact & Stock Sentiment Analysis – NexVeris",
-    "metaDescription": "Analyze how news narratives influence market sentiment and stock movements.",
-    "h1": "Market Impact & Stock Sentiment AI",
-    "subtitle": "Understand how news moves markets",
-    "intro": "Assess whether news events are likely to drive volatility or long-term market shifts.",
-    "seoContent": "<h2>Why market reactions depend on narratives</h2><p>Markets respond to perception as much as fundamentals. News aligned with dominant narratives often accelerates trends.</p><h2>How NexVeris analyzes market impact</h2><p>The platform evaluates sentiment direction, narrative amplification, and incentive alignment.</p><h2>Who benefits</h2><p>Investors and analysts monitoring earnings, policy shifts, and geopolitical events.</p>"
+    "metaTitle": "Market Impact & Stock Sentiment Analysis Tool | NexVeris",
+    "metaDescription": "Analyze how news narratives influence market sentiment and potential stock movements using AI.",
+    "seoContent": "<h1>Market Impact & Stock Sentiment AI</h1><p>This tool analyzes how news narratives influence investor sentiment, volatility, and market reactions.</p><h2>Why narratives move markets</h2><p>Markets often react to perception before fundamentals. News aligned with dominant narratives can accelerate existing trends.</p><h2>How NexVeris evaluates market impact</h2><p>The platform analyzes sentiment direction, narrative amplification, and incentive alignment rather than predicting prices.</p><h2>Who should use this tool</h2><p>Investors and analysts monitoring earnings, policy changes, and geopolitical developments.</p>"
   },
   {
     "slug": "pestle-analysis-ai-generator",
-    "title": "AI PESTLE Analysis Generator – NexVeris",
-    "metaDescription": "Generate structured PESTLE analysis from news using AI.",
-    "h1": "AI PESTLE Analysis Generator",
-    "subtitle": "Reveal macro forces behind the news",
-    "intro": "Analyze political, economic, social, technological, legal, and environmental factors automatically.",
-    "seoContent": "<h2>Why PESTLE analysis matters</h2><p>Many events appear isolated when viewed narrowly. PESTLE analysis reveals structural drivers and long-term risks.</p><h2>How NexVeris applies PESTLE</h2><p>The platform extracts macro-level signals and organizes them into PESTLE dimensions.</p><h2>Who uses this tool</h2><p>Strategists, investors, policy analysts, and researchers assessing systemic risk.</p>"
+    "metaTitle": "AI PESTLE Analysis Generator for News | NexVeris",
+    "metaDescription": "Generate structured PESTLE analysis from news articles using AI.",
+    "seoContent": "<h1>AI PESTLE Analysis Generator</h1><p>This tool automatically analyzes political, economic, social, technological, legal, and environmental factors behind news events.</p><h2>Why PESTLE analysis matters</h2><p>PESTLE analysis reveals macro forces and long-term risks that are often hidden in daily news coverage.</p><h2>How NexVeris applies PESTLE analysis</h2><p>The platform extracts macro-level signals from news and organizes them into structured PESTLE dimensions.</p><h2>Who benefits</h2><p>Strategists, investors, policy analysts, and researchers assessing systemic impact.</p>"
   },
   {
     "slug": "ai-news-summarizer",
-    "title": "AI News Summarizer – NexVeris",
-    "metaDescription": "Summarize news with decision-relevant context, not just headlines.",
-    "h1": "AI News Summarizer",
-    "subtitle": "Summaries designed for decisions",
-    "intro": "Get concise, context-aware summaries that highlight what actually matters.",
-    "seoContent": "<h2>Why decision-focused summaries are different</h2><p>Traditional summaries explain what happened. NexVeris focuses on why it matters.</p><h2>How NexVeris summarizes news</h2><p>Each summary highlights key drivers, credibility considerations, and implications.</p><h2>Who benefits</h2><p>Professionals who need fast understanding without losing context.</p>"
+    "metaTitle": "AI News Summarizer with Context | NexVeris",
+    "metaDescription": "Summarize news with context and relevance, not just headlines.",
+    "seoContent": "<h1>AI News Summarizer</h1><p>This AI news summarizer highlights what matters most while preserving context and implications.</p><h2>Why context-aware summaries matter</h2><p>Traditional summaries explain what happened. Context-aware summaries explain why it matters.</p><h2>How NexVeris summarizes news</h2><p>Each summary highlights key drivers, credibility considerations, and potential consequences.</p><h2>Who this is for</h2><p>Professionals who need fast understanding without losing analytical depth.</p>"
   }
 ]

@@ -540,25 +540,39 @@ export default function Home() {
             - Connect homepage to all landing pages
             - Visible to Google, hidden from users
         ===================================================== */}
-        <section className="sr-only">
-          <h2>AI-powered News Analysis Platform</h2>
-          <p>
-            NexVeris is an AI-powered news analysis and decision intelligence
-            platform that evaluates news credibility, detects bias, analyzes
-            incentive structures, and assesses potential market impact.
-          </p>
-          <p>
-            The platform is designed for investors, analysts, researchers,
-            and decision-makers who need to understand not just what the news says,
-            but why it is being said and how it may influence markets or behavior.
-          </p>
-          <ul>
-            <li>AI News Analysis Tool</li>
-            <li>News Credibility & Bias Detection</li>
-            <li>Market Impact & Sentiment Analysis</li>
-            <li>PESTLE & Geopolitical Risk Analysis</li>
-          </ul>
-        </section>
+<section className="sr-only">
+  <h2>AI-powered News Analysis Platform</h2>
+
+  <p>
+    NexVeris is an AI-powered news analysis and decision intelligence
+    platform that evaluates news credibility, detects bias, analyzes
+    incentive structures, and assesses potential market impact.
+  </p>
+
+  <ul>
+    <li>
+      <a href="/landing/ai-news-analysis-tool">
+        AI News Analysis Tool
+      </a>
+    </li>
+    <li>
+      <a href="/landing/bias-credibility-checker">
+        News Credibility & Bias Detection
+      </a>
+    </li>
+    <li>
+      <a href="/landing/market-impact-stock-sentiment-ai">
+        Market Impact & Sentiment Analysis
+      </a>
+    </li>
+    <li>
+      <a href="/landing/pestle-analysis-ai-generator">
+        PESTLE & Geopolitical Risk Analysis
+      </a>
+    </li>
+  </ul>
+</section>
+
 
       </main>
     </div>
