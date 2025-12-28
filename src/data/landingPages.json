@@ -1,32 +1,74 @@
 [
   {
-    "slug": "ai-news-analysis-tool",
-    "metaTitle": "AI News Analysis Tool for Credibility & Market Impact | NexVeris",
-    "metaDescription": "Analyze news credibility, narrative bias, incentive structures, and potential market impact using AI-driven decision intelligence.",
-    "seoContent": "<h1>AI News Analysis Tool</h1><p>The AI News Analysis Tool by NexVeris helps users analyze news credibility, narrative bias, incentive structures, and potential market impact beyond headlines.</p><h2>What an AI news analysis tool should do</h2><p>An effective AI news analysis tool goes beyond summarization. It helps readers understand how information is framed, what is omitted, and how narratives influence decisions and markets.</p><h2>How NexVeris is different</h2><p>Unlike traditional AI news summarizers, NexVeris focuses on why a story is told in a certain way, who benefits, and what risks may be hidden.</p><h2>Who this tool is for</h2><p>This tool is designed for investors, analysts, researchers, journalists, and decision-makers who require structured context rather than raw information.</p>"
+    "slug": "ai-news-analysis-for-investors",
+    "metaTitle": "AI News Analysis for Investors | NexVeris",
+    "metaDescription": "Analyze news credibility, narrative bias, and market impact to support investment decisions.",
+    "seoContent": "<h1>AI News Analysis for Investors</h1><p>Investors face constant information overload. Market-moving narratives often spread faster than verified facts, increasing the risk of emotional or biased decision-making.</p><h2>How investors use AI news analysis</h2><p>This tool evaluates credibility, framing techniques, incentive alignment, and potential market impact within news coverage.</p><h2>Why narrative matters in investing</h2><p>Stock prices often react to perception before fundamentals. Understanding narrative drivers helps investors manage risk.</p><h2>Who this is for</h2><p>Retail investors, portfolio managers, and analysts seeking structured insight rather than headlines.</p>"
   },
   {
-    "slug": "bias-credibility-checker",
-    "metaTitle": "News Bias & Credibility Checker | NexVeris",
-    "metaDescription": "Evaluate news credibility and detect narrative bias using AI-driven structural analysis.",
-    "seoContent": "<h1>Bias & Credibility Checker</h1><p>The Bias & Credibility Checker helps readers assess whether news coverage is balanced, transparent, and reliable.</p><h2>Why credibility matters</h2><p>Credibility issues often arise through selective framing, omission of counterviews, and emotionally loaded language rather than outright falsehood.</p><h2>How narrative bias shapes perception</h2><p>Structural bias influences how readers interpret facts, especially in political, economic, and geopolitical reporting.</p><h2>How this differs from fact-checkers</h2><p>Unlike fact-checking tools that verify claims, NexVeris evaluates narrative structure and credibility risks.</p>"
+    "slug": "news-credibility-checker-for-journalists",
+    "metaTitle": "News Credibility Checker for Journalists | NexVeris",
+    "metaDescription": "Assess credibility, bias, and omissions in news reporting using AI-driven analysis.",
+    "seoContent": "<h1>News Credibility Checker for Journalists</h1><p>Journalists operate in fast-moving environments where framing and source selection shape public understanding.</p><h2>How this tool supports journalism</h2><p>The checker highlights structural bias, selective sourcing, and missing perspectives.</p><h2>Beyond fact-checking</h2><p>Rather than verifying individual claims, NexVeris evaluates how narratives are constructed.</p><h2>Responsible reporting</h2><p>This tool supports editorial judgment but does not replace human verification.</p>"
   },
   {
-    "slug": "market-impact-stock-sentiment-ai",
-    "metaTitle": "Market Impact & Stock Sentiment Analysis Tool | NexVeris",
-    "metaDescription": "Analyze how news narratives influence market sentiment and potential stock movements using AI.",
-    "seoContent": "<h1>Market Impact & Stock Sentiment AI</h1><p>This tool analyzes how news narratives influence investor sentiment, volatility, and market reactions.</p><h2>Why narratives move markets</h2><p>Markets often react to perception before fundamentals. News aligned with dominant narratives can accelerate existing trends.</p><h2>How NexVeris evaluates market impact</h2><p>The platform analyzes sentiment direction, narrative amplification, and incentive alignment rather than predicting prices.</p><h2>Who should use this tool</h2><p>Investors and analysts monitoring earnings, policy changes, and geopolitical developments.</p>"
+    "slug": "market-impact-analysis-for-traders",
+    "metaTitle": "Market Impact Analysis for Traders | NexVeris",
+    "metaDescription": "Understand how breaking news and narratives influence short-term market reactions.",
+    "seoContent": "<h1>Market Impact Analysis for Traders</h1><p>Short-term market movements are often driven by sentiment and narrative momentum.</p><h2>How traders use this tool</h2><p>The analysis identifies emotional intensity, amplification signals, and directional sentiment.</p><h2>Timing and volatility</h2><p>Understanding narrative acceleration helps traders anticipate volatility.</p><h2>Use with caution</h2><p>This analysis provides context, not trading signals.</p>"
   },
   {
-    "slug": "pestle-analysis-ai-generator",
-    "metaTitle": "AI PESTLE Analysis Generator for News | NexVeris",
-    "metaDescription": "Generate structured PESTLE analysis from news articles using AI.",
-    "seoContent": "<h1>AI PESTLE Analysis Generator</h1><p>This tool automatically analyzes political, economic, social, technological, legal, and environmental factors behind news events.</p><h2>Why PESTLE analysis matters</h2><p>PESTLE analysis reveals macro forces and long-term risks that are often hidden in daily news coverage.</p><h2>How NexVeris applies PESTLE analysis</h2><p>The platform extracts macro-level signals from news and organizes them into structured PESTLE dimensions.</p><h2>Who benefits</h2><p>Strategists, investors, policy analysts, and researchers assessing systemic impact.</p>"
+    "slug": "geopolitical-news-analysis-for-analysts",
+    "metaTitle": "Geopolitical News Analysis for Analysts | NexVeris",
+    "metaDescription": "Analyze geopolitical news credibility, incentives, and strategic implications.",
+    "seoContent": "<h1>Geopolitical News Analysis for Analysts</h1><p>Geopolitical reporting often reflects strategic messaging rather than neutral observation.</p><h2>What this analysis reveals</h2><p>NexVeris evaluates narrative alignment, omitted stakeholders, and incentive structures.</p><h2>Why this matters</h2><p>Policy narratives influence markets, alliances, and risk perception.</p><h2>Intended users</h2><p>Policy analysts, researchers, and geopolitical risk professionals.</p>"
   },
   {
-    "slug": "ai-news-summarizer",
-    "metaTitle": "AI News Summarizer with Context | NexVeris",
-    "metaDescription": "Summarize news with context and relevance, not just headlines.",
-    "seoContent": "<h1>AI News Summarizer</h1><p>This AI news summarizer highlights what matters most while preserving context and implications.</p><h2>Why context-aware summaries matter</h2><p>Traditional summaries explain what happened. Context-aware summaries explain why it matters.</p><h2>How NexVeris summarizes news</h2><p>Each summary highlights key drivers, credibility considerations, and potential consequences.</p><h2>Who this is for</h2><p>Professionals who need fast understanding without losing analytical depth.</p>"
+    "slug": "geopolitical-news-credibility-analysis",
+    "metaTitle": "Geopolitical News Credibility Analysis | NexVeris",
+    "metaDescription": "Evaluate credibility risks and narrative bias in geopolitical reporting.",
+    "seoContent": "<h1>Geopolitical News Credibility Analysis</h1><p>Credibility challenges in geopolitical news often arise through selective framing and omission.</p><h2>Structural bias indicators</h2><p>The analysis highlights emotional language, source concentration, and missing counterviews.</p><h2>Reducing misinformation risk</h2><p>Understanding credibility risks helps prevent overreaction to strategic narratives.</p>"
+  },
+  {
+    "slug": "central-bank-policy-market-impact",
+    "metaTitle": "Central Bank Policy News Market Impact Analysis | NexVeris",
+    "metaDescription": "Analyze how central bank policy news influences market sentiment and expectations.",
+    "seoContent": "<h1>Central Bank Policy Market Impact Analysis</h1><p>Central bank communications are carefully crafted to guide expectations.</p><h2>What NexVeris analyzes</h2><p>The platform evaluates tone, implied guidance, and narrative consistency.</p><h2>Why expectations matter</h2><p>Markets often move based on anticipated policy shifts rather than decisions alone.</p>"
+  },
+  {
+    "slug": "uk-election-news-bias-analysis",
+    "metaTitle": "UK Election News Bias Analysis | NexVeris",
+    "metaDescription": "Detect narrative bias and framing techniques in UK election news coverage.",
+    "seoContent": "<h1>UK Election News Bias Analysis</h1><p>Election coverage shapes voter perception through framing choices.</p><h2>How bias appears</h2><p>Bias often emerges via emphasis, omission, and emotional framing.</p><h2>Why this matters</h2><p>Understanding bias supports informed civic and market decisions.</p>"
+  },
+  {
+    "slug": "tech-regulation-news-market-impact",
+    "metaTitle": "Tech Regulation News Market Impact | NexVeris",
+    "metaDescription": "Analyze how technology regulation news affects market sentiment and risk perception.",
+    "seoContent": "<h1>Tech Regulation News Market Impact</h1><p>Regulatory narratives can significantly impact technology valuations.</p><h2>What is analyzed</h2><p>NexVeris evaluates regulatory tone, enforcement signals, and narrative escalation.</p><h2>Who uses this</h2><p>Investors, compliance teams, and market analysts.</p>"
+  },
+  {
+    "slug": "energy-sector-news-analysis",
+    "metaTitle": "Energy Sector News Analysis | NexVeris",
+    "metaDescription": "Analyze credibility and market impact of energy sector news.",
+    "seoContent": "<h1>Energy Sector News Analysis</h1><p>Energy markets are sensitive to geopolitical and policy narratives.</p><h2>Key risk signals</h2><p>The analysis highlights supply disruption narratives and policy framing.</p><h2>Strategic relevance</h2><p>Understanding narrative drivers supports energy risk assessment.</p>"
+  },
+  {
+    "slug": "banking-crisis-news-sentiment-analysis",
+    "metaTitle": "Banking Crisis News Sentiment Analysis | NexVeris",
+    "metaDescription": "Evaluate sentiment and narrative amplification in banking crisis coverage.",
+    "seoContent": "<h1>Banking Crisis News Sentiment Analysis</h1><p>Crisis reporting often amplifies fear and uncertainty.</p><h2>How sentiment spreads</h2><p>Narratives can accelerate market stress beyond fundamentals.</p><h2>Risk management</h2><p>Sentiment awareness supports systemic risk monitoring.</p>"
+  },
+  {
+    "slug": "interest-rate-hike-market-impact",
+    "metaTitle": "Interest Rate Hike News Market Impact | NexVeris",
+    "metaDescription": "Analyze how interest rate hike news affects markets and expectations.",
+    "seoContent": "<h1>Interest Rate Hike Market Impact</h1><p>Rate hike narratives influence asset pricing and capital flows.</p><h2>What to watch</h2><p>The analysis focuses on forward guidance and tone.</p><h2>Investor relevance</h2><p>Understanding narrative context reduces surprise risk.</p>"
+  },
+  {
+    "slug": "sanctions-announcement-market-reaction",
+    "metaTitle": "Sanctions Announcement Market Reaction Analysis | NexVeris",
+    "metaDescription": "Analyze market reactions to sanctions announcements and geopolitical news.",
+    "seoContent": "<h1>Sanctions Announcement Market Reaction</h1><p>Sanctions announcements often trigger rapid market responses.</p><h2>Narrative escalation</h2><p>Media framing can amplify perceived economic impact.</p><h2>Who benefits</h2><p>Analysts and investors monitoring geopolitical risk.</p>"
   }
 ]
