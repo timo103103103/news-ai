@@ -1,7 +1,6 @@
 import React from "react";
 import { GitBranch, Clock } from "lucide-react";
 import WorkflowStep from "../components/WorkflowStep";
-import { TierLock } from "../components/TierLock";
 import LazySection from "../components/LazySection";
 
 
@@ -13,16 +12,13 @@ interface Step7OutlookProps {
   chronos?: any;
   entropy?: any;
   ouroboros?: any;
-  isPremium: boolean;
-verdictText?: string;
-
+  verdictText?: string;
 }
 
 export default function Step7Outlook({
   chronos,
   entropy,
   ouroboros,
-  isPremium,
   verdictText,
 }: Step7OutlookProps) {
   return (
@@ -30,8 +26,7 @@ export default function Step7Outlook({
 
     >
       <div className="p-6 h-full">
-        {isPremium ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[700px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[700px]">
             {/* ===================== PAST ===================== */}
             <LazySection>
               <div className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md border border-slate-200 dark:border-slate-800 relative overflow-visible">
@@ -107,27 +102,6 @@ export default function Step7Outlook({
               </div>
             </LazySection>
           </div>
-        ) : (
-          <TierLock
-            feature="predictive_modeling"
-            className="min-h-[300px] bg-slate-50 dark:bg-slate-900/40"
-          >
-            <div className="p-8 text-center">
-              <Clock className="w-12 h-12 text-blue-300 dark:text-blue-500 mx-auto mb-4" />
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">
-                Unlock Future Prediction Analysis
-              </h3>
-              <p className="text-slate-600 dark:text-slate-300">
-                <strong>Basic value:</strong> Understand where this story is
-                heading based on patterns. Upgrade for full predictive modeling
-                with historical context and scenario analysis.
-              </p>
-              <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                Upgrade to Premium
-              </button>
-            </div>
-          </TierLock>
-        )}
       </div>
     </WorkflowStep>
   );

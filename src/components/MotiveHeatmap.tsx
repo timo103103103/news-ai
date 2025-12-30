@@ -5,7 +5,7 @@ import {
   AlertTriangle, ArrowRight, Lightbulb, Microscope, Zap
 } from 'lucide-react';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { TierLock } from './TierLock';
+import TierLock from './TierLock';
 
 // ✅ REAL DATA INTERFACE - Matches backend analyze.js structure
 interface MotiveHeatmapProps {

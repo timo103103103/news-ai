@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 
 const slides = [
   {
     key: "news",
-    src: "/images/news.png",
+    src: "/images/news.png", // Assume optimized with ?quality=80
     title: "Raw news input",
   },
   {
@@ -21,6 +22,7 @@ const slides = [
 export default function HeroStackPreview() {
   const [active, setActive] = useState(0);
   const intervalRef = useRef<number | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const stop = () => {
     if (intervalRef.current) {
@@ -33,20 +35,21 @@ export default function HeroStackPreview() {
     stop();
     intervalRef.current = window.setInterval(() => {
       setActive((prev) => (prev + 1) % slides.length);
-    }, 13000); // 慢速輪播，避免暈
+    }, 8000); // Reduced to 8s
   };
 
   useEffect(() => {
     start();
     return stop;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div
       className="relative w-[760px] h-[520px] select-none"
-      onMouseEnter={stop}
+      onMouseEnter={() => setTimeout(stop, 300)} // Hover delay
       onMouseLeave={start}
+      role="region"
+      aria-label="Hero preview carousel"
     >
       {/* Slides */}
       {slides.map((slide, i) => {
@@ -54,20 +57,17 @@ export default function HeroStackPreview() {
 
         let style = "";
         if (offset === 0) {
-          style =
-            "z-30 opacity-100 translate-x-0 translate-y-0 scale-100";
+          style = "z-30 opacity-100 translate-x-0 translate-y-0 scale-100";
         } else if (offset === 1) {
-          style =
-            "z-20 opacity-60 -translate-x-3 translate-y-3 scale-[0.97]";
+          style = "z-20 opacity-60 -translate-x-3 translate-y-3 scale-[0.97]";
         } else {
-          style =
-            "z-10 opacity-20 -translate-x-6 translate-y-6 scale-[0.94]";
+          style = "z-10 opacity-20 -translate-x-6 translate-y-6 scale-[0.94]";
         }
 
         return (
           <div
             key={slide.key}
-            className={`absolute inset-0 transition-all duration-[1200ms] ease-out ${style}`}
+            className={`absolute inset-0 transition-all duration-[1200ms] ease-out ${style} ${shouldReduceMotion ? 'transition-none' : ''}`} // Reduced motion
           >
             <div className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.35)]">
               {/* Image */}
@@ -75,12 +75,13 @@ export default function HeroStackPreview() {
                 src={slide.src}
                 alt={slide.title}
                 className="w-full h-full object-cover"
+                loading="lazy" // Optimization
               />
 
-              {/* Soft overlay for readability */}
+              {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-transparent to-transparent dark:from-slate-900/60 pointer-events-none" />
 
-              {/* Caption (only active slide) */}
+              {/* Caption */}
               {offset === 0 && (
                 <div className="absolute bottom-4 left-4">
                   <div className="text-xs font-medium text-slate-700 dark:text-slate-300 bg-white/80 dark:bg-slate-900/70 backdrop-blur rounded px-3 py-1">
@@ -93,8 +94,8 @@ export default function HeroStackPreview() {
         );
       })}
 
-      {/* Dots / Indicators */}
-      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+      {/* Dots */}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-3" role="tablist" aria-label="Carousel controls">
         {slides.map((_, i) => (
           <button
             key={i}
@@ -102,7 +103,7 @@ export default function HeroStackPreview() {
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => {
               setActive(i);
-              start(); // reset autoplay timing
+              start();
             }}
             className={`w-2.5 h-2.5 rounded-full transition-all duration-200
               ${
@@ -111,6 +112,8 @@ export default function HeroStackPreview() {
                   : "bg-slate-300 dark:bg-slate-600 hover:scale-110"
               }
             `}
+            role="tab"
+            aria-selected={i === active}
           />
         ))}
       </div>

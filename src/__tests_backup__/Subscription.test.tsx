@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SubscriptionProvider, useSubscription } from '../contexts/SubscriptionContext';
-import { TierLock, UpgradeBanner } from '../components/TierLock';
+import TierLock, UpgradeBanner from '../components/TierLock';
 
 // Mock window tracking functions
 vi.stubGlobal('trackCTAClick', vi.fn());

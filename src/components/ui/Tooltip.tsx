@@ -1,5 +1,5 @@
 import { Activity, TrendingUp, Clock, ArrowRight, AlertTriangle } from "lucide-react";
-import { TierLock } from "@/components/TierLock";
+import TierLock from "@/components/TierLock";
 import MarketImpactSection from "@/components/MarketImpactSection";
 import Tooltip from "@/components/Tooltip";
 

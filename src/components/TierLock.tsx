@@ -1,85 +1,77 @@
-// src/components/TierLock.tsx
+// TierLock.tsx
+import { ReactNode } from 'react'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import { Lock } from 'lucide-react'
 
-import React from 'react'
-import { Lock, ArrowRight } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useSubscription } from '../contexts/SubscriptionContext'
+type Feature =
+  | 'hidden_motive_lite'
+  | 'hidden_motive_full'
+  | 'pestle_full'
+  | 'stakeholder_impact'
+  | 'market_impact'
+  | 'predictive_modeling'
+  | 'pdf_export'
+  | 'csv_export'
 
-/**
- * TierLock
- * -----------------------------------------
- * Feature-based access control wrapper.
- *
- * IMPORTANT:
- * - TierLock does NOT know about tiers (starter / pro / business)
- * - TierLock ONLY checks feature access via SubscriptionContext
- * - All tier logic MUST live in SubscriptionContext
- */
-export interface TierLockProps {
-  feature: string
-  className?: string
-  children: React.ReactNode
-}
-
-export function TierLock({
-  feature,
-  className = '',
-  children,
-}: TierLockProps) {
-  const navigate = useNavigate()
-
-  const {
-    loading,
-    canAccess,
-    getUpgradeMessage,
-    getUpgradeCTA,
-  } = useSubscription()
+interface TierLockProps {
+  feature: Feature
+  children: ReactNode
 
   /**
-   * 1️⃣ Loading state
-   * Prevents flash-lock before subscription is hydrated
+   * 🔑 Analysis-level override
+   * If provided, this has higher priority than subscription tier.
+   * Used by Results page to unlock FULL analysis for Business / Pro.
    */
+  canAccessOverride?: (feature: Feature) => boolean
+}
+
+export default function TierLock({
+  feature,
+  children,
+  canAccessOverride
+}: TierLockProps) {
+  const {
+    canAccess,
+    loading,
+    getUpgradeMessage,
+    getUpgradeCTA
+  } = useSubscription()
+
   if (loading) {
     return (
-      <div className={`rounded-xl border border-gray-200 dark:border-slate-800 p-6 ${className}`}>
-        <div className="animate-pulse h-40 rounded bg-gray-100 dark:bg-slate-800" />
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-6 text-sm text-slate-400">
+        Loading access…
       </div>
     )
   }
 
-  /**
-   * 2️⃣ Access granted
-   * Business / Pro / Starter handled internally by SubscriptionContext
-   */
-  if (canAccess(feature)) {
+  // 🔐 FINAL access decision (analysis > subscription)
+  const allowed = canAccessOverride
+    ? canAccessOverride(feature)
+    : canAccess(feature)
+
+  if (allowed) {
     return <>{children}</>
   }
 
-  /**
-   * 3️⃣ Locked view
-   */
   return (
-    <div className={`relative ${className}`}>
-      <div className="rounded-xl border border-dashed border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 p-8 min-h-[260px] flex flex-col items-center justify-center text-center">
-        <Lock className="w-10 h-10 mb-3 text-purple-600" />
-
-        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-slate-100">
-          Premium Feature
-        </h3>
-
-        <p className="text-sm text-gray-600 dark:text-slate-400 max-w-sm mb-4">
-          {getUpgradeMessage(feature)}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => navigate('/pricing')}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors"
-        >
-          {getUpgradeCTA(feature)}
-          <ArrowRight className="w-4 h-4" />
-        </button>
+    <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-8 text-center">
+      <div className="flex justify-center mb-4">
+        <Lock className="h-6 w-6 text-slate-400" />
       </div>
+
+      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+        {getUpgradeMessage(feature)}
+      </p>
+
+      <button
+        className="mt-4 inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
+        onClick={() => {
+          window.location.href = '/pricing'
+        }}
+      >
+        {getUpgradeCTA(feature)}
+      </button>
     </div>
   )
 }

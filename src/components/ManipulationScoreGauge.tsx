@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, 
-  ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Cell, 
+  ScatterChart, Scatter, XAxis, YAxis, ZAxis, Cell, 
   Tooltip as RechartsTooltip 
 } from 'recharts';
 import { 
@@ -33,9 +33,10 @@ export const ManipulationScoreGauge: React.FC<ManipulationScoreGaugeProps> = ({ 
     factors: []
   };
 
-  if (!credibilityData) {
-  console.warn("ManipulationScoreGauge: credibilityData missing");
-}
+  // Dev-only warning for missing data
+  if (!credibilityData && import.meta.env.DEV) {
+    console.warn("ManipulationScoreGauge: credibilityData missing");
+  }
 
   // Radar Data for Dimensional Analysis
   const radarData = useMemo(() => {
@@ -70,21 +71,26 @@ export const ManipulationScoreGauge: React.FC<ManipulationScoreGaugeProps> = ({ 
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 items-center">
-        {/* Dimension Radar */}
-        <div className="h-[240px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid stroke="#94a3b8" strokeOpacity={0.2} />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
-              <Radar
-                name="Article Fingerprint"
-                dataKey="A"
-                stroke="#4f46e5"
-                fill="#4f46e5"
-                fillOpacity={0.4}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        {/* Dimension Radar - Fixed size to avoid ResponsiveContainer height calculation issues */}
+        <div className="h-[240px] w-full flex items-center justify-center">
+          <RadarChart
+            width={300}
+            height={240}
+            cx={150}
+            cy={120}
+            outerRadius={90}
+            data={radarData}
+          >
+            <PolarGrid stroke="#94a3b8" strokeOpacity={0.2} />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
+            <Radar
+              name="Article Fingerprint"
+              dataKey="A"
+              stroke="#4f46e5"
+              fill="#4f46e5"
+              fillOpacity={0.4}
+            />
+          </RadarChart>
         </div>
 
         {/* Tactical Indicators */}

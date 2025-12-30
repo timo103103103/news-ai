@@ -110,9 +110,20 @@ const PowerAmplificationMap = ({ actors, className = '' }: PowerAmplificationMap
 
   if (!actors || actors.length === 0) {
     return (
-      <div className="bg-slate-900/50 rounded-xl p-8 text-center border border-slate-800">
-        <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-        <p className="text-slate-400">No power amplification data available</p>
+      <div className="bg-slate-100 dark:bg-slate-900/40 rounded-xl p-10 text-center border border-slate-200 dark:border-slate-800">
+        <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+
+        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          No Amplification Detected
+        </h4>
+
+        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          Our analysis did not identify any dominant actors actively amplifying or
+          shaping this narrative beyond baseline information flow.
+          <br /><br />
+          This typically indicates a low coordination environment, organic discourse,
+          or early-stage narrative formation.
+        </p>
       </div>
     );
   }

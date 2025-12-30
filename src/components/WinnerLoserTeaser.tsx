@@ -86,17 +86,7 @@ export default function WinnerLoserTeaser({ partyImpact }: WinnerLoserTeaserProp
 
   // ✅ Show placeholder if no data available
   if (!hasData || (realWinners.length === 0 && realLosers.length === 0)) {
-    return (
-      <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl shadow-2xl overflow-hidden max-w-lg mx-auto border border-slate-700 p-8">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">Alliance Network</h3>
-          <p className="text-sm text-slate-500">
-            No clear winners or losers identified in this article.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Helper to calculate position on a circle

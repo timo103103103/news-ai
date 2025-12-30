@@ -9,7 +9,6 @@ import {
   AlertTriangle, Briefcase, TrendingUp, TrendingDown, Zap, Lightbulb,
   ThumbsUp, ThumbsDown, Minus
 } from 'lucide-react';
-import { TierLock } from './TierLock';
 
 // ✅ UPDATED DATA INTERFACE - 3 Measurable Parameters
 interface PartyBarChartProps {
@@ -259,7 +258,7 @@ const getUniqueColor = (index: number): { dark: string; light: string } => {
   };
 };
 
-export function PartyBarChart({ partyImpactData, className = '' }: PartyBarChartProps) {
+export default function PartyBarChart({ partyImpactData, className = '' }: PartyBarChartProps) {
   // ✅ FIXED: No longer need tier variable - TierLock uses feature-based access
   const [selectedStakeholder, setSelectedStakeholder] = useState<ProcessedStakeholder | null>(null);
   const [hoveredStakeholder, setHoveredStakeholder] = useState<string | null>(null);
@@ -415,8 +414,7 @@ export function PartyBarChart({ partyImpactData, className = '' }: PartyBarChart
   }
 
   return (
-    <TierLock feature="party_impact">
-      <div className={`bg-white dark:bg-slate-900/60 rounded-xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-slate-900/60 rounded-xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden ${className}`}>
         <div className="p-6 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -568,10 +566,18 @@ export function PartyBarChart({ partyImpactData, className = '' }: PartyBarChart
             <AnimatePresence mode="wait">
               {selectedStakeholder ? (
                 <motion.div key="detail-view" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1">
-                  <div className="mb-4 p-4 rounded-lg border-2 shadow-sm" style={{ backgroundColor: selectedStakeholder.uniqueLightColor, borderColor: selectedStakeholder.uniqueColor }}>
+                  <div
+                    className="mb-4 p-4 rounded-lg border-2 shadow-sm"
+                    style={{
+                      backgroundColor: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark'))
+                        ? 'rgba(51, 65, 85, 0.85)' /* slate-700/85 */
+                        : selectedStakeholder.uniqueLightColor,
+                      borderColor: selectedStakeholder.uniqueColor
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-lg font-bold text-gray-900 dark:text-slate-100">{selectedStakeholder.name}</h4>
-                      <button onClick={() => setSelectedStakeholder(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors text-sm font-medium">Close</button>
+                      <button onClick={() => setSelectedStakeholder(null)} className="text-gray-400 dark:text-slate-300 hover:text-gray-600 dark:hover:text-slate-200 transition-colors text-sm font-medium">Close</button>
                     </div>
                     <p className="text-sm text-gray-700 dark:text-slate-300">{selectedStakeholder.role}</p>
                     <div className="flex items-center gap-2 mt-3">
@@ -751,6 +757,5 @@ export function PartyBarChart({ partyImpactData, className = '' }: PartyBarChart
           </div>
         </div>
       </div>
-    </TierLock>
   );
 }

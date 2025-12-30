@@ -6,12 +6,10 @@ import {
   ArrowUpRight, ArrowDownRight, Factory, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TierLock } from "@/components/TierLock";
 import MarketImpactSection from "@/components/MarketImpactSection";
 
 interface Step6MarketImpactProps {
   marketImpact: any;
-  isPremium: boolean;
 }
 
 /* =========================================================
@@ -164,11 +162,7 @@ const TickerIntelligenceCard = ({ ticker }: { ticker: any }) => {
 /* =========================================================
    Main Component (Improved UX: Better spacing, larger fonts, responsive grids, added collapsibles for advanced sections)
 ========================================================= */
-export default function Step6MarketImpact({ marketImpact, isPremium }: Step6MarketImpactProps) {
-  if (!isPremium) {
-    return <TierLock feature="market_impact" className="min-h-[400px]" />;
-  }
-
+export default function Step6MarketImpact({ marketImpact }: Step6MarketImpactProps) {
   const { tickers, sectors, overallSentiment, institutionalFlow } = marketImpact;
 
   const directBeneficiaries = [...(tickers?.direct || []), ...(tickers?.indirect || [])]

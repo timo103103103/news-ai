@@ -14,6 +14,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
   /* Design Tokens */
   --font-size-h1: 3.000rem;
   --font-size-h2: 2.250rem;
@@ -62,6 +63,10 @@
   --icon-stroke-thin: 1.5;
   --icon-stroke: 2;
   --icon-stroke-bold: 2.5;
+
+  /* Header Height Tokens (NEW - Integrated with design system) */
+  --header-height: 3.5rem; /* h-14 equivalent (56px) */
+  --header-offset: calc(var(--header-height) + var(--space-16)); /* header + spacing */
 }
 
 @layer base {
@@ -128,7 +133,6 @@
 .anim-tv-on { animation: tvTurnOn 1400ms ease-out forwards; transform-origin: center; will-change: transform, filter; }
 .anim-hidden { opacity: 0; }
 .anim-delay-2500 { animation-delay: 2.5s; }
-.anim-delay-2500 { animation-delay: 2.5s; }
 .anim-init-hidden-up { opacity: 0; transform: translateY(32px) scale(0.92); }
 
 @media (max-width: 768px) {
@@ -139,6 +143,10 @@
     --font-size-h4: 1.125rem;
     --font-size-h5: 1.000rem;
     --font-size-h6: 0.938rem;
+
+    /* Mobile Header Height (NEW) */
+    --header-height: 3.25rem; /* Slightly smaller for mobile (52px) */
+    --header-offset: calc(var(--header-height) + var(--space-12)); /* header + reduced spacing */
   }
 }
 
@@ -202,7 +210,7 @@
 
 .font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif; }
 .font-inter h1, .font-inter h2, .font-inter h3, .font-inter h4, .font-inter h5, .font-inter h6 { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif; }
-.
+
 .heading-inter-strong h1, .heading-inter-strong h2, .heading-inter-strong h3, .heading-inter-strong h4, .heading-inter-strong h5, .heading-inter-strong h6 {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Open Sans', Helvetica, Arial, sans-serif;
   letter-spacing: -0.02em;
