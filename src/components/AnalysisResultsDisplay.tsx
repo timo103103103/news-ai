@@ -70,7 +70,7 @@ import Step6MarketImpact from "@/sections/Step6MarketImpact";
 import Step7Outlook from "@/sections/Step7Outlook";
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -541,6 +541,118 @@ const WorkflowStep = ({
   );
 };
 
+// PESTLE Strategic Advice Generator
+// Provides actionable strategic recommendations based on Impact × Agency analysis
+type PestleAdvice = {
+  classification: string;
+  primaryAdvice: string;
+  actionType: 'attack' | 'defend' | 'monitor' | 'strategic';
+  urgency: 'critical' | 'high' | 'medium' | 'low';
+};
+
+const mkPestleAdvice = ({
+  factor,
+  impact,
+  agency,
+  actionable,
+  vulnerability
+}: {
+  factor: string;
+  impact: number;
+  agency: number;
+  actionable: number;
+  vulnerability: number;
+}): PestleAdvice => {
+  
+  // Classification thresholds
+  const highImpact = impact >= 60;
+  const medImpact = impact >= 40;
+  const highAgency = agency >= 0.6;
+  const medAgency = agency >= 0.4;
+  const highA = actionable >= 40;
+  const highV = vulnerability >= 40;
+
+  // Strategic quadrants based on Impact × Agency
+  if (highImpact && highAgency) {
+    // High Impact + High Control → Attack Zone
+    return {
+      classification: '🎯 Attack Zone',
+      primaryAdvice: `High controllability (${Math.round(agency * 100)}%). Invest resources proactively to exploit this ${actionable}-point opportunity. Build competitive advantage here.`,
+      actionType: 'attack',
+      urgency: 'high'
+    };
+  }
+
+  if (highImpact && !medAgency) {
+    // High Impact + Low Control → Defend Zone (Critical)
+    return {
+      classification: '🛡️ Defend Zone',
+      primaryAdvice: `Low controllability (${Math.round(agency * 100)}%). High vulnerability (${vulnerability}). URGENT: Build hedges, diversify exposure, establish contingency plans.`,
+      actionType: 'defend',
+      urgency: 'critical'
+    };
+  }
+
+  if (highImpact && medAgency) {
+    // High Impact + Medium Control → Strategic Priority
+    return {
+      classification: '⚡ Strategic Priority',
+      primaryAdvice: `Moderate controllability (${Math.round(agency * 100)}%). Balance offense (A=${actionable}) with defense (V=${vulnerability}). Invest in improving control while hedging downside.`,
+      actionType: 'strategic',
+      urgency: 'high'
+    };
+  }
+
+  if (medImpact && highAgency) {
+    // Medium Impact + High Control → Tactical Opportunity
+    return {
+      classification: '✅ Tactical Opportunity',
+      primaryAdvice: `High controllability (${Math.round(agency * 100)}%). Execute tactical initiatives with minimal risk. Quick wins available here.`,
+      actionType: 'attack',
+      urgency: 'medium'
+    };
+  }
+
+  if (medImpact && !medAgency) {
+    // Medium Impact + Low Control → Monitor & Hedge
+    return {
+      classification: '👁️ Monitor & Hedge',
+      primaryAdvice: `Limited control (${Math.round(agency * 100)}%). Monitor closely and maintain defensive positions. Vulnerability=${vulnerability} requires attention.`,
+      actionType: 'defend',
+      urgency: 'medium'
+    };
+  }
+
+  // Low Impact scenarios
+  if (!medImpact && highAgency) {
+    // Low Impact + High Control → Routine Management
+    return {
+      classification: '📋 Routine Management',
+      primaryAdvice: `Low impact (${impact}), high control (${Math.round(agency * 100)}%). Standard operating procedures sufficient. Low priority.`,
+      actionType: 'monitor',
+      urgency: 'low'
+    };
+  }
+
+  if (!medImpact && !medAgency) {
+    // Low Impact + Low Control → Low Priority
+    return {
+      classification: '💤 Low Priority',
+      primaryAdvice: `Low impact (${impact}) and limited control (${Math.round(agency * 100)}%). Monitor passively. Redirect resources to higher-priority factors.`,
+      actionType: 'monitor',
+      urgency: 'low'
+    };
+  }
+
+  // Default: Medium Impact + Medium Control
+  return {
+    classification: '⚖️ Balanced Approach',
+    primaryAdvice: `Moderate impact (${impact}) and control (${Math.round(agency * 100)}%). Maintain balanced strategy: pursue opportunities (A=${actionable}) while managing risks (V=${vulnerability}).`,
+    actionType: 'strategic',
+    urgency: 'medium'
+  };
+};
+
 // PESTLE Component
 const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestle: AnalysisData['pestle'], canAccessDetails: boolean, onSelectFactor: (f: string | null) => void }) => {
   if (!pestle) {
@@ -554,16 +666,117 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
 
   const [selectedFactor, setSelectedFactor] = useState<string | null>(null);
   const [hoverFactor, setHoverFactor] = useState<string | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const barRef = useRef<HTMLDivElement | null>(null);
   const radarRef = useRef<HTMLDivElement | null>(null);
   const [barVisible, setBarVisible] = useState(false);
   const [radarVisible, setRadarVisible] = useState(false);
 
+  // --- Agency / Control (C) estimation (0..1) ---------------------------------
+  // NOTE: backend 未有 control 字段時，用 factors 文本做可解釋估算。
+  // 你之後可以換成真正 backend control（例如 pestle[fKey].control）而唔使改圖表。
+
+  const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
+  // Very lightweight heuristic: scan factor statements for "hedgeable / substitutable / influence / speed" cues
+  const estimateControl = (factorName: string, statements: string[] = [], impactLabel?: string): number => {
+    const t = (statements || []).join(' ').toLowerCase();
+
+    // (1) Hedgeability cues
+    const hedgePos = ['hedge', 'insurance', 'derivative', 'swap', 'futures', 'contract', 'diversif', 'offset'];
+    const hedgeNeg = ['ban', 'sanction', 'export control', 'embargo', 'war', 'conflict', 'military', 'coup'];
+
+    // (2) Substitutability cues
+    const subPos = ['alternative', 'substitut', 'multiple suppliers', 'reroute', 'shift supply', 'pivot', 'replace'];
+    const subNeg = ['single source', 'bottleneck', 'shortage', 'scarce', 'locked', 'dependency'];
+
+    // (3) Influence / leverage cues
+    const inflPos = ['lobby', 'policy dialogue', 'regulator engagement', 'standard setting', 'partnership', 'market leader'];
+    const inflNeg = ['unilateral', 'mandatory', 'forced', 'no appeal', 'sudden'];
+
+    // (4) Execution speed cues
+    const speedPos = ['rapid', 'immediately', 'fast', 'short cycle', 'agile', 'reprice'];
+    const speedNeg = ['delay', 'long cycle', 'slow', 'months', 'multi-year'];
+
+    const scoreBucket = (pos: string[], neg: string[]) => {
+      let s = 0;
+      for (const w of pos) if (t.includes(w)) s += 1;
+      for (const w of neg) if (t.includes(w)) s -= 1;
+      return s;
+    };
+
+    const H = scoreBucket(hedgePos, hedgeNeg);
+    const S = scoreBucket(subPos, subNeg);
+    const L = scoreBucket(inflPos, inflNeg);
+    const R = scoreBucket(speedPos, speedNeg);
+
+    // Base by factor type (optional bias)
+    // Political/War-like tends to be less controllable; Economic/Tech sometimes more controllable
+    let base = 0.5;
+    if (factorName === 'Political') base = 0.35;
+    if (factorName === 'Legal') base = 0.4;
+    if (factorName === 'Economic') base = 0.55;
+    if (factorName === 'Technological') base = 0.52;
+    if (factorName === 'Social') base = 0.45;
+    if (factorName === 'Environmental') base = 0.42;
+
+    // Convert buckets to 0..1 adjustments
+    const adj =
+      0.12 * H +
+      0.10 * S +
+      0.08 * L +
+      0.08 * R;
+
+    // If impact label is "high" we don't change control; control is separate.
+    // But if impact label indicates "regulatory/mandatory", slightly reduce control.
+    const labelPenalty =
+      (impactLabel || '').toLowerCase().includes('high') && (t.includes('mandatory') || t.includes('regulation'))
+        ? -0.06
+        : 0;
+
+    return clamp01(base + adj + labelPenalty);
+  };
+
+  // Custom dot for Radar: dot radius reflects Control/Agency
+  const AgencyDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    if (cx == null || cy == null || !payload) return null;
+
+    // control 0..1 -> radius 2.5..8 (bigger = more controllable)
+    const c = typeof payload.control === 'number' ? payload.control : 0.5;
+    const r = 2.5 + c * 5.5;
+
+    // Slightly emphasize selected/hovered
+    const isEmph = payload.factor === hoverFactor || payload.factor === selectedFactor;
+
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={isEmph ? r + 1.2 : r}
+        fill={payload.color || '#64748b'}
+        fillOpacity={isEmph ? 0.95 : 0.7}
+        stroke="rgba(15, 23, 42, 0.35)"
+        strokeWidth={isEmph ? 1.4 : 0.8}
+      />
+    );
+  };
+
   const radarData = Object.entries(FACTOR_CONFIG).map(([factor, config]) => {
     const fKey = factor.toLowerCase() as keyof typeof pestle;
     const factorData = (pestle && pestle[fKey]) || { score: 0, impact: 'low', factors: [] };
+
     const score = factorData.score ?? 0;
     const displayScore = canAccessDetails ? score : Math.round(score * 0.65);
+
+    // --- NEW: Control/Agency (0..1) + decision metrics
+    const control = canAccessDetails
+      ? estimateControl(factor, factorData.factors || [], factorData.impact)
+      : 0.45; // Free tier: keep it conservative + stable
+
+    const actionable = Math.round(displayScore * control);          // A = I*C
+    const vulnerability = Math.round(displayScore * (1 - control)); // V = I*(1-C)
+
     return {
       factor,
       value: displayScore,
@@ -573,7 +786,13 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
       color: config.color,
       description: config.description,
       icon: React.createElement(config.icon, { className: 'w-5 h-5' }),
-      factors: factorData.factors || []
+      factors: factorData.factors || [],
+
+      // NEW FIELDS
+      control, // 0..1
+      controlPct: Math.round(control * 100),
+      actionable,    // 0..100-ish
+      vulnerability, // 0..100-ish
     };
   });
 
@@ -617,13 +836,13 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4"/> Impact Scores by Factor
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-100 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4"/> How Strong Each Force Is
             </h4>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Click a bar to expand</div>
+            <div className="text-xs text-gray-500 dark:text-slate-300">Click a bar to expand</div>
           </div>
 
-          <div ref={barRef} style={{ minHeight: '360px', height: '360px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
+          <div ref={barRef} style={{ minHeight: '360px', height: '360px' }} className="bg-white dark:bg-slate-900/70 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={radarData} layout="vertical" margin={{ top: 8, right: 24, left: 60, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-slate-700" />
@@ -661,97 +880,311 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">360° PESTLE Profile</h4>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-100">Impact vs. Control Map</h4>
           
-          <div ref={radarRef} style={{ minHeight: '380px', height: '380px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} outerRadius="95%" margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+          <div
+            ref={radarRef}
+            style={{ minHeight: '650px', minWidth: '650px', aspectRatio: '1 / 1', overflow: 'visible' }}
+            className="bg-white dark:bg-slate-900/70 rounded-lg p-6 border border-slate-200 dark:border-slate-700 mx-auto"
+          >
+            <ResponsiveContainer width="100%" aspect={1} minWidth={650} minHeight={650}>
+              <RadarChart data={radarData} outerRadius="52%" margin={{ top: 100, right: 100, bottom: 100, left: 100 }}>
                 <PolarGrid stroke="#cbd5e1" className="dark:stroke-slate-700" />
-                <PolarAngleAxis dataKey="factor" tick={{ fontSize: 13 }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 13 }} />
+                <PolarAngleAxis dataKey="factor" tick={{ fontSize: 12, fill: 'currentColor' }} tickLine={false} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  formatter={(v: any, name: string, p: any) => {
+                    const d = p?.payload;
+                    if (!d) return [v, name];
+
+                    // show Impact + Control + Actionable/Vulnerable
+                    return [
+                      `Impact ${d.value}/100 · Agency ${d.controlPct}% · A=${d.actionable} · V=${d.vulnerability}`,
+                      d.factor
+                    ];
+                  }}
+                />
+
                 <Radar 
                   name="Impact" 
                   dataKey="value" 
                   stroke="#3b82f6" 
                   fill="#3b82f6" 
-                  fillOpacity={0.3}
+                  fillOpacity={0.28}
                   isAnimationActive={radarVisible}
                   animationDuration={500}
-                  dot={{ r: 3, fill: '#64748b' }}
+                  dot={<AgencyDot />}
                 />
                 <Radar
                   name="Highlight"
                   dataKey="highlightValue"
                   stroke="#f59e0b"
                   fill="#f59e0b"
-                  fillOpacity={hoverFactor ? 0.45 : 0}
+                  fillOpacity={hoverFactor ? 0.35 : 0}
                   isAnimationActive={false}
-                  dot={{ r: hoverFactor ? 5 : 0, fill: '#f59e0b' }}
+                  dot={false}
                 />
               </RadarChart>
             </ResponsiveContainer>
+
+            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-200">
+              <span>Dot size = How much control you have</span>
+              <span>Bigger dot → You can act</span>
+              <span>Smaller dot → You must defend</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {radarData.map((item, idx) => (
-          <motion.button
-            key={idx}
-            onClick={() => {
-              setSelectedFactor(item.factor);
-              onSelectFactor(item.factor);
-            }}
-            onHoverStart={() => setHoverFactor(item.factor)}
-            onHoverEnd={() => setHoverFactor(null)}
-            className={`p-4 rounded-xl border-2 transition-colors text-left ${
-              selectedFactor === item.factor
-                ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-300 dark:border-slate-600'
-                : 'bg-white dark:bg-slate-900/30 border-gray-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/40'
-            }`}
-          >
-            {(() => { 
-              const { pros, cons } = splitFactors(item.factors || []); 
-              return (
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-sm font-semibold" style={{ color: item.color }}>{item.factor}</div>
-                    <div className="text-2xl font-black mt-1 text-slate-900 dark:text-white">{item.value}</div>
-                  </div>
-                  <div className="col-span-2 border-l border-slate-200 dark:border-slate-700 pl-4">
-                    {!canAccessDetails ? (
-                      <div className="flex items-center justify-center h-full">
-                        <div className="text-center py-8">
-                          <Lock className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Premium Feature</p>
+        {radarData.map((item, idx) => {
+          // Calculate strategic advice for this factor
+          const advice = mkPestleAdvice({
+            factor: item.factor,
+            impact: item.value,
+            agency: item.control,
+            actionable: item.actionable,
+            vulnerability: item.vulnerability
+          });
+
+          const { pros, cons } = splitFactors(item.factors || []);
+          const isExpanded = expandedCards.has(item.factor);
+
+          // Strategy badge config - "judgment before data"
+          const badgeConfig = {
+            attack: { 
+              bg: 'bg-emerald-100 dark:bg-emerald-900/30', 
+              border: 'border-emerald-300 dark:border-emerald-700',
+              text: 'text-emerald-700 dark:text-emerald-300',
+              icon: '🎯',
+              label: 'ATTACK'
+            },
+            defend: { 
+              bg: 'bg-red-100 dark:bg-red-900/30', 
+              border: 'border-red-300 dark:border-red-700',
+              text: 'text-red-700 dark:text-red-300',
+              icon: '🛡️',
+              label: 'DEFEND (Protect)'
+            },
+            strategic: { 
+              bg: 'bg-amber-100 dark:bg-amber-900/30', 
+              border: 'border-amber-300 dark:border-amber-700',
+              text: 'text-amber-700 dark:text-amber-300',
+              icon: '⚡',
+              label: 'STRATEGIC (Selective Action)'
+            },
+            monitor: { 
+              bg: 'bg-slate-100 dark:bg-slate-900/30', 
+              border: 'border-slate-300 dark:border-slate-700',
+              text: 'text-slate-600 dark:text-slate-400',
+              icon: '👁️',
+              label: 'MONITOR'
+            }
+          };
+
+          const badge = badgeConfig[advice.actionType];
+
+          return (
+            <motion.div
+              key={idx}
+              onHoverStart={() => setHoverFactor(item.factor)}
+              onHoverEnd={() => setHoverFactor(null)}
+              className={`rounded-xl border-2 transition-all duration-200 ${
+                selectedFactor === item.factor
+                  ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-300 dark:border-slate-600 shadow-lg'
+                  : 'bg-white dark:bg-slate-900/30 border-gray-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+              {/* 🥇 LAYER 1: SITUATION AT A GLANCE (3 signals only)      */}
+              {/* Purpose: "What's the situation?" in 3 seconds           */}
+              {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+              <button
+                onClick={() => {
+                  setSelectedFactor(item.factor);
+                  onSelectFactor(item.factor);
+                }}
+                className="w-full p-4 text-left"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  {/* Left: Factor name + Impact */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="text-sm font-bold uppercase tracking-wide" style={{ color: item.color }}>
+                        {item.factor}
+                      </div>
+                      {/* Strategy Badge - immediate judgment signal */}
+                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${badge.bg} ${badge.border} ${badge.text}`}>
+                        <span>{badge.icon}</span>
+                        <span>{badge.label}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Impact visualization */}
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl font-black text-slate-900 dark:text-white tabular-nums">
+                        {item.value}
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ 
+                              width: `${item.value}%`,
+                              background: `linear-gradient(90deg, ${item.color}dd, ${item.color})`
+                            }}
+                          />
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">
+                          Impact Score
                         </div>
                       </div>
-                    ) : (
-                      <>
-                        <div className="mb-3">
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[13px] font-semibold">Upside Drivers</div>
-                          <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
-                            {(pros.length ? pros : [FACTOR_CONFIG[item.factor].description]).slice(0,3).map((p, i) => (
-                              <li key={`pro-${i}`}>{p}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-[13px] font-semibold">Downside Risks</div>
-                          <ul className="mt-2 text-[13px] font-normal text-slate-600 dark:text-slate-400 list-none ml-0 space-y-1">
-                            {(cons.length ? cons : []).slice(0,3).map((c, i) => (
-                              <li key={`con-${i}`}>{c}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    )}
+                    </div>
                   </div>
+
+                  {/* Right: Expand button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newExpanded = new Set(expandedCards);
+                      if (newExpanded.has(item.factor)) {
+                        newExpanded.delete(item.factor);
+                      } else {
+                        newExpanded.add(item.factor);
+                      }
+                      setExpandedCards(newExpanded);
+                    }}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                  >
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </motion.div>
+                  </button>
                 </div>
-              );
-            })()}
-          </motion.button>
-        ))}
+              </button>
+
+              {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+              {/* 🥈 LAYER 2: DECISION CONTEXT (Click to reveal)          */}
+              {/* Purpose: "What should I do?" - strategic guidance       */}
+              {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+                      {/* One-line strategy explanation - "judgment before data" */}
+                      <div className={`mb-3 p-3 rounded-lg border ${
+                        advice.urgency === 'critical' 
+                          ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' 
+                          : advice.urgency === 'high'
+                          ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                          : advice.urgency === 'medium'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                          : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700'
+                      }`}>
+                        <div className={`text-xs font-bold mb-1 ${
+                          advice.urgency === 'critical' 
+                            ? 'text-red-700 dark:text-red-300' 
+                            : advice.urgency === 'high'
+                            ? 'text-amber-700 dark:text-amber-300'
+                            : advice.urgency === 'medium'
+                            ? 'text-blue-700 dark:text-blue-300'
+                            : 'text-slate-700 dark:text-slate-300'
+                        }`}>
+                          {advice.classification}
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                          {advice.primaryAdvice.split('.').slice(0, 2).join('.')}. 
+                        </div>
+                      </div>
+
+                      {/* Metrics row - secondary data */}
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="text-center p-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg">
+                          <div className="text-xs text-slate-500 dark:text-slate-500 mb-0.5">Agency</div>
+                          <div className="text-sm font-bold text-slate-900 dark:text-white">{item.controlPct}%</div>
+                        </div>
+                        <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                          <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-0.5">Attack (A)</div>
+                          <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{item.actionable}</div>
+                        </div>
+                        <div className="text-center p-2 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
+                          <div className="text-xs text-rose-600 dark:text-rose-400 mb-0.5">Defend (V)</div>
+                          <div className="text-sm font-bold text-rose-700 dark:text-rose-300">{item.vulnerability}</div>
+                        </div>
+                      </div>
+
+                      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+                      {/* 🥉 LAYER 3: TACTICAL DETAILS (Premium gated)   */}
+                      {/* Purpose: "What are the specifics?" - drivers   */}
+                      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+                      {!canAccessDetails ? (
+                        <div className="p-4 text-center bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200 dark:border-slate-800">
+                          <Lock className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Tactical details locked</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Upgrade to see drivers & risks</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* Upside Drivers - max 2 */}
+                          {pros.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                  Upside Drivers
+                                </div>
+                              </div>
+                              <ul className="space-y-1.5 pl-3">
+                                {(pros.length ? pros : [FACTOR_CONFIG[item.factor].description]).slice(0, 2).map((p, i) => (
+                                  <li key={`pro-${i}`} className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    • {p}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Downside Risks - max 2 */}
+                          {cons.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <div className="w-1 h-1 rounded-full bg-rose-500"></div>
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
+                                  Downside Risks
+                                </div>
+                              </div>
+                              <ul className="space-y-1.5 pl-3">
+                                {cons.slice(0, 2).map((c, i) => (
+                                  <li key={`con-${i}`} className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    • {c}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
@@ -801,6 +1234,10 @@ const AnalysisResultPage = () => {
   
   // 🔧 Strategy / Intent data (normalized from backend)
   const strategyIntent = analysisData?.hiddenMotives || analysisData?.rawAnalysis?.hiddenMotives || null;
+
+  // ✅ CRITICAL: Declare analysisMode BEFORE it's used in console.log
+  // This must be declared before the powerAmplification debug logging section
+  const analysisMode = analysisData?.mode || 'lite'; // "lite" | "standard" | "full"
 
   // 🔧 CRITICAL: Normalize powerAmplification actors data
   // Backend may return powerAmplification at multiple nesting levels:
@@ -870,8 +1307,6 @@ const AnalysisResultPage = () => {
   // Backend returns mode="full" for business users, but frontend was ignoring it
   // and still using global subscription tier. This causes UI to show locks even
   // though backend successfully executed full analysis.
-  const analysisMode = analysisData?.mode || 'lite'; // "lite" | "standard" | "full"
-  
   /**
    * Feature gate based on what backend ACTUALLY RAN for this analysis
    * NOT based on global subscription tier snapshot
@@ -1408,12 +1843,12 @@ const AnalysisResultPage = () => {
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white">PESTLE Force Analysis</h4>
+                <h4 className="font-extrabold text-2xl text-slate-900 dark:text-white">External Pressure & Control Analysis</h4>
                 <div className="flex items-center text-sm font-bold text-red-600 dark:text-red-400">
-                  Avg Impact: {(() => {
+                  Overall Pressure Level: Elevated ({(() => {
                     const values = pestle ? Object.values(pestle).map(p => p?.score ?? 0) : [0,0,0,0,0,0];
                     return Math.round(values.reduce((s,n)=>s+n,0)/6);
-                  })()} | Elevated Pressure
+                  })()}/100)
                 </div>
               </div>
               <p className="text-slate-600 dark:text-slate-300 mb-6">

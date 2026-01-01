@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSubscription } from '@/contexts/SubscriptionContext'
 import { useState } from "react";
 import {
   History,
@@ -23,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
+  const { plan, loading } = useSubscription()
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -137,9 +139,11 @@ export default function Header() {
                   {user?.email}
                 </span>
 
-                <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                  {user?.plan?.toUpperCase() || "FREE"}
-                </span>
+{!loading && (
+  <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+    {plan.toUpperCase()}
+  </span>
+)}
 
                 <button
                   onClick={handleLogout}

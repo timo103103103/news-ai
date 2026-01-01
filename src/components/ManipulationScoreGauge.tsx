@@ -25,6 +25,15 @@ interface ManipulationScoreGaugeProps {
   className?: string;
 }
 
+// PROFESSIONAL LABEL ABBREVIATION MAP
+const LABEL_MAP = {
+  'Linguistic Neutrality': 'Linguistic',
+  'Sourcing Depth': 'Sourcing',
+  'Logic Consistency': 'Logic',
+  'Editorial Distance': 'Editorial',
+  'Attribution Quality': 'Attribution'
+};
+
 export const ManipulationScoreGauge: React.FC<ManipulationScoreGaugeProps> = ({ credibilityData, className = "" }) => {
   const data = credibilityData || {
     manipulationScore: 0,
@@ -38,14 +47,39 @@ export const ManipulationScoreGauge: React.FC<ManipulationScoreGaugeProps> = ({ 
     console.warn("ManipulationScoreGauge: credibilityData missing");
   }
 
-  // Radar Data for Dimensional Analysis
+  // Radar Data for Dimensional Analysis - WITH ABBREVIATIONS
   const radarData = useMemo(() => {
     const dimensions = [
-      { subject: 'Linguistic Neutrality', A: 100 - (data.manipulationScore * 0.8), fullMark: 100 },
-      { subject: 'Sourcing Depth', A: data.credibilityScore, fullMark: 100 },
-      { subject: 'Logic Consistency', A: Math.max(30, 100 - (data.biasIndicators.length * 10)), fullMark: 100 },
-      { subject: 'Editorial Distance', A: 100 - data.manipulationScore, fullMark: 100 },
-      { subject: 'Attribution Quality', A: data.factors.find(f => f.name.includes('Source'))?.score || 50, fullMark: 100 },
+      { 
+        subject: LABEL_MAP['Linguistic Neutrality'], 
+        fullName: 'Linguistic Neutrality',
+        A: 100 - (data.manipulationScore * 0.8), 
+        fullMark: 100 
+      },
+      { 
+        subject: LABEL_MAP['Sourcing Depth'], 
+        fullName: 'Sourcing Depth',
+        A: data.credibilityScore, 
+        fullMark: 100 
+      },
+      { 
+        subject: LABEL_MAP['Logic Consistency'], 
+        fullName: 'Logic Consistency',
+        A: Math.max(30, 100 - (data.biasIndicators.length * 10)), 
+        fullMark: 100 
+      },
+      { 
+        subject: LABEL_MAP['Editorial Distance'], 
+        fullName: 'Editorial Distance',
+        A: 100 - data.manipulationScore, 
+        fullMark: 100 
+      },
+      { 
+        subject: LABEL_MAP['Attribution Quality'], 
+        fullName: 'Attribution Quality',
+        A: data.factors.find(f => f.name.includes('Source'))?.score || 50, 
+        fullMark: 100 
+      },
     ];
     return dimensions;
   }, [data]);
@@ -70,27 +104,59 @@ export const ManipulationScoreGauge: React.FC<ManipulationScoreGaugeProps> = ({ 
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 items-center">
-        {/* Dimension Radar - Fixed size to avoid ResponsiveContainer height calculation issues */}
-        <div className="h-[240px] w-full flex items-center justify-center">
-          <RadarChart
-            width={300}
-            height={240}
-            cx={150}
-            cy={120}
-            outerRadius={90}
-            data={radarData}
-          >
-            <PolarGrid stroke="#94a3b8" strokeOpacity={0.2} />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
-            <Radar
-              name="Article Fingerprint"
-              dataKey="A"
-              stroke="#4f46e5"
-              fill="#4f46e5"
-              fillOpacity={0.4}
-            />
-          </RadarChart>
+      <div className="grid lg:grid-cols-2 gap-8 items-start">
+        {/* PROFESSIONAL: Dimension Radar with ABBREVIATED labels */}
+        <div className="space-y-3">
+          <div className="h-[380px] w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <RadarChart
+              width={400}
+              height={380}
+              cx={200}
+              cy={190}
+              outerRadius={100}
+              data={radarData}
+              margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
+            >
+              <PolarGrid stroke="#94a3b8" strokeOpacity={0.2} />
+              <PolarAngleAxis 
+                dataKey="subject" 
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} 
+              />
+              <RechartsTooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  fontSize: '12px'
+                }}
+                formatter={(value: any, name: any, props: any) => {
+                  const fullName = props.payload.fullName;
+                  return [`${value.toFixed(0)}%`, fullName];
+                }}
+              />
+              <Radar
+                name="Article Fingerprint"
+                dataKey="A"
+                stroke="#4f46e5"
+                fill="#4f46e5"
+                fillOpacity={0.4}
+              />
+            </RadarChart>
+          </div>
+
+          {/* LEGEND: Shows full dimension names */}
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            {radarData.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                <span className="text-slate-600 dark:text-slate-400">
+                  <strong className="text-slate-900 dark:text-white">{item.subject}</strong>
+                  {' = '}
+                  {item.fullName}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Tactical Indicators */}

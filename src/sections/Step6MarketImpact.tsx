@@ -1,15 +1,26 @@
+// Step6MarketImpact.tsx - TRIAL GENEROSITY VERSION
+// ============================================================================
+// FIXES:
+// 1. ✅ Safe destructuring to handle undefined marketImpact (lite mode)
+// 2. ✅ Trial teaser support for first 3 analyses
+// 3. ✅ Graceful fallback when no data available
+// 4. ✅ All original functionality preserved
+// ============================================================================
+
 import React, { useState } from "react";
 import {
   TrendingUp, TrendingDown, AlertTriangle, Timer,
   Activity, ChevronDown, ChevronUp, Target,
   Layers, BarChart3, Info, ShieldAlert,
-  ArrowUpRight, ArrowDownRight, Factory, Users
+  ArrowUpRight, ArrowDownRight, Factory, Users,
+  Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MarketImpactSection from "@/components/MarketImpactSection";
 
 interface Step6MarketImpactProps {
   marketImpact: any;
+  isTrialAnalysis?: boolean; // NEW: Trial detection
 }
 
 /* =========================================================
@@ -130,19 +141,18 @@ const TickerIntelligenceCard = ({ ticker }: { ticker: any }) => {
                 </h5>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   {ticker.impactMechanism ||
-                    "This exposure is inferred from how the news affects the company’s business position."}
+                    "This exposure is inferred from how the news affects the company's business position."}
                 </p>
               </div>
 
               {ticker.evidence?.sourceSentence && (
                 <div className="bg-slate-100/50 dark:bg-slate-800/50 p-4 rounded-lg italic border-l-4 border-indigo-200">
                   <p className="text-sm text-slate-600">
-                    “{ticker.evidence.sourceSentence}”
+                    "{ticker.evidence.sourceSentence}"
                   </p>
                 </div>
               )}
 
-              {/* Added: More rounded info - Potential risks or opportunities */}
               <div className="pt-4 border-t">
                 <h5 className="text-sm font-semibold text-slate-700 mb-2">Key Considerations</h5>
                 <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
@@ -160,20 +170,197 @@ const TickerIntelligenceCard = ({ ticker }: { ticker: any }) => {
 };
 
 /* =========================================================
-   Main Component (Improved UX: Better spacing, larger fonts, responsive grids, added collapsibles for advanced sections)
+   NEW: Trial Teaser Component
 ========================================================= */
-export default function Step6MarketImpact({ marketImpact }: Step6MarketImpactProps) {
-  const { tickers, sectors, overallSentiment, institutionalFlow } = marketImpact;
+const TrialMarketImpactTeaser = () => {
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto p-4 md:p-0">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="rounded-2xl border-2 border-blue-400 dark:border-blue-600 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 overflow-hidden shadow-xl"
+      >
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <TrendingUp className="w-7 h-7 text-emerald-500" />
+              Market Impact Preview
+            </h2>
+            <span className="text-xs px-4 py-2 rounded-full bg-blue-600 text-white font-bold uppercase tracking-wide">
+              Trial Preview
+            </span>
+          </div>
+          
+          <div className="bg-white/80 dark:bg-slate-800/80 rounded-xl p-6 mb-6 border border-blue-200 dark:border-blue-700">
+            <p className="text-base text-slate-700 dark:text-slate-300 mb-4 leading-relaxed">
+              This article could trigger significant market movements across multiple dimensions:
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                <ArrowUpRight className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-sm font-bold text-emerald-900 dark:text-emerald-100 mb-1">
+                    Capital Rotation
+                  </div>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                    Potential sector shifts and fund flows
+                  </p>
+                </div>
+              </div>
 
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <Activity className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-1">
+                    Sentiment Shifts
+                  </div>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    Positioning changes across asset classes
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                <Target className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-sm font-bold text-purple-900 dark:text-purple-100 mb-1">
+                    Trading Opportunities
+                  </div>
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    Contrarian setups and momentum plays
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1">
+                    Positioning Traps
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    Common mistakes investors make when reacting to this type of news
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center py-6 border-t border-blue-200 dark:border-blue-700">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              Unlock the complete analysis to see:
+            </p>
+            <ul className="text-sm text-left max-w-md mx-auto space-y-2 mb-6">
+              <li className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Specific tickers and their projected impact
+              </li>
+              <li className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Sector-level sentiment shifts with confidence scores
+              </li>
+              <li className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Institutional flow patterns and smart money positioning
+              </li>
+              <li className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Actionable trading setups with risk parameters
+              </li>
+            </ul>
+            <button
+              onClick={() => window.location.href = '/pricing'}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-base hover:from-blue-700 hover:to-purple-700 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5"
+            >
+              Unlock Full Market Intelligence
+              <ArrowUpRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+        <Info className="w-4 h-4" />
+        Market analysis for informational purposes only — not investment advice
+      </div>
+    </div>
+  );
+};
+
+/* =========================================================
+   NEW: Empty State (No Data Available)
+========================================================= */
+const EmptyMarketImpactState = () => {
+  return (
+    <div className="max-w-2xl mx-auto p-8 text-center">
+      <div className="rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-12">
+        <div className="flex justify-center mb-4">
+          <Lock className="w-12 h-12 text-slate-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          Market Impact Analysis Unavailable
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+          This advanced feature is available in Pro and Business plans.
+        </p>
+        <button
+          onClick={() => window.location.href = '/pricing'}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+        >
+          View Pricing Plans
+          <ArrowUpRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* =========================================================
+   Main Component (FIXED with safe destructuring and trial logic)
+========================================================= */
+export default function Step6MarketImpact({ marketImpact, isTrialAnalysis = false }: Step6MarketImpactProps) {
+  // ===============================================
+  // CRITICAL FIX: Handle undefined marketImpact
+  // ===============================================
+  // Lite mode doesn't run market impact analysis (cost optimization)
+  // This prevents destructuring errors
+  
+  // CASE 1: Trial analysis - show teaser
+  if (!marketImpact && isTrialAnalysis) {
+    console.log('🎯 Showing trial market impact teaser');
+    return <TrialMarketImpactTeaser />;
+  }
+
+  // CASE 2: No data and not trial - show empty state
+  if (!marketImpact) {
+    console.log('⚠️ No market impact data - showing empty state');
+    return <EmptyMarketImpactState />;
+  }
+
+  // ===============================================
+  // SAFE DESTRUCTURING with defaults
+  // ===============================================
+  const { 
+    tickers = {}, 
+    sectors = [], 
+    overallSentiment = {}, 
+    institutionalFlow = {} 
+  } = marketImpact;
+
+  // Safe array destructuring for tickers
   const directBeneficiaries = [...(tickers?.direct || []), ...(tickers?.indirect || [])]
-    .filter(t => t.sentiment === "Bullish");
+    .filter(t => t?.sentiment === "Bullish");
 
   const marketLosers = [...(tickers?.direct || []), ...(tickers?.indirect || []), ...(tickers?.speculative || [])]
-    .filter(t => t.sentiment === "Bearish");
+    .filter(t => t?.sentiment === "Bearish");
 
   const supplyChain = (tickers?.indirect || []).filter(
-    t => t.impactMechanism?.toLowerCase().includes("supply") ||
-         t.impactMechanism?.toLowerCase().includes("vendor")
+    t => t?.impactMechanism?.toLowerCase().includes("supply") ||
+         t?.impactMechanism?.toLowerCase().includes("vendor")
   );
 
   const competitors = tickers?.speculative || [];
@@ -182,38 +369,25 @@ export default function Step6MarketImpact({ marketImpact }: Step6MarketImpactPro
     <div className="space-y-8 max-w-7xl mx-auto p-4 md:p-0">
 
       {/* ================================
-         1. Market Impact Summary (Basic: always visible)
+         1. Executive Overview
       ================================= */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-indigo-500" />
-          Summary Overview
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-slate-900 text-white relative overflow-hidden">
-            <label className="text-xs uppercase tracking-wide text-slate-300">
-              Market Positioning Bias
-            </label>
-            <div className="flex items-center gap-4 mt-3">
-              <span className="text-3xl font-black">
-                {overallSentiment || "Mixed"}
-              </span>
-              <div className="flex items-center gap-2 text-sm text-slate-300 border-l border-slate-600 pl-4">
-                <Layers className="w-4 h-4" />
-                {institutionalFlow || "Positioning unclear"}
-              </div>
-            </div>
-            <p className="text-sm text-slate-300 mt-4">
-              Highlights {directBeneficiaries.length} beneficiaries and {marketLosers.length} risks.
-            </p>
-            <Activity className="absolute -right-8 -bottom-8 w-40 h-40 text-white/5" />
-          </div>
+      <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold flex items-center gap-3">
+            <TrendingUp className="w-7 h-7 text-indigo-500" />
+            Market Impact Overview
+          </h2>
+          <span className="text-xs px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold uppercase tracking-wide">
+            Pro Intelligence
+          </span>
+        </div>
 
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <label className="text-xs uppercase tracking-wide text-slate-500">
-              Trade Setup Readiness
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50">
+            <label className="text-xs uppercase tracking-wide text-indigo-500">
+              Actionability
             </label>
-            <div className="text-xl font-bold mt-3 flex items-center gap-3">
+            <div className="mt-3 text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Timer className="w-6 h-6 text-indigo-500" />
               {directBeneficiaries.length > 0 ? "Actionable (Await confirmation)" : "Watch only"}
             </div>
@@ -233,7 +407,6 @@ export default function Step6MarketImpact({ marketImpact }: Step6MarketImpactPro
               <div className="flex items-center gap-3">
                 <ShieldAlert className="w-4 h-4" /> Macro reversal
               </div>
-              {/* Added: More rounded info */}
               <div className="flex items-center gap-3">
                 <ShieldAlert className="w-4 h-4" /> Regulatory changes
               </div>
@@ -364,7 +537,7 @@ export default function Step6MarketImpact({ marketImpact }: Step6MarketImpactPro
 
       <MarketImpactSection marketImpact={marketImpact} />
 
-      {/* Added: More rounded info - Decision Aid Section (Basic: always visible) */}
+      {/* Decision Support Tips */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Info className="w-5 h-5 text-indigo-500" />

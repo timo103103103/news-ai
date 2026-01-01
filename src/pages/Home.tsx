@@ -95,6 +95,7 @@ export default function Home() {
   const [isSticky, setIsSticky] = useState(false);
   const [ctaVariant] = useState<keyof typeof CTA_VARIANTS>(getCtaVariant());
   const [showExitPopup, setShowExitPopup] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -175,6 +176,23 @@ export default function Home() {
     document.addEventListener("mouseleave", handleMouseLeave);
     return () => document.removeEventListener("mouseleave", handleMouseLeave);
   }, [showExitPopup, remainingAnalyses]);
+
+  // Onboarding "Aha Flow" (First-time users only)
+  useEffect(() => {
+    const seen = localStorage.getItem("nexveris_onboarding_seen");
+    if (!seen) {
+      // Show after 1 second delay for better UX
+      const timer = setTimeout(() => {
+        setShowOnboarding(true);
+        localStorage.setItem("nexveris_onboarding_seen", "true");
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false);
+  };
 
   const filteredSuggestions = useMemo(() => {
     if (!urlInput) return [];
@@ -329,6 +347,102 @@ export default function Home() {
           }
         />
       </Helmet>
+
+      {/* ONBOARDING AHA FLOW MODAL (First-time users) */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full p-8 shadow-2xl relative border border-slate-200 dark:border-slate-800"
+            >
+              {/* Close Button */}
+              <button
+                onClick={handleCloseOnboarding}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                aria-label="Close onboarding"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Step Label */}
+              <p className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 font-bold">
+                Before you start
+              </p>
+
+              {/* Main Heading */}
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-slate-900 dark:text-white">
+                NexVeris won't tell you what to believe.
+              </h2>
+
+              {/* Core Message */}
+              <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                We only show you one thing:
+                <br />
+                <strong className="text-slate-900 dark:text-white">
+                  How this story was constructed, and who benefits most from your interpretation.
+                </strong>
+              </p>
+
+              {/* Aha Core Insight Box */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-800 rounded-xl p-5 mb-5 border border-blue-200 dark:border-slate-700">
+                <div className="flex items-start gap-3 mb-3">
+                  <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white block mb-1">
+                      Most readers only see the "surface narrative"
+                    </span>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Missing perspectives, incentive structures, and market paths are typically invisible
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 mb-3">
+                  <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                      Not seeing the full structure = passively accepting the preset framing
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-blue-200 dark:border-slate-600">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 italic">
+                    💡 The difference isn't in your stance—it's whether you see the complete structure.
+                  </p>
+                </div>
+              </div>
+
+              {/* Reflection Point */}
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
+                <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+                  <strong>If you only read the article,</strong>
+                  <br />
+                  you're actually following a pre-designed interpretation path.
+                </p>
+              </div>
+
+              {/* Primary CTA */}
+              <button
+                onClick={handleCloseOnboarding}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Start My First Analysis
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Trial Info */}
+              <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                You have <strong className="text-blue-600 dark:text-blue-400">3 free analyses</strong> to see the difference.
+              </p>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       
 
@@ -800,9 +914,9 @@ export default function Home() {
         {/* TESTIMONIALS (Social Proof) */}
         <section id="testimonials" className="mb-32 max-w-5xl mx-auto scroll-mt-20">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
-            Join 5,000+ investors
+            Used by investors testing narrative risk before acting
             <br />
-            <span className="text-blue-600 dark:text-blue-400">who detect bias before it costs them</span>
+
           </h2>
 
           <p className="text-center text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-12">
@@ -811,24 +925,25 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6">
             <TestimonialCard
-              quote="NexVeris showed me framing I completely missed. Would've cost me 15% on that trade."
+              quote="It didn’t tell me what to buy.
+It showed me what I was missing."
               author="John D."
               role="Investment Manager"
-              avatar="💼"
               rating={5}
             />
             <TestimonialCard
-              quote="Went from skeptic to paid user in 24 hours. The bias detection is surgical."
+              quote="I was skeptical at first.
+Now I check major headlines here before reacting."
               author="Sarah L."
               role="Risk Analyst"
-              avatar="📊"
-              rating={5}
+              rating={4}
             />
             <TestimonialCard
-              quote="Finally see what articles avoid saying. This is what professional analysis looks like."
+              quote="Sometimes it confirms my view.
+Sometimes it tells me to wait.
+Both matter."
               author="Mike R."
               role="Portfolio Manager"
-              avatar="🛡️"
               rating={5}
             />
           </div>
@@ -893,54 +1008,76 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section className="mb-32 bg-slate-50 dark:bg-slate-800/40 rounded-3xl px-6 py-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            You don't need to trust us.
-            <br />
-            <span className="text-blue-600 dark:text-blue-400">Just look at the structure.</span>
-          </h2>
-          <p className="text-center text-slate-600 dark:text-slate-300 mb-12">
-            No complex setup. No data science required. Just clarity.
-          </p>
+ {/* HOW IT WORKS */}
+<section className="mb-32 bg-slate-50 dark:bg-slate-800/40 rounded-3xl px-6 py-16">
+  <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+    You don't need to trust us.
+    <br />
+    <span className="text-blue-600 dark:text-blue-400">
+      Just follow the structure — and see what to do next.
+    </span>
+  </h2>
 
-          <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <ProcessCard
-              step="01"
-              title="Input"
-              desc="Paste any news article URL or text."
-            />
-            <ProcessCard
-              step="02"
-              title="Detect"
-              desc="AI analyzes how the narrative is constructed — framing, pressure points, and omissions."
-            />
-            <ProcessCard
-              step="03"
-              title="See the path"
-              desc="Understand where you're being led — not just what the article claims to report."
-            />
-          </div>
-        </section>
+  <p className="text-center text-slate-600 dark:text-slate-300 mb-12">
+    No complex setup. No data science required. Just clarity before decisions are made.
+  </p>
+
+  <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+    <ProcessCard
+      step="01"
+      title="Input"
+      desc="Paste any news article URL or text. No filters. No preprocessing. Just the raw narrative."
+    />
+    <ProcessCard
+      step="02"
+      title="Detect"
+      desc="AI breaks down how the narrative is constructed — what’s emphasized, what’s missing, and where subtle pressure is applied."
+    />
+    <ProcessCard
+      step="03"
+      title="See the path"
+      desc="See how perception is being shaped — and what posture it implies: act, wait, or defend."
+    />
+  </div>
+
+  {/* Optional (recommended): Output hint for credibility */}
+  <p className="mt-10 text-center text-xs text-slate-500 dark:text-slate-400">
+    <span className="font-semibold">Output:</span> Narrative intent · Incentive pressure · Market consequence · Decision posture
+  </p>
+</section>
+
 
         {/* SOCIAL PROOF */}
-        <section className="mb-32 max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-lg">
-            <h3 className="text-2xl font-bold text-center mb-8">
-              Built for decision-makers who can't afford to be guided
-            </h3>
+<section className="max-w-4xl mx-auto mb-32">
+  <div className="bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 px-8 py-10 text-center shadow-sm">
+    <h3 className="text-2xl font-bold mb-4">
+      Built for people who make decisions
+      <br />
+      <span className="text-blue-600 dark:text-blue-400">
+        before the consequences are obvious
+      </span>
+    </h3>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              <TrustPill text="Investors & Analysts" />
-              <TrustPill text="Risk Managers" />
-              <TrustPill text="Strategic Researchers" />
-            </div>
+    <div className="flex flex-wrap justify-center gap-4 mb-6">
+      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium">
+        ✓ Investors & Analysts
+      </span>
+      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium">
+        ✓ Risk Managers
+      </span>
+      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium">
+        ✓ Strategic Researchers
+      </span>
+    </div>
 
-            <p className="text-center text-slate-600 dark:text-slate-300 mt-8">
-              NexVeris doesn't tell you what to think. It shows you how articles guide perception — so you can see the path before you follow it.
-            </p>
-          </div>
-        </section>
+    <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+      NexVeris doesn’t tell you what to think or predict what will happen.
+      It shows how narratives shape pressure and incentives —
+      so you can decide <strong>when to act, when to wait, and when to defend</strong>.
+    </p>
+  </div>
+</section>
+
 
         {/* FAQ */}
         <section id="faq" className="max-w-4xl mx-auto mb-32 scroll-mt-20">

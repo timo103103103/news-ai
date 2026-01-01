@@ -76,7 +76,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell
 } from 'recharts';
-
+import UpgradeAfterThirdAnalysis from '@/components/UpgradeAfterThirdAnalysis';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import StockImpactMeter, { ImpactDistributionMeter } from '@/components/StockImpactMeter';
 import MotiveDetectionDisplay from '@/components/MotiveDetectionDisplay';
@@ -392,10 +392,16 @@ const normalizeAnalysisData = (rawData: any): AnalysisData => {
     if (import.meta.env.DEV) {
       console.log('📊 Using direct structure');
     }
+    // Use direct structure without rawAnalysis fallback
+    // All backend formats should use 'data' wrapper
     normalizedData = {
       ...rawData,
-      ...(rawData.rawAnalysis || {})
+      mode: rawData.mode || 'lite'
     };
+    
+    if (import.meta.env.DEV && rawData.rawAnalysis) {
+      console.warn('⚠️ Deprecated rawAnalysis structure detected - should use data wrapper');
+    }
   }
 
   // Normalize summary fields
@@ -408,12 +414,14 @@ const normalizeAnalysisData = (rawData: any): AnalysisData => {
     }
   }
 
-  // 🔧 FIX: Normalize Hidden Motives data
-  const hmRaw = normalizedData?.rawAnalysis?.hiddenMotives 
-             || normalizedData?.rawAnalysis?.hidden_motives
-             || normalizedData?.hiddenMotives 
+  // ===================================================================
+  // HIDDEN MOTIVES NORMALIZATION
+  // ===================================================================
+  // Check all possible locations but prefer standard locations
+  const hmRaw = normalizedData?.hiddenMotives 
              || normalizedData?.hidden_motives
-             || normalizedData?.motive;
+             || normalizedData?.motive
+             || null;
 
   if (import.meta.env.DEV) {
     console.log('🧠 Hidden Motives raw data:', hmRaw);
@@ -426,12 +434,8 @@ const normalizeAnalysisData = (rawData: any): AnalysisData => {
     }
     
     if (normalizedHM) {
+      // Set only in standard location - no backward compatibility needed
       normalizedData.hiddenMotives = normalizedHM;
-      // Also set in rawAnalysis for backward compatibility
-      if (!normalizedData.rawAnalysis) {
-        normalizedData.rawAnalysis = {};
-      }
-      normalizedData.rawAnalysis.hiddenMotives = normalizedHM;
     }
   } else {
     console.warn('⚠️ No Hidden Motives data found in any expected location');
@@ -836,13 +840,13 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-100 flex items-center gap-2">
               <BarChart3 className="w-4 h-4"/> How Strong Each Force Is
             </h4>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Click a bar to expand</div>
+            <div className="text-xs text-gray-500 dark:text-slate-300">Click a bar to expand</div>
           </div>
 
-          <div ref={barRef} style={{ minHeight: '360px', height: '360px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
+          <div ref={barRef} style={{ minHeight: '360px', height: '360px' }} className="bg-white dark:bg-slate-900/70 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={radarData} layout="vertical" margin={{ top: 8, right: 24, left: 60, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-slate-700" />
@@ -880,14 +884,18 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Impact vs. Control Map</h4>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-100">Impact vs. Control Map</h4>
           
-          <div ref={radarRef} style={{ minHeight: '380px', height: '380px' }} className="bg-gray-50 dark:bg-slate-900/30 rounded-lg p-3">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} outerRadius="95%" margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+          <div
+            ref={radarRef}
+            style={{ minHeight: '650px', minWidth: '650px', aspectRatio: '1 / 1', overflow: 'visible' }}
+            className="bg-white dark:bg-slate-900/70 rounded-lg p-6 border border-slate-200 dark:border-slate-700 mx-auto"
+          >
+            <ResponsiveContainer width="100%" aspect={1} minWidth={650} minHeight={650}>
+              <RadarChart data={radarData} outerRadius="52%" margin={{ top: 100, right: 100, bottom: 100, left: 100 }}>
                 <PolarGrid stroke="#cbd5e1" className="dark:stroke-slate-700" />
-                <PolarAngleAxis dataKey="factor" tick={{ fontSize: 13 }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 13 }} />
+                <PolarAngleAxis dataKey="factor" tick={{ fontSize: 12, fill: 'currentColor' }} tickLine={false} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                 
                 <RechartsTooltip
                   contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -925,8 +933,7 @@ const PestleBarAndRadar = ({ pestle, canAccessDetails, onSelectFactor }: { pestl
               </RadarChart>
             </ResponsiveContainer>
 
-            {/* Legend */}
-            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-200">
               <span>Dot size = How much control you have</span>
               <span>Bigger dot → You can act</span>
               <span>Smaller dot → You must defend</span>
@@ -1200,20 +1207,57 @@ const AnalysisResultPage = () => {
   const { scrollYProgress } = useScroll({ target: mainRef, layoutEffect: false });
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
+  // ===================================================================
+  // SESSION RESTORATION - PRODUCTION GRADE
+  // ===================================================================
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const stored = sessionStorage.getItem('analysisResult');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const normalized = normalizeAnalysisData(parsed);
-        setAnalysisData(normalized);
-      } catch (e) {
-        console.error('Failed to parse analysisResult', e);
-      }
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const stored = sessionStorage.getItem('analysisResult');
+      
+      if (!stored) {
+        console.warn('⚠️ No analysis result in session - user may have navigated directly to /results');
+        setLoading(false);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+      
+      // Log session restoration for debugging
+      if (import.meta.env.DEV) {
+        console.log('📦 Restoring analysis session:', {
+          timestamp: parsed.timestamp,
+          mode: parsed.mode,
+          userId: parsed.userId,
+          sessionId: parsed.sessionId,
+          hasHiddenMotives: !!parsed.hiddenMotives
+        });
+      }
+
+      const normalized = normalizeAnalysisData(parsed);
+      setAnalysisData(normalized);
+      
+      if (import.meta.env.DEV) {
+        console.log('✅ Session restored successfully');
+      }
+      
+    } catch (e) {
+      console.error('❌ Failed to restore session:', e);
+      // Clear corrupted session to prevent infinite error loops
+      try {
+        sessionStorage.removeItem('analysisResult');
+      } catch (clearError) {
+        console.error('Failed to clear corrupted session:', clearError);
+      }
+    } finally {
+      // CRITICAL: Always complete loading state
+      // This prevents the page from being stuck in loading state
+      setLoading(false);
+    }
   }, []);
 
   // ✅ Data destructuring MUST be before any early returns
@@ -1229,12 +1273,29 @@ const AnalysisResultPage = () => {
     ouroboros 
   } = analysisData || {};
   
-  // 🔧 Strategy / Intent data (normalized from backend)
-  const strategyIntent = analysisData?.hiddenMotives || analysisData?.rawAnalysis?.hiddenMotives || null;
+  // ===================================================================
+  // STRATEGY/INTENT DATA - SINGLE SOURCE OF TRUTH
+  // ===================================================================
+  // CRITICAL: Only use analysisData.hiddenMotives
+  // normalizeAnalysisData already handles all backend format variations
+  // Never access rawAnalysis directly - it causes data inconsistency
+  const strategyIntent = analysisData?.hiddenMotives || null;
+
+  if (import.meta.env.DEV && !strategyIntent && analysisData) {
+    console.warn('⚠️ No hiddenMotives found in normalized data:', {
+      hasAnalysisData: !!analysisData,
+      mode: analysisData.mode,
+      availableKeys: Object.keys(analysisData)
+    });
+  }
 
   // ✅ CRITICAL: Declare analysisMode BEFORE it's used in console.log
   // This must be declared before the powerAmplification debug logging section
   const analysisMode = analysisData?.mode || 'lite'; // "lite" | "standard" | "full"
+
+  // ✅ CRITICAL: Declare isTrialAnalysis for trial generosity logic
+  // Extracted from backend's trialContext (first 3 free analyses get bonus features)
+  const isTrialAnalysis = analysisData?.trialContext?.isTrial || false;
 
   // 🔧 CRITICAL: Normalize powerAmplification actors data
   // Backend may return powerAmplification at multiple nesting levels:
@@ -1512,6 +1573,21 @@ const AnalysisResultPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors">
+      
+      {/* ===================================================================
+          SESSION ANCHOR - React Reconciliation Safety
+          This hidden element prevents React from treating the page as "empty"
+          during lazy loading or conditional renders - Critical for preventing
+          "flash of no content" bugs
+          =================================================================== */}
+      {analysisData && (
+        <div className="hidden" data-session-anchor="true" aria-hidden="true">
+          <span data-timestamp={analysisData.timestamp}>{analysisData.timestamp}</span>
+          <span data-mode={analysisData.mode}>{analysisData.mode}</span>
+          <span data-user={analysisData.userId}>{analysisData.userId}</span>
+        </div>
+      )}
+
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
         <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 origin-[0%] transform" style={{ scaleX }} />
         <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
@@ -1891,6 +1967,87 @@ const AnalysisResultPage = () => {
             </div>
           </WorkflowStep>
 
+          {/* ===================================================================
+              Step 3.5: Sentiment & Emotional Bias (TRIAL TEASER)
+              ================================================================= 
+              Shows during first 3 free analyses to demonstrate value
+              Professional preview → Creates "Aha moment" → Loss aversion at paywall
+              ===================================================================
+          */}
+          <WorkflowStep
+            icon={Activity}
+            title="3. How This Story Shapes Public Emotion"
+            subtitle="Early emotional signals and crowd bias patterns"
+            id="sentiment"
+            isActive={true}
+            verdictText={analysisData?.sentiment?.recommendation || "Sentiment patterns detected"}
+            beginnerBullets={[
+              'Dominant emotional tone detected',
+              'Narrative framing influences reader risk perception',
+              'Early signals often precede price reaction'
+            ]}
+          >
+            <TierLock
+              feature="sentiment_teaser"
+              isTrialAnalysis={isTrialAnalysis}
+              canAccessOverride={canAccessFeature}
+            >
+              {/* ===== SENTIMENT PREVIEW CONTENT ===== */}
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Overall Tone</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {analysisData?.sentiment?.overall || 'Detected'}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Emotional Bias</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {analysisData?.sentiment?.emotionalTone || 'Identified'}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-slate-50 dark:bg-slate-900/40 p-3 text-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Confidence</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {analysisData?.sentiment?.confidence
+                        ? `${analysisData.sentiment.confidence}%`
+                        : '—'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 🔒 Professional soft lock explanation (only for post-trial free users) */}
+                {!isTrialAnalysis && analysisMode === 'lite' && (
+                  <div className="mt-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/50 p-4 text-sm text-slate-600 dark:text-slate-400">
+                    <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      This is an early signal preview.
+                    </p>
+                    <p>
+                      Full sentiment drivers, polarity shifts, and manipulation patterns
+                      are available on <span className="font-semibold">Starter</span> tier and above.
+                    </p>
+                  </div>
+                )}
+
+                {/* ✅ Trial encouragement (only during first 3 analyses) */}
+                {isTrialAnalysis && (
+                  <div className="mt-4 rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50/60 dark:bg-blue-900/20 p-4 text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium mb-1">
+                      🎯 Trial Preview Active
+                    </p>
+                    <p>
+                      You're seeing enhanced sentiment analysis as part of your first 3 free analyses.
+                      Full features available with <span className="font-semibold">Starter</span> tier.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TierLock>
+          </WorkflowStep>
+
           {/* Intelligence Layer Indicator (Tier Positioning) */}
           {analysisData?.tierPositioning && (
             <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
@@ -2026,6 +2183,14 @@ const AnalysisResultPage = () => {
             <DailyIntelligenceSignup />
           </div>
         </section>
+
+        {/* Post-analysis upgrade moment (Free users only) */}
+{plan === 'free' && !canAccess('analysis') && (
+  <UpgradeAfterThirdAnalysis
+    onUpgrade={() => (window.location.href = '/pricing')}
+  />
+)}
+
       </main>
 
       {!canAccessFeature('stakeholder_impact') && (

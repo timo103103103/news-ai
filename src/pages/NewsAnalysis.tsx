@@ -310,6 +310,9 @@ const NewsAnalysis = () => {
 
       setIsLoading(true);
 
+      // ===============================================================
+      // USER REGISTRATION/SYNC (non-blocking)
+      // ===============================================================
       try {
         await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
@@ -326,42 +329,41 @@ const NewsAnalysis = () => {
         console.log('⚠️ User registration/sync failed (might already exist):', registerError);
       }
 
-      // 🔹 CRITICAL FIX: Initialize analysis and get analysisId BEFORE calling summary
-      // Backend requires analysisId to track the analysis lifecycle
-      const initRes = await fetch(`${API_BASE_URL}/api/analyze/init`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          userId: session.user.id,
-          sourceType: activeTab,
-        }),
-      });
-
-      if (!initRes.ok) {
-        const initError = await initRes.json().catch(() => ({ error: 'Failed to initialize analysis' }));
-        throw new Error(initError.error || 'Failed to initialize analysis');
+      // ===============================================================
+      // GET USER'S SCAN COUNT FOR TRIAL LOGIC
+      // ===============================================================
+      let analysesUsed = 0;
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('scans_used_this_month')
+          .eq('id', session.user.id)
+          .single();
+        
+        analysesUsed = userData?.scans_used_this_month || 0;
+        
+        if (import.meta.env.DEV) {
+          console.log('📊 User has used', analysesUsed, 'analyses this month');
+        }
+      } catch (err) {
+        console.warn('⚠️ Could not fetch scan count, defaulting to 0:', err);
+        analysesUsed = 0;
       }
 
-      const { analysisId } = await initRes.json();
-
-      if (!analysisId) {
-        throw new Error('analysisId missing from init response');
-      }
-
-      // Add analysisId to request body
-      requestBody.analysisId = analysisId;
-
-      const apiUrl = `${API_BASE_URL}/api/analyze/summary`;
+      // ===============================================================
+      // CALL ANALYZE ENDPOINT DIRECTLY (NO INIT NEEDED)
+      // ===============================================================
+      const apiUrl = `${API_BASE_URL}/api/analyze`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          ...requestBody,
+          analysesUsed,  // ← CRITICAL: Pass scan count for trial logic
+        }),
       });
 
       if (!response.ok) {
@@ -388,16 +390,40 @@ const NewsAnalysis = () => {
       const data = await response.json();
       const analysisData = data.data;
 
-      sessionStorage.setItem(
-        'analysisResult',
-        JSON.stringify({
+      // ===============================================================
+      // SESSION PERSISTENCE - Enhanced with metadata & error handling
+      // ===============================================================
+      try {
+        const sessionData = {
           ...analysisData,
           sourceType: activeTab,
           sourceText: requestBody.text || requestBody.url || '',
           timestamp: new Date().toISOString(),
           userId: session.user.id,
-        })
-      );
+          sessionId: `analysis_${Date.now()}`,  // Unique session identifier
+          version: '2.0',  // Schema version for future compatibility
+          // Store original request for potential re-analysis
+          originalRequest: {
+            type: activeTab,
+            value: requestBody.text || requestBody.url || requestBody.file?.name
+          }
+        };
+
+        sessionStorage.setItem('analysisResult', JSON.stringify(sessionData));
+        
+        if (import.meta.env.DEV) {
+          console.log('✅ Analysis session saved:', {
+            mode: analysisData.mode,
+            timestamp: sessionData.timestamp,
+            sessionId: sessionData.sessionId,
+            hasHiddenMotives: !!analysisData.hiddenMotives
+          });
+        }
+      } catch (storageError) {
+        // Log but don't block navigation - analysis is still in state
+        console.error('⚠️ Failed to persist to session storage:', storageError);
+        // This is non-critical - analysis will still display if user doesn't refresh
+      }
 
       if (isFreePlan && session.user?.id) recordScan(session.user.id);
       toast.success('Intelligence Protocol Complete');

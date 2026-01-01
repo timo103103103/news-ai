@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NexVeris AI</string>
+    <string name="title_activity_main">NexVeris AI</string>
+    <string name="package_name">com.neverisai.app</string>
+    <string name="custom_url_scheme">com.neverisai.app</string>
+</resources>

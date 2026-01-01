@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import InstallPrompt from '@/components/InstallPrompt';
 import AuthProvider from "./components/AuthProvider";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 
@@ -134,3 +134,7 @@ function App() {
 }
 
 export default App;
+<>
+  {/* 你原本嘅內容 */}
+  <InstallPrompt />
+</>
