@@ -1,11 +1,19 @@
-# Allow all crawlers
+# ================================
+# robots.txt for NexVeris AI
+# Domain: https://www.nexverisai.com
+# Environment: Production
+# ================================
+
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://news-ai-i173.vercel.app/sitemap.xml
-
-# Disallow admin and auth pages
-Disallow: /admin/
+# Block non-public or internal routes (optional but recommended)
 Disallow: /api/
-Disallow: /auth/callback
+Disallow: /auth/
+Disallow: /_supabase/
+Disallow: /_vercel/
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Sitemap location (CRITICAL)
+Sitemap: https://www.nexverisai.com/sitemap.xml
