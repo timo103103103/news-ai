@@ -1,38 +1,47 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import tsconfigPaths from "vite-tsconfig-paths";
+import tsconfigPaths from 'vite-tsconfig-paths'
+import sitemap from 'vite-plugin-sitemap'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tsconfigPaths(),
+
+    /**
+     * ================================
+     * ✅ SITEMAP – PRODUCTION FIX
+     * ================================
+     * ⚠️ 強制指定正式網域
+     * ⚠️ 完全避免 vercel.app / localhost
+     */
+    sitemap({
+      hostname: 'https://www.nexverisai.com',
+      outDir: 'dist',
+      changefreq: 'weekly',
+      priority: 0.7,
+      lastmod: new Date(),
+    }),
   ],
+
+  /**
+   * ================================
+   * DEV SERVER
+   * ================================
+   */
   server: {
     port: 5173,
     strictPort: true,
     open: true,
     host: 'localhost',
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3005',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('❌ Proxy error:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('📤 Sending to backend:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('📥 Backend response:', proxyRes.statusCode, req.url);
-          });
-        },
-      }
-    }
   },
+
+  /**
+   * ================================
+   * BUILD CONFIG
+   * ================================
+   */
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -46,4 +55,4 @@ export default defineConfig({
       }
     }
   }
-});
+})
