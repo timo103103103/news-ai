@@ -1,19 +1,10 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc'
 import tsconfigPaths from "vite-tsconfig-paths";
-import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [
-          'react-dev-locator',
-        ],
-      },
-    }),
-    // Branding: remove Trae badge for NexVeris AI
+    react(), // ✅ Removed babel config - SWC doesn't need it
     tsconfigPaths(),
   ],
   server: {
@@ -26,9 +17,7 @@ export default defineConfig({
         target: 'http://localhost:3005',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path, // Keep /api prefix - backend expects it
-        
-        // Debug logging
+        rewrite: (path) => path,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.log('❌ Proxy error:', err);
